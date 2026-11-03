@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import L from "leaflet";
 import { TileLayer, useMap } from "react-leaflet";
 
@@ -35,7 +36,7 @@ function OsmTiles() {
   );
 }
 
-function OlaVector({ dark, onFail }: { dark: boolean; onFail: () => void }) {
+function OlaVector({ dark, onFail }: { dark: boolean; onFail: (why: string) => void }) {
   const map = useMap();
   useEffect(() => {
     let layer: L.Layer | null = null;
@@ -63,19 +64,20 @@ function OlaVector({ dark, onFail }: { dark: boolean; onFail: () => void }) {
         layer = gl;
         const m = gl.getMaplibreMap();
         let loaded = false;
-        const giveUp = window.setTimeout(() => { if (!loaded) onFail(); }, 12000); // never leave a blank map
+        const giveUp = window.setTimeout(() => { if (!loaded) onFail("timeout: map not loaded after 12s"); }, 12000); // never leave a blank map
         timers.push(giveUp);
         m.once("load", () => { loaded = true; window.clearTimeout(giveUp); });
         m.on("error", (e) => {
-          const ev = e as unknown as { error?: { status?: number }; sourceId?: string; tile?: unknown };
+          const ev = e as unknown as { error?: { status?: number; message?: string }; sourceId?: string; tile?: unknown };
           const status = ev.error?.status;
+          const why = `${status ?? "no status"} ${(ev.error?.message ?? "").replace(/api_key=[^&\s]+/g, "api_key=***")} ${ev.sourceId ? "(source " + ev.sourceId + ")" : "(style)"}`.trim();
           const styleLevel = !loaded && !ev.sourceId && !ev.tile; // the style itself couldn't load
           // Bad key, domain not allowed, quota used up, or style unreachable: go back to OpenStreetMap.
           // A few stray tile errors after loading are normal.
-          if (status === 401 || status === 403 || status === 429 || styleLevel || ++errors >= 6) onFail();
+          if (status === 401 || status === 403 || status === 429 || styleLevel || ++errors >= 6) onFail(`map error: ${why}`);
         });
-      } catch {
-        if (!cancelled) onFail(); // e.g. no WebGL on an old phone
+      } catch (err) {
+        if (!cancelled) onFail(`exception: ${(err as Error)?.message ?? err}`); // e.g. no WebGL on an old phone
       }
     })();
     return () => {
@@ -87,9 +89,14 @@ function OlaVector({ dark, onFail }: { dark: boolean; onFail: () => void }) {
   return null;
 }
 
+const debug = typeof location !== "undefined" && new URLSearchParams(location.search).has("mapdebug");
+
 export default function Basemap() {
   const dark = useIsDark();
-  const [failed, setFailed] = useState(!KEY);
-  if (failed) return <OsmTiles />;
-  return <OlaVector dark={dark} onFail={() => setFailed(true)} />;
+  const [failed, setFailed] = useState<string | null>(KEY ? null : "no key in this build (VITE_OLA_MAPS_KEY missing)");
+  const fail = (why: string) => { console.warn("Ola basemap fallback to OpenStreetMap:", why); setFailed((f) => f ?? why); };
+  const note = debug && createPortal(
+    <div className="map-debug">{failed ? `Basemap: OpenStreetMap fallback. Reason: ${failed}` : "Basemap: Ola Maps (loading or loaded)"}</div>, document.body);
+  if (failed) return <>{note}<OsmTiles /></>;
+  return <>{note}<OlaVector dark={dark} onFail={fail} /></>;
 }
