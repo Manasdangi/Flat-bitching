@@ -1,5 +1,8 @@
 import { sectorById } from "../data/sectors";
+import { linkProps } from "../lib/router";
 import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type Office, type Weights } from "../lib/score";
+import { isNamedSociety, slugify } from "../lib/societies";
+import { AqiBadge, SuggestFix } from "./Extras";
 import Reviews from "./Reviews";
 
 type Props = {
@@ -21,11 +24,20 @@ const rupees = ([a, b]: [number, number]) => `₹${a}k – ₹${b}k`;
 
 export default function SectorPanel({ id, weights, office, onClose, inCompare, onToggleCompare }: Props) {
   const s = sectorById(id);
-  if (!s) return <p>Sector not found.</p>;
+  if (!s) return <div className="panel-body"><h2>Sector not found</h2><p>We don't cover this one yet.</p></div>;
   const metro = nearestMetro(s);
   const c = commute(s, office);
   const sc = allScores(s, office);
   const m = matchScore(s, weights, office);
+  const named = s.societies.filter(isNamedSociety);
+
+  const share = async () => {
+    const url = location.origin + `/sector/${s.id}`;
+    try {
+      if (navigator.share) await navigator.share({ title: `${s.name} – Gurgaon Flat Finder`, url });
+      else await navigator.clipboard?.writeText(url);
+    } catch { /* cancelled */ }
+  };
 
   return (
     <article className="panel-body">
@@ -38,12 +50,13 @@ export default function SectorPanel({ id, weights, office, onClose, inCompare, o
       </div>
       {m != null && <p className="match">Your match: <b>{m}%</b></p>}
       <p>{s.summary}</p>
+      <AqiBadge lat={s.lat} lng={s.lng} />
 
       <div className="actions">
         <button className={`btn small ${inCompare ? "ghost" : ""}`} onClick={onToggleCompare}>
           {inCompare ? "✓ In compare" : "+ Compare"}
         </button>
-        <button className="btn small ghost" onClick={() => navigator.clipboard?.writeText(location.href)}>Copy link</button>
+        <button className="btn small ghost" onClick={share}>Share</button>
       </div>
 
       <div className="facts">
@@ -51,7 +64,13 @@ export default function SectorPanel({ id, weights, office, onClose, inCompare, o
         <div><span>PG (single)</span><b>{rupees(s.pgRent)}</b></div>
         <div><span>PG availability</span><b>{s.pg}</b></div>
         <div><span>Nearest metro</span><b>{metro.station.name} · {metro.km.toFixed(1)} km</b></div>
-        {c && office && <div><span>To {office.name}</span><b>~{c.roadKm.toFixed(0)} km · ~{c.minutes} min</b></div>}
+        {c && office && (
+          <div className="wide">
+            <span>Drive to {office.name}</span>
+            <b>{c.roadKm.toFixed(1)} km · ~{c.minutes} min at peak{c.offpeak != null && <> · {c.offpeak} min off-peak</>}</b>
+            <small className="muted">{c.real ? "Road route via OpenStreetMap; peak time estimated" : office.name.includes("pinned") ? "Rough estimate for a pinned location" : "Rough estimate (route data loading or unavailable)"}</small>
+          </div>
+        )}
       </div>
 
       <h3>Scores</h3>
@@ -60,7 +79,7 @@ export default function SectorPanel({ id, weights, office, onClose, inCompare, o
           <li key={p.key}><span>{p.icon} {p.label}</span><Bar v={sc[p.key]} /></li>
         ))}
       </ul>
-      {!office && <p className="note">Set your office in the Match tab to see commute times.</p>}
+      {!office && <p className="note">Pick your office in the Match tab to see real drive times.</p>}
 
       <div className="two-col">
         <div><h3>👍 Good</h3><ul>{s.highlights.map((h) => <li key={h}>{h}</li>)}</ul></div>
@@ -83,14 +102,19 @@ export default function SectorPanel({ id, weights, office, onClose, inCompare, o
       </div>
 
       <h3>Popular societies & housing</h3>
-      <div className="chips">{s.societies.map((x) => <span key={x} className="chip">{x}</span>)}</div>
+      <div className="chips">
+        {s.societies.map((x) => isNamedSociety(x)
+          ? <a key={x} className="chip link-chip" {...linkProps(`/society/${slugify(x)}`)}>🏢 {x} ›</a>
+          : <span key={x} className="chip">{x}</span>)}
+      </div>
 
       <p className="note">
-        Rents are rough ranges from 2025–26 listings, nearby places are straight-line distances, and scores are editorial estimates. Metro distance and commute are calculated from approximate locations.
-        Always visit at night and in monsoon, and check with residents before renting.
+        Sector outlines and drive times come from OpenStreetMap. Rents are rough ranges from 2025–26 listings, nearby places are straight-line
+        distances, and scores are editorial estimates until enough residents rate them. Visit at night and in monsoon before renting.
       </p>
+      <SuggestFix sectorId={s.id} />
 
-      <Reviews sectorId={s.id} />
+      <Reviews sectorId={s.id} societies={named} />
     </article>
   );
 }

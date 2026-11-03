@@ -72,11 +72,27 @@ export const hangoutScore = (sec: Sector) => {
 export const transitScore = (sec: Sector) => band(nearestMetro(sec).km, [1, 2, 3.5, 6]);
 export const affordScore = (sec: Sector) => band((sec.rent2bhk[0] + sec.rent2bhk[1]) / 2, [28, 36, 48, 70]);
 
-// Rough road estimate: straight line × 1.4, ~20 km/h average in peak traffic.
-export function commute(sec: Sector, office: Office) {
+// Real road drive times (OSRM) for the selected tech hub, set by the app when an office is chosen.
+type DriveRow = { km: number; minutes_offpeak: number };
+let activeDrives: { office: string; rows: Map<string, DriveRow> } | null = null;
+export function setActiveDrives(office: string | null, rows: Map<string, DriveRow>) {
+  activeDrives = office ? { office, rows } : null;
+}
+const PEAK = 1.8;
+
+export type Commute = { roadKm: number; minutes: number; offpeak: number | null; real: boolean; score: number };
+
+/** Road commute. Uses real OSRM route data for tech hubs; falls back to a straight-line estimate for pinned offices. */
+export function commute(sec: Sector, office: Office): Commute | null {
   if (!office) return null;
+  const d = activeDrives?.office === office.name ? activeDrives.rows.get(sec.id) : undefined;
+  if (d) {
+    const minutes = Math.round(d.minutes_offpeak * PEAK + 2);
+    return { roadKm: d.km, minutes, offpeak: d.minutes_offpeak, real: true, score: band(minutes, [15, 25, 35, 50]) };
+  }
   const roadKm = km(sec.lat, sec.lng, office.lat, office.lng) * 1.4;
-  return { roadKm, minutes: Math.round((roadKm / 20) * 60 + 5), score: band(roadKm, [4, 8, 13, 20]) };
+  const minutes = Math.round((roadKm / 20) * 60 + 5);
+  return { roadKm, minutes, offpeak: null, real: false, score: band(minutes, [15, 25, 35, 50]) };
 }
 
 export function allScores(sec: Sector, office: Office): Record<PriorityKey, number | null> {

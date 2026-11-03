@@ -1,4 +1,5 @@
 import { OFFICES, SECTORS } from "../data/sectors";
+import { track } from "../lib/track";
 import { matchScore, PRIORITIES, ZERO_WEIGHTS, type Office, type Weights } from "../lib/score";
 
 type Props = {
@@ -36,7 +37,7 @@ export default function Matcher(p: Props) {
 
       <div className="chips">
         {PRESETS.map((pr) => (
-          <button key={pr.label} className="chip" onClick={() => p.setWeights({ ...ZERO_WEIGHTS, ...pr.w })}>{pr.label}</button>
+          <button key={pr.label} className="chip" onClick={() => { p.setWeights({ ...ZERO_WEIGHTS, ...pr.w }); track("preset", { name: pr.label }); }}>{pr.label}</button>
         ))}
         {active && <button className="chip" onClick={() => p.setWeights(ZERO_WEIGHTS)}>Reset</button>}
       </div>
@@ -48,6 +49,7 @@ export default function Matcher(p: Props) {
           onChange={(e) => {
             const o = OFFICES.find((x) => x.id === e.target.value);
             p.setOffice(o ? { name: o.name, lat: o.lat, lng: o.lng } : null);
+            if (o) track("office_set", { hub: o.name });
           }}
         >
           <option value="">No office selected</option>

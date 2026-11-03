@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
+import { CircleMarker, GeoJSON, MapContainer, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
+import { useShapes } from "../lib/geo";
 import { LANDMARKS, METRO, SECTORS, sectorById } from "../data/sectors";
 import { matchColor, matchScore, type Office, type Weights } from "../lib/score";
 
@@ -45,6 +46,8 @@ function ZoomWatch({ onZoom }: { onZoom: (z: number) => void }) {
 
 export default function MapView({ selectedId, onSelect, weights, office, pickingOffice, onPickOffice, layers }: Props) {
   const [zoom, setZoom] = useState(12);
+  const shapes = useShapes();
+  const hasShape = new Set(shapes.map((x) => x.sector_id));
   const base = zoom >= 14 ? 15 : zoom >= 13 ? 12 : 9;
   return (
     <MapContainer center={[28.45, 77.04]} zoom={12} className={`map z${Math.min(Math.max(zoom, 11), 14)} ${pickingOffice ? "picking" : ""}`} zoomControl={false}>
@@ -64,14 +67,30 @@ export default function MapView({ selectedId, onSelect, weights, office, picking
         </CircleMarker>
       ))}
 
+      {shapes.map((sh) => {
+        const sec = sectorById(sh.sector_id);
+        if (!sec) return null;
+        const color = matchColor(matchScore(sec, weights, office));
+        const sel = sh.sector_id === selectedId;
+        return (
+          <GeoJSON
+            key={`${sh.sector_id}-${color}-${sel}`}
+            data={sh.geojson}
+            style={{ color: sel ? "#111827" : color, weight: sel ? 3 : 1.2, fillColor: color, fillOpacity: sel ? 0.35 : 0.22 }}
+            eventHandlers={{ click: () => !pickingOffice && onSelect(sh.sector_id) }}
+          />
+        );
+      })}
+
       {SECTORS.map((s) => {
         const m = matchScore(s, weights, office);
         const sel = s.id === selectedId;
+        const r = hasShape.has(s.id) ? Math.max(base - 3, 7) : base;
         return (
           <CircleMarker
             key={s.id}
             center={[s.lat, s.lng]}
-            radius={sel ? base + 5 : base}
+            radius={sel ? r + 4 : r}
             pathOptions={{ color: sel ? "#111827" : "#fff", weight: sel ? 3 : 1.5, fillColor: matchColor(m), fillOpacity: 0.85 }}
             eventHandlers={{ click: () => !pickingOffice && onSelect(s.id) }}
           >

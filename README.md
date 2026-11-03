@@ -27,3 +27,12 @@ Sector locations are approximate centres. Rents are rough ranges calibrated agai
 
 ## Stack
 React 19 · TypeScript · Vite · react-leaflet · Supabase (REST via fetch)
+
+## Data pipeline (v2)
+- **Sector outlines**: OpenStreetMap administrative boundaries, simplified and stored in the Supabase `sector_shapes` table (ODbL).
+- **Drive times**: OSRM routing (OpenStreetMap) from each sector to each tech hub, in `drive_times`. Peak time ≈ off-peak × 1.8.
+- **Live AQI**: Open-Meteo air-quality API (CAMS model estimate), fetched in the browser.
+- **Reviews**: per-aspect ratings and society tags. One review per sector per day per device/IP; 3 reports auto-hide a review. Private spam metadata lives in `review_meta`, which has no public read access.
+- **Corrections**: residents suggest fixes in the `corrections` table. Review them in Supabase → Table Editor.
+- **SEO**: real URLs (`/sector/48`, `/society/sobha-city`), per-page titles, OG image, and `sitemap.xml` generated on build.
+- **PWA**: installable, with an offline app shell (`public/sw.js`).
