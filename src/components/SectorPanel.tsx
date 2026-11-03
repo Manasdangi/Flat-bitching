@@ -1,5 +1,5 @@
 import { sectorById } from "../data/sectors";
-import { allScores, commute, matchScore, nearestMetro, PRIORITIES, type Office, type Weights } from "../lib/score";
+import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type Office, type Weights } from "../lib/score";
 import Reviews from "./Reviews";
 
 type Props = {
@@ -67,11 +67,26 @@ export default function SectorPanel({ id, weights, office, onClose, inCompare, o
         <div><h3>⚠️ Watch out</h3><ul>{s.watchOut.map((h) => <li key={h}>{h}</li>)}</ul></div>
       </div>
 
+      <h3>Nearby</h3>
+      <div className="nearby">
+        {([["hospital", "🏥 Hospitals"], ["school", "🎒 Schools"], ["mall", "🛍️ Malls & markets"]] as const).map(([k, label]) => {
+          const list = nearby(s, k);
+          return (
+            <div key={k}>
+              <b>{label}</b>
+              {list.length === 0 ? <p className="muted">None of our listed ones within 6 km</p> : (
+                <ul>{list.map((l) => <li key={l.name + l.area}>{l.name} <span className="muted">· {l.area} · {l.km.toFixed(1)} km</span></li>)}</ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
       <h3>Popular societies & housing</h3>
       <div className="chips">{s.societies.map((x) => <span key={x} className="chip">{x}</span>)}</div>
 
       <p className="note">
-        Rents are rough ranges from 2025–26 listings, and scores are editorial estimates. Metro distance and commute are calculated from approximate locations.
+        Rents are rough ranges from 2025–26 listings, nearby places are straight-line distances, and scores are editorial estimates. Metro distance and commute are calculated from approximate locations.
         Always visit at night and in monsoon, and check with residents before renting.
       </p>
 

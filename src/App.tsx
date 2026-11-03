@@ -6,7 +6,7 @@ import SearchBar from "./components/SearchBar";
 import SectorPanel from "./components/SectorPanel";
 import Matcher from "./components/Matcher";
 import Compare from "./components/Compare";
-import { SECTORS, sectorById } from "./data/sectors";
+import { DATA_UPDATED, SECTORS, SOURCES, sectorById } from "./data/sectors";
 import { ZERO_WEIGHTS, type Office, type Weights } from "./lib/score";
 
 type View = "explore" | "match" | "compare";
@@ -126,7 +126,9 @@ export default function App() {
                   </div>
                 </div>
               ))}
-              <p className="note">v1 covers {SECTORS.length} popular sectors. Data is researched and approximate, and reviews come from real users.</p>
+              <p className="note">Covers {SECTORS.length} sectors (updated {DATA_UPDATED}). Data is researched from public sources and approximate, and reviews come from real users.</p>
+              <h3>Sources</h3>
+              <ul className="sources">{SOURCES.map((x) => <li key={x.url}><a href={x.url} target="_blank" rel="noreferrer">{x.label}</a></li>)}</ul>
             </div>
           )}
         </aside>

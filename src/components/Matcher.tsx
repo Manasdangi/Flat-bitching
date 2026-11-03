@@ -16,7 +16,7 @@ type Props = {
 const PRESETS: { label: string; w: Partial<Weights> }[] = [
   { label: "👩 Safe for women", w: { safety: 5, transit: 3, market: 3, clean: 2 } },
   { label: "🚇 No car", w: { transit: 5, market: 4, commute: 3 } },
-  { label: "👨‍👩‍👧 Family", w: { safety: 4, green: 4, clean: 4, drain: 3 } },
+  { label: "👨‍👩‍👧 Family", w: { safety: 4, green: 4, clean: 4, drain: 3, schools: 4, health: 3 } },
   { label: "💸 Budget", w: { afford: 5, commute: 3, transit: 2 } },
   { label: "🌿 Clean air", w: { air: 5, green: 4, clean: 3 } },
 ];

@@ -1,4 +1,4 @@
-import { METRO, type Sector } from "../data/sectors";
+import { LANDMARKS, METRO, type Landmark, type Sector } from "../data/sectors";
 
 export type Office = { name: string; lat: number; lng: number } | null;
 
@@ -11,6 +11,8 @@ export const PRIORITIES = [
   { key: "green", label: "Parks & greenery", icon: "🌳" },
   { key: "drain", label: "No waterlogging", icon: "☔" },
   { key: "afford", label: "Affordable", icon: "💰" },
+  { key: "health", label: "Near a big hospital", icon: "🏥" },
+  { key: "schools", label: "Good schools nearby", icon: "🎒" },
   { key: "commute", label: "Short office commute", icon: "🏢" },
 ] as const;
 
@@ -44,6 +46,21 @@ const band = (v: number, cuts: number[]) => {
   return 1;
 };
 
+/** Nearest landmarks of a kind, closest first. */
+export function nearby(sec: Sector, kind: Landmark["kind"], n = 3, maxKm = 6) {
+  return LANDMARKS.filter((l) => l.kind === kind)
+    .map((l) => ({ ...l, km: km(sec.lat, sec.lng, l.lat, l.lng) }))
+    .filter((l) => l.km <= maxKm)
+    .sort((a, b) => a.km - b.km)
+    .slice(0, n);
+}
+
+export const healthScore = (sec: Sector) => band(nearby(sec, "hospital", 1, 99)[0]?.km ?? 99, [1.5, 3, 5, 8]);
+export const schoolScore = (sec: Sector) => {
+  const within3 = nearby(sec, "school", 10, 3).length;
+  return within3 >= 3 ? 5 : within3 === 2 ? 4 : within3 === 1 ? 3 : nearby(sec, "school", 1, 6).length ? 2 : 1;
+};
+
 export const transitScore = (sec: Sector) => band(nearestMetro(sec).km, [1, 2, 3.5, 6]);
 export const affordScore = (sec: Sector) => band((sec.rent2bhk[0] + sec.rent2bhk[1]) / 2, [28, 36, 48, 70]);
 
@@ -59,6 +76,8 @@ export function allScores(sec: Sector, office: Office): Record<PriorityKey, numb
     ...sec.scores,
     transit: transitScore(sec),
     afford: affordScore(sec),
+    health: healthScore(sec),
+    schools: schoolScore(sec),
     commute: commute(sec, office)?.score ?? null,
   };
 }

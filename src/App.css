@@ -96,3 +96,7 @@ select { max-width: 100%; }
   .panel { border-left: none; overflow: visible; }
   .two-col { grid-template-columns: 1fr; }
 }
+.nearby { display: grid; gap: 10px; }
+.nearby ul, .sources { margin: 4px 0 0; padding-left: 18px; font-size: 14px; }
+.nearby p { margin: 4px 0 0; font-size: 13px; }
+.sources a { color: var(--accent); }

@@ -36,7 +36,7 @@ export default function SearchBar({ onSelect }: { onSelect: (id: string) => void
       />
       {open && q && (
         <ul className="suggest">
-          {results.length === 0 && <li className="muted">Not covered yet. v1 has {SECTORS.length} popular sectors.</li>}
+          {results.length === 0 && <li className="muted">Not covered yet. We cover {SECTORS.length} sectors so far.</li>}
           {results.map(({ s, society }) => (
             <li key={s.id} onMouseDown={() => pick(s.id)}>
               <b>{s.name}</b>

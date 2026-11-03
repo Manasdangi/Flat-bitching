@@ -1,5 +1,5 @@
 import { SECTORS, sectorById } from "../data/sectors";
-import { allScores, commute, matchScore, nearestMetro, PRIORITIES, type Office, type Weights } from "../lib/score";
+import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type Office, type Weights } from "../lib/score";
 import { Bar } from "./SectorPanel";
 
 type Props = {
@@ -46,6 +46,7 @@ export default function Compare({ ids, setIds, weights, office, onSelect }: Prop
               <tr><td>2BHK rent</td>{list.map((s) => <td key={s.id}>₹{s.rent2bhk[0]}–{s.rent2bhk[1]}k</td>)}</tr>
               <tr><td>PG</td>{list.map((s) => <td key={s.id}>₹{s.pgRent[0]}–{s.pgRent[1]}k · {s.pg}</td>)}</tr>
               <tr><td>Metro</td>{list.map((s) => { const m = nearestMetro(s); return <td key={s.id}>{m.station.name}<br /><small>{m.km.toFixed(1)} km</small></td>; })}</tr>
+              <tr><td>Nearest hospital</td>{list.map((s) => { const h = nearby(s, "hospital", 1, 99)[0]; return <td key={s.id}>{h ? <>{h.name}<br /><small>{h.km.toFixed(1)} km</small></> : "–"}</td>; })}</tr>
               {office && <tr><td>Commute</td>{list.map((s) => <td key={s.id}>~{commute(s, office)!.minutes} min</td>)}</tr>}
               {PRIORITIES.filter((p) => p.key !== "commute" || office).map((p) => (
                 <tr key={p.key}><td>{p.icon} {p.label}</td>{list.map((s) => <td key={s.id}><Bar v={allScores(s, office)[p.key]} /></td>)}</tr>
