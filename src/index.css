@@ -1,5 +1,6 @@
 :root {
   --bg: #f6f7fb; --card: #fff; --text: #111827; --muted: #6b7280; --line: #e5e7eb;
+  --raise: #f6f7fb; --nav-h: calc(58px + env(safe-area-inset-bottom, 0px));
   --accent: #4f46e5; --accent-soft: #eef2ff; --warn-bg: #fff7ed; --warn: #9a3412;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   color: var(--text); background: var(--bg);
@@ -7,6 +8,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0b1020; --card: #121a2e; --text: #e5e7eb; --muted: #9ca3af; --line: #243049;
+    --raise: #1b2540;
     --accent: #818cf8; --accent-soft: #1e2547; --warn-bg: #2a1b10; --warn: #fdba74;
   }
 }
