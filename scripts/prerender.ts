@@ -1,0 +1,165 @@
+// Post-build: writes crawlable static HTML for every sector/society/key page and a few data-driven guide pages.
+// The React app still boots on top of the sector/society pages; guide pages are standalone static HTML.
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { SECTORS, ZONES, METRO, DATA_UPDATED, type Sector } from "../src/data/sectors";
+import { FLOOD, WATER } from "../src/data/risk";
+import { SOCIETIES } from "../src/lib/societies";
+
+const SITE = "https://gurgaon-flat-finder.vercel.app";
+const NAME = "Gurgaon Flat Finder";
+const tpl = readFileSync("dist/index.html", "utf8");
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const km = (aLat: number, aLng: number, bLat: number, bLng: number) => Math.hypot((aLat - bLat) * 111, (aLng - bLng) * 98);
+const metroOf = (s: Sector) => METRO.map((m) => ({ m, d: km(s.lat, s.lng, m.lat, m.lng) })).sort((a, b) => a.d - b.d)[0];
+const rent = ([a, b]: [number, number]) => `₹${a}k–₹${b}k`;
+const link = (path: string, text: string) => `<a href="${path}">${esc(text)}</a>`;
+
+type Page = { path: string; title: string; desc: string; body: string; ld?: object[]; standalone?: boolean };
+
+const CSS = `body{font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;color:#1b1b2f;background:#fff}
+@media(prefers-color-scheme:dark){body{background:#12121c;color:#e8e8f2}a{color:#a5a8ff}th,td{border-color:#33334a}}
+main{max-width:760px;margin:0 auto;padding:20px 16px 60px}h1{line-height:1.25}a{color:#4338ca}
+table{border-collapse:collapse;width:100%;font-size:15px}th,td{border-bottom:1px solid #e2e2ee;padding:8px 6px;text-align:left}
+.cta{display:inline-block;background:#4338ca;color:#fff!important;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:600}
+.note{font-size:14px;opacity:.8}`;
+
+function sectorPage(s: Sector): Page {
+  const mt = metroOf(s), f = FLOOD[s.id], w = WATER[s.id];
+  const near = SECTORS.filter((x) => x.id !== s.id).map((x) => ({ x, d: km(s.lat, s.lng, x.lat, x.lng) })).sort((a, b) => a.d - b.d).slice(0, 5);
+  const title = `${s.name}, Gurgaon: rent, societies, reviews | ${NAME}`;
+  const desc = `${s.name} (${s.zone}): 2BHK ${rent(s.rent2bhk)}, PG ${rent(s.pgRent)}, nearest metro ${mt.m.name} (${mt.d.toFixed(1)} km), flood and water notes, societies and resident reviews. ${s.summary}`.slice(0, 300);
+  const body = `<main><nav aria-label="Breadcrumb">${link("/", "Gurgaon sectors")} › ${esc(s.zone)}</nav>
+<h1>${esc(s.name)}, Gurgaon</h1><p>${esc(s.summary)}</p>
+<ul><li>2 BHK rent: ${rent(s.rent2bhk)} per month (rough range)</li><li>PG (single occupancy): ${rent(s.pgRent)} per month, availability ${esc(s.pg)}</li>
+<li>Nearest metro: ${esc(mt.m.name)}, about ${mt.d.toFixed(1)} km straight-line</li><li>Women safety score: ${s.scores.safety}/5 (editorial estimate)</li></ul>
+<h2>Good</h2><ul>${s.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>
+<h2>Watch out</h2><ul>${s.watchOut.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>
+<h2>Water and flooding</h2><p>${f ? `Waterlogging risk (${f.level}): ${esc(f.note)} ` : ""}${w ? `Water: ${esc(w.note)}` : ""}${!f && !w ? "No water or flooding problems reported in the sources we checked. Ask current residents." : ""}</p>
+<h2>Societies</h2><ul>${s.societies.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+<h2>Nearby sectors</h2><ul>${near.map(({ x, d }) => `<li>${link(`/sector/${x.id}`, x.name)} (${d.toFixed(1)} km)</li>`).join("")}</ul>
+<p class="note">Rents are rough ranges from 2025–26 listings and scores are editorial estimates, updated ${DATA_UPDATED}. ${link("/data", "How we get our data")}.</p></main>`;
+  const ld = [
+    { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+      { "@type": "ListItem", position: 1, name: NAME, item: SITE + "/" },
+      { "@type": "ListItem", position: 2, name: s.name, item: `${SITE}/sector/${s.id}` }] },
+    { "@context": "https://schema.org", "@type": "Place", name: `${s.name}, Gurgaon`, description: s.summary,
+      geo: { "@type": "GeoCoordinates", latitude: s.lat, longitude: s.lng }, address: { "@type": "PostalAddress", addressLocality: "Gurugram", addressRegion: "Haryana", addressCountry: "IN" } },
+  ];
+  return { path: `/sector/${s.id}`, title, desc, body, ld };
+}
+
+const pages: Page[] = [];
+for (const s of SECTORS) pages.push(sectorPage(s));
+for (const soc of SOCIETIES) {
+  pages.push({
+    path: `/society/${soc.slug}`,
+    title: `${soc.name} reviews, ${soc.sectors[0].name} Gurgaon | ${NAME}`,
+    desc: `Resident reviews and ratings for ${soc.name} in ${soc.sectors.map((x) => x.name).join(", ")}, Gurgaon: cleanliness, safety, water, power and waterlogging.`,
+    body: `<main><h1>${esc(soc.name)}, Gurgaon</h1><p>Located in ${soc.sectors.map((x) => link(`/sector/${x.id}`, x.name)).join(", ")}.</p>
+<p>Typical 2 BHK rent in the sector: ${soc.sectors.map((x) => `${esc(x.name)} ${rent(x.rent2bhk)}`).join("; ")}.</p>
+<p class="note">Resident reviews load in the app. ${link("/data", "How we get our data")}.</p></main>`,
+  });
+}
+
+// Home: crawlable index of every sector, grouped by zone, plus guides.
+const GUIDES: { slug: string; title: string; desc: string; build: () => string }[] = [];
+const rows = (list: Sector[], cols: (s: Sector) => string[], heads: string[]) =>
+  `<table><thead><tr>${heads.map((h) => `<th>${h}</th>`).join("")}</tr></thead><tbody>${list.map((s) => `<tr><td>${link(`/sector/${s.id}`, s.name)}</td>${cols(s).map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+const stamp = `<p class="note">Rents are rough ranges from 2025–26 listings and scores are editorial estimates, updated ${DATA_UPDATED}. See ${link("/data", "how we get our data")}. Visit at night and in monsoon before you rent.</p>`;
+
+GUIDES.push({
+  slug: "best-sectors-gurgaon-single-women",
+  title: "Best sectors in Gurgaon for single working women (2026)",
+  desc: "Sectors ranked by our women-safety score with PG availability, rent and metro distance. Built from sector data, resident polls and public reports.",
+  build: () => {
+    const top = [...SECTORS].filter((s) => s.pg !== "Low").sort((a, b) => b.scores.safety - a.scores.safety || a.pgRent[0] - b.pgRent[0]).slice(0, 15);
+    return `<p>Single working women usually weigh four things: lit, active streets at night, a metro or easy cab access, PGs or landlords that accept singles, and a commute that does not end after dark. These sectors score highest on our safety rating and have at least a medium PG scene.</p>
+${rows(top, (s) => [`${s.scores.safety}/5`, rent(s.pgRent), s.pg, `${metroOf(s).d.toFixed(1)} km`], ["Sector", "Safety", "PG rent", "PG supply", "Metro"])}
+<h2>How to use this</h2><ul><li>Treat scores as a starting point: they are editorial until enough residents vote.</li><li>Check the street at 9–10pm and ask current residents about late cabs and gate security.</li><li>Use the ${link("/women", "women's checklist")} before paying a deposit.</li></ul>${stamp}`;
+  },
+});
+GUIDES.push({
+  slug: "waterlogging-prone-sectors-gurgaon",
+  title: "Waterlogging-prone sectors in Gurgaon: where to be careful in monsoon",
+  desc: "Gurgaon sectors with reported waterlogging, from news and civic reports, and what to check before renting on the ground floor or basement.",
+  build: () => {
+    const hit = SECTORS.filter((s) => FLOOD[s.id]).sort((a, b) => Number(FLOOD[b.id].level === "high") - Number(FLOOD[a.id].level === "high"));
+    return `<p>Parts of Gurgaon flood in heavy rain. This list comes from news and civic reports, not official flood maps, and flooding is often limited to specific roads or low points inside a sector.</p>
+${rows(hit, (s) => [FLOOD[s.id].level, FLOOD[s.id].note], ["Sector", "Risk", "Reported"])}
+<h2>Before you sign</h2><ul><li>Avoid basements and ground floors in listed areas, and ask about a stilt or sump pump.</li><li>Ask neighbours where water stood last monsoon, and how the approach road behaves.</li></ul>${stamp}`;
+  },
+});
+GUIDES.push({
+  slug: "cheapest-sectors-gurgaon-2bhk-rent",
+  title: "Cheapest sectors in Gurgaon for a 2 BHK rent (2026)",
+  desc: "Gurgaon sectors with the lowest 2 BHK rent ranges, with metro distance and PG rents.",
+  build: () => {
+    const l = [...SECTORS].sort((a, b) => a.rent2bhk[0] + a.rent2bhk[1] - (b.rent2bhk[0] + b.rent2bhk[1])).slice(0, 20);
+    return `<p>Lower rent usually means a longer commute, older stock or fewer amenities. Ranges are rough and vary by society and floor.</p>
+${rows(l, (s) => [rent(s.rent2bhk), rent(s.pgRent), `${metroOf(s).d.toFixed(1)} km`], ["Sector", "2 BHK rent", "PG rent", "Metro"])}${stamp}`;
+  },
+});
+GUIDES.push({
+  slug: "pg-rent-gurgaon-by-sector",
+  title: "PG rent in Gurgaon by sector (single occupancy, 2026)",
+  desc: "Typical PG rent for a single room across Gurgaon sectors, with how easy PGs are to find in each.",
+  build: () => {
+    const l = SECTORS.filter((s) => s.pg !== "Low").sort((a, b) => a.pgRent[0] - b.pgRent[0]);
+    return `<p>Single-occupancy PG rents by sector. Sharing rooms cost less. Meals, power and security rules vary a lot, so ask what is included.</p>
+${rows(l, (s) => [rent(s.pgRent), s.pg, rent(s.rent2bhk)], ["Sector", "PG (single)", "PG supply", "2 BHK"])}${stamp}`;
+  },
+});
+GUIDES.push({
+  slug: "gurgaon-sectors-near-metro",
+  title: "Gurgaon sectors within walking distance of a metro station",
+  desc: "Gurgaon sectors within about 1.5 km of a Yellow Line or Rapid Metro station, with rent ranges.",
+  build: () => {
+    const l = SECTORS.map((s) => ({ s, mt: metroOf(s) })).filter((x) => x.mt.d <= 1.5).sort((a, b) => a.mt.d - b.mt.d);
+    return `<p>Distances are straight-line from the sector centre, so the real walk is longer. Check the last train time if you travel late.</p>
+${rows(l.map((x) => x.s), (s) => [`${metroOf(s).m.name}`, `${metroOf(s).d.toFixed(1)} km`, rent(s.rent2bhk)], ["Sector", "Station", "Distance", "2 BHK"])}${stamp}`;
+  },
+});
+for (const g of GUIDES) pages.push({
+  path: `/guides/${g.slug}`, title: `${g.title} | ${NAME}`, desc: g.desc, standalone: true,
+  body: `<main><nav>${link("/", NAME)} › ${link("/guides", "Guides")}</nav><h1>${esc(g.title)}</h1>${g.build()}<p><a class="cta" href="/">Open the map</a></p></main>`,
+  ld: [{ "@context": "https://schema.org", "@type": "Article", headline: g.title, description: g.desc, dateModified: new Date().toISOString().slice(0, 10), author: { "@type": "Organization", name: NAME } }],
+});
+pages.push({ path: "/guides", title: `Gurgaon renting guides | ${NAME}`, desc: "Data-driven guides to renting in Gurgaon: safest sectors for women, PG rents, waterlogging, metro access and budget.", standalone: true,
+  body: `<main><h1>Gurgaon renting guides</h1><ul>${GUIDES.map((g) => `<li>${link(`/guides/${g.slug}`, g.title)}</li>`).join("")}</ul><p><a class="cta" href="/">Open the map</a></p></main>` });
+
+const home = `<main><h1>${NAME}: choose the right sector in Gurgaon</h1><p>Map of ${SECTORS.length} Gurgaon sectors with rents, societies, PGs, metro, schools, tech hubs, live air quality and resident reviews.</p>
+<h2>Guides</h2><ul>${GUIDES.map((g) => `<li>${link(`/guides/${g.slug}`, g.title)}</li>`).join("")}</ul>
+${ZONES.map((z) => `<h2>${esc(z)}</h2><ul>${SECTORS.filter((s) => s.zone === z).map((s) => `<li>${link(`/sector/${s.id}`, s.name)}</li>`).join("")}</ul>`).join("")}</main>`;
+
+function render(p: Page | null): string {
+  let html = tpl;
+  const title = p?.title ?? `${NAME}: choose the right sector in Gurgaon`;
+  const desc = p?.desc ?? `Map of ${SECTORS.length} Gurgaon sectors with rents, societies, PGs, metro, schools, tech hubs, live air quality and resident reviews.`;
+  const url = SITE + (p?.path ?? "/");
+  const body = p?.body ?? home;
+  html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`)
+    .replace(/(<meta name="description" content=")[^"]*"/, `$1${esc(desc)}"`)
+    .replace(/(<link rel="canonical" href=")[^"]*"/, `$1${url}"`)
+    .replace(/(<meta property="og:title" content=")[^"]*"/, `$1${esc(title)}"`)
+    .replace(/(<meta property="og:description" content=")[^"]*"/, `$1${esc(desc)}"`)
+    .replace(/(<meta property="og:url" content=")[^"]*"/, `$1${url}"`)
+    .replace(/(<meta name="twitter:title" content=")[^"]*"/, `$1${esc(title)}"`)
+    .replace(/(<meta name="twitter:description" content=")[^"]*"/, `$1${esc(desc)}"`);
+  const ld = (p?.ld ?? [{ "@context": "https://schema.org", "@type": "WebSite", name: NAME, url: SITE + "/" }]).map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join("");
+  if (p?.standalone) {
+    html = html.replace(/<script type="module"[\s\S]*?<\/script>/g, "").replace(/<link rel="(modulepreload|stylesheet)"[^>]*>/g, "")
+      .replace("</head>", `<style>${CSS}</style>${ld}</head>`).replace(/<div id="root"><\/div>/, body).replace(/<noscript>[\s\S]*?<\/noscript>/, "");
+  } else {
+    html = html.replace("</head>", `${ld}</head>`).replace(/<div id="root"><\/div>/, `<div id="root"><div style="max-width:760px;margin:0 auto;padding:16px;font:16px/1.6 system-ui,sans-serif">${body}</div></div>`);
+  }
+  return html;
+}
+
+function write(path: string, html: string) {
+  const dir = path === "/" ? "dist" : `dist${path}`;
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(`${dir}/index.html`, html);
+}
+write("/", render(null));
+for (const p of pages) write(p.path, render(p));
+console.log(`prerender: ${pages.length + 1} pages (${GUIDES.length} guides)`);
