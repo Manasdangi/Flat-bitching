@@ -13,6 +13,8 @@ import WomenSnapshot from "./WomenSnapshot";
 import { womenMode } from "../lib/store";
 import CostCalculator from "./CostCalculator";
 import Checklist from "./Checklist";
+import RentCheck from "./RentCheck";
+import VisitPlanner from "./VisitPlanner";
 import { badgesFor } from "../lib/presets";
 
 type Props = {
@@ -99,7 +101,9 @@ export default function SectorPanel({ id, weights, office, office2, onClose, inC
       <ResidentPolls sectorId={s.id} />
 
       <div className="tools">
+        <RentCheck sector={s} />
         <CostCalculator sector={s} />
+        <VisitPlanner sector={s} />
         <Checklist sectorId={s.id} />
       </div>
 

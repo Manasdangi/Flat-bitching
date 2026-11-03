@@ -278,3 +278,9 @@ a.btn { text-decoration: none; display: inline-block; }
 
 /* Chips (sector links, filters): centre the label vertically and horizontally, whether <a> or <button> */
 .chip { display: inline-flex; align-items: center; justify-content: center; line-height: 1.2; text-decoration: none; box-sizing: border-box; }
+
+.verdict { border: 1px solid var(--line); border-left-width: 4px; border-radius: 10px; padding: 10px 12px; background: var(--raise); }
+.verdict p { margin: 4px 0; }
+.verdict.fair, .verdict.low { border-left-color: #16a34a; }
+.verdict.high { border-left-color: #ca8a04; }
+.verdict.far-high, .verdict.far-low { border-left-color: #dc2626; }
