@@ -5,6 +5,7 @@ import { isNamedSociety, slugify } from "../lib/societies";
 import { AqiBadge, SuggestFix } from "./Extras";
 import Reviews from "./Reviews";
 import { SaveButton } from "./Shortlist";
+import { FLOOD, FLOOD_SOURCE, WATER, WATER_SOURCE } from "../data/risk";
 import CostCalculator from "./CostCalculator";
 import Checklist from "./Checklist";
 import { badgesFor } from "../lib/presets";
@@ -85,6 +86,8 @@ export default function SectorPanel({ id, weights, office, office2, onClose, inC
         )}
       </div>
 
+      <RiskCard id={s.id} />
+
       <div className="tools">
         <CostCalculator sector={s} />
         <Checklist sectorId={s.id} />
@@ -133,5 +136,18 @@ export default function SectorPanel({ id, weights, office, office2, onClose, inC
 
       <Reviews sectorId={s.id} societies={named} />
     </article>
+  );
+}
+
+function RiskCard({ id }: { id: string }) {
+  const f = FLOOD[id], w = WATER[id];
+  return (
+    <div className={`risk ${f || w ? "has" : ""}`}>
+      <h3>🌧️ Water &amp; flood check</h3>
+      {w && <p>🚰 <b>{w.score === 1 ? "Severe water shortage reported." : "Water shortages reported."}</b> {w.note} <small className="muted">Ask the society about tanker costs before you sign.</small></p>}
+      {f && <p>☔ <b>{f.level === "high" ? "High waterlogging risk." : "Waterlogging risk."}</b> {f.note} <small className="muted">Avoid basement or ground-floor flats here, and check for a stilt or pump.</small></p>}
+      {!f && !w && <p className="muted">No water or flooding problems reported for this sector in the sources we checked. That is not a guarantee, so ask current residents.</p>}
+      <small className="muted">Sources: <a href={WATER_SOURCE.url} target="_blank" rel="noreferrer">{WATER_SOURCE.label}</a>, <a href={FLOOD_SOURCE.url} target="_blank" rel="noreferrer">{FLOOD_SOURCE.label}</a>. Reports, not official data. Tell us if something's off using "Suggest a fix" below.</small>
+    </div>
   );
 }

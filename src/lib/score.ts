@@ -1,4 +1,5 @@
 import { LANDMARKS, METRO, type Landmark, type Sector } from "../data/sectors";
+import { drainFor, waterScore } from "../data/risk";
 
 export type Office = { name: string; lat: number; lng: number } | null;
 
@@ -10,6 +11,7 @@ export const PRIORITIES = [
   { key: "market", label: "Near market", icon: "🛒" },
   { key: "green", label: "Parks & greenery", icon: "🌳" },
   { key: "drain", label: "No waterlogging", icon: "☔" },
+  { key: "water", label: "Reliable water supply", icon: "🚰" },
   { key: "afford", label: "Affordable", icon: "💰" },
   { key: "health", label: "Near a big hospital", icon: "🏥" },
   { key: "schools", label: "Good schools nearby", icon: "🎒" },
@@ -101,6 +103,8 @@ export function commute(sec: Sector, office: Office): Commute | null {
 export function allScores(sec: Sector, office: Office): Record<PriorityKey, number | null> {
   return {
     ...sec.scores,
+    drain: drainFor(sec.id, sec.scores.drain),
+    water: waterScore(sec.id),
     transit: transitScore(sec),
     afford: affordScore(sec),
     health: healthScore(sec),

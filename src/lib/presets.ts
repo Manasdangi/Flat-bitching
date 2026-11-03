@@ -4,7 +4,7 @@ import { matchScore, ZERO_WEIGHTS, type Weights } from "./score";
 export const PRESETS: { label: string; short: string; w: Partial<Weights> }[] = [
   { label: "👩 Safe for women", short: "women safety", w: { safety: 5, transit: 3, market: 3, clean: 2 } },
   { label: "🚇 No car", short: "living without a car", w: { transit: 5, market: 4, commute: 3 } },
-  { label: "👨‍👩‍👧 Family", short: "families", w: { safety: 4, green: 4, clean: 4, drain: 3, schools: 4, health: 3 } },
+  { label: "👨‍👩‍👧 Family", short: "families", w: { safety: 4, green: 4, clean: 4, drain: 3, water: 3, schools: 4, health: 3 } },
   { label: "💸 Budget", short: "tight budgets", w: { afford: 5, commute: 3, transit: 2 } },
   { label: "🌿 Clean air", short: "cleaner air", w: { air: 5, green: 4, clean: 3 } },
   { label: "🧑‍💻 Young techie", short: "young techies", w: { techhub: 5, nightlife: 4, transit: 3, afford: 2 } },

@@ -5,6 +5,7 @@ import MapView from "./components/MapView";
 import SearchBar from "./components/SearchBar";
 import SectorPanel from "./components/SectorPanel";
 import Matcher from "./components/Matcher";
+import RentSafety from "./components/RentSafety";
 import { Quiz, QuizResult } from "./components/Quiz";
 import Compare from "./components/Compare";
 import SocietyPage, { SocietyList } from "./components/SocietyPage";
@@ -38,6 +39,7 @@ function seo(route: Route) {
   }
   if (route.view === "match") return { title: `Find your best Gurgaon sector | ${SITE}`, desc: "Set your priorities (women safety, metro, clean air, schools, commute, budget) and see which Gurgaon sectors match best." };
   if (route.view === "quiz" || route.view === "quizResult") return { title: `Find your best Gurgaon sector in 60 seconds | ${SITE}`, desc: "Answer 6 quick questions and get your top 3 Gurgaon sectors, with a shareable result card." };
+  if (route.view === "rentSafety") return { title: `Rent safely in Gurgaon: tenant checklist | ${SITE}`, desc: "Avoid deposit scams and bad agreements: what to check before paying, what Haryana law says, and what to put in your rent agreement." };
   if (route.view === "shortlist") return { title: `My shortlist | ${SITE}`, desc: "Your saved Gurgaon sectors and societies, with notes. Share the list with your partner or flatmates." };
   if (route.view === "compare") return { title: `Compare Gurgaon sectors | ${SITE}`, desc: "Compare Gurgaon sectors side by side: rent, metro, commute, hospitals and scores." };
   return { title: `${SITE}: choose the right sector in Gurgaon`, desc: `Map of ${SECTORS.length} Gurgaon sectors with rents, societies, PGs, metro, schools, tech hubs, live air quality and resident reviews.` };
@@ -47,13 +49,14 @@ type Sheet = "peek" | "half" | "full";
 
 export default function App() {
   const route = useRoute();
-  const [weights, setWeights] = usePersisted<Weights>("gff-weights", ZERO_WEIGHTS);
+  const [storedWeights, setWeights] = usePersisted<Weights>("gff-weights", ZERO_WEIGHTS);
+  const weights = { ...ZERO_WEIGHTS, ...storedWeights };
   const [prefs, setPrefs] = usePersisted<{ office: Office; office2: Office; budget: number; compare: string[] }>(
     "gff-prefs", { office: null, office2: null, budget: 0, compare: [] },
   );
   const [pickingOffice, setPickingOffice] = useState<0 | 1 | 2>(0);
   const saved = shortlist.use();
-  const [layers, setLayers] = usePersisted("gff-layers", { tech: true, hangout: true });
+  const [layers, setLayers] = usePersisted("gff-layers", { tech: true, hangout: true, flood: false });
   const [sheet, setSheet] = useState<Sheet>("half");
   const [legendOpen, setLegendOpen] = useState(() => typeof window === "undefined" || window.innerWidth > 860);
   const panelRef = useRef<HTMLElement>(null);
@@ -82,7 +85,7 @@ export default function App() {
   const setOffice2 = (office2: Office) => setPrefs((p) => ({ ...p, office2 }));
   const setCompare = (compare: string[]) => setPrefs((p) => ({ ...p, compare }));
   const selectedId = route.view === "sector" ? route.id : null;
-  const tab = route.view === "sector" || route.view === "society" ? "explore" : route.view === "quizResult" ? "quiz" : route.view;
+  const tab = route.view === "sector" || route.view === "society" || route.view === "rentSafety" ? "explore" : route.view === "quizResult" ? "quiz" : route.view;
 
   // Bottom-sheet drag on phones: swipe up/down on the handle.
   const touchY = useRef<number | null>(null);
@@ -135,6 +138,7 @@ export default function App() {
             <span><i className="dot" style={{ background: "#0284c7" }} />Rapid</span>
             <label><input type="checkbox" checked={layers.tech} onChange={(e) => setLayers((l) => ({ ...l, tech: e.target.checked }))} /><i className="dot" style={{ background: "#0f172a" }} />Tech hubs</label>
             <label><input type="checkbox" checked={layers.hangout} onChange={(e) => setLayers((l) => ({ ...l, hangout: e.target.checked }))} /><i className="dot" style={{ background: "#db2777" }} />Hangouts</label>
+              <label><input type="checkbox" checked={Boolean(layers.flood)} onChange={(e) => setLayers((l) => ({ ...l, flood: e.target.checked }))} /><i className="dot" style={{ background: "#0ea5e9" }} />Flood-prone</label>
           </div>
           </details>
         </div>
@@ -181,6 +185,8 @@ export default function App() {
             <Quiz onDone={(p) => { setWeights(p.weights); setOffice(p.office); setPrefs((x) => ({ ...x, budget: p.budget })); }} />
           ) : route.view === "quizResult" ? (
             <QuizResult params={new URLSearchParams(location.search)} weights={weights} office={prefs.office} budget={prefs.budget} onSelect={select} />
+          ) : route.view === "rentSafety" ? (
+            <RentSafety />
           ) : route.view === "shortlist" ? (
             <ShortlistPage weights={weights} office={prefs.office} compareIds={prefs.compare} setCompare={setCompare} />
           ) : route.view === "compare" ? (
@@ -193,6 +199,7 @@ export default function App() {
                 <a className="action-card primary" {...linkProps("/quiz")}><b>⚡ 60-second quiz</b><span>Answer 6 taps, get your top 3 sectors</span></a>
                 <a className="action-card" {...linkProps("/match")}><b>🎯 Set priorities</b><span>Safety, metro, air, commute, budget</span></a>
                 <button className="action-card" onClick={() => document.querySelector<HTMLButtonElement>(".locate-btn")?.click()}><b>📍 Where am I?</b><span>Find the sector you're standing in</span></button>
+                <a className="action-card" {...linkProps("/rent-safety")}><b>🛡️ Rent safely</b><span>Scam checks, deposit and agreement tips</span></a>
                 <a className="action-card" {...linkProps("/shortlist")}><b>♥ My shortlist</b><span>{saved.length ? `${saved.length} saved` : "Nothing saved yet"}</span></a>
               </div>
               <LatestReviews />

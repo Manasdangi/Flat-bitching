@@ -7,7 +7,7 @@ const sectorBlocks = [...src.matchAll(/^  s\("([^"]+)",[\s\S]*?\n    \[([^\]]*)\
 const GENERIC = /(plots|floors|housing|flats|PGs|Mostly|houses|launches|societies|hospital|mall|Builder|limited)/i;
 const slugify = (n) => n.toLowerCase().replace(/\(.*?\)/g, "").replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-const urls = new Set(["/", "/match", "/compare", "/quiz"]);
+const urls = new Set(["/", "/match", "/compare", "/quiz", "/rent-safety"]);
 for (const [, id, socs] of sectorBlocks) {
   urls.add(`/sector/${id}`);
   for (const [, name] of socs.matchAll(/"([^"]+)"/g)) if (!GENERIC.test(name) && slugify(name)) urls.add(`/society/${slugify(name)}`);

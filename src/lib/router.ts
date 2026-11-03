@@ -7,6 +7,7 @@ export type Route =
   | { view: "compare" }
   | { view: "shortlist" }
   | { view: "quiz" }
+  | { view: "rentSafety" }
   | { view: "quizResult" }
   | { view: "sector"; id: string }
   | { view: "society"; slug: string };
@@ -18,6 +19,7 @@ export function parse(path: string): Route {
   if (a === "match") return { view: "match" };
   if (a === "compare") return { view: "compare" };
   if (a === "shortlist") return { view: "shortlist" };
+  if (a === "rent-safety") return { view: "rentSafety" };
   if (a === "quiz") return b === "result" ? { view: "quizResult" } : { view: "quiz" };
   return { view: "explore" };
 }

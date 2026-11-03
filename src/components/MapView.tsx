@@ -1,3 +1,4 @@
+import { FLOOD } from "../data/risk";
 import { useEffect, useState } from "react";
 import { CircleMarker, GeoJSON, MapContainer, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { sectorAt, useShapes } from "../lib/geo";
@@ -13,7 +14,7 @@ type Props = {
   pickingOffice: boolean;
   onPickOffice: (lat: number, lng: number) => void;
   office2: Office;
-  layers: { tech: boolean; hangout: boolean };
+  layers: { tech: boolean; hangout: boolean; flood?: boolean };
 };
 
 function FlyTo({ id }: { id: string | null }) {
@@ -98,9 +99,9 @@ export default function MapView({ selectedId, onSelect, weights, office, office2
         const sel = sh.sector_id === selectedId;
         return (
           <GeoJSON
-            key={`${sh.sector_id}-${color}-${sel}`}
+            key={`${sh.sector_id}-${color}-${sel}-${layers.flood ? 1 : 0}`}
             data={sh.geojson}
-            style={{ color: sel ? "#111827" : color, weight: sel ? 3 : 1.2, fillColor: color, fillOpacity: sel ? 0.35 : 0.22 }}
+            style={{ color: sel ? "#111827" : layers.flood && FLOOD[sh.sector_id] ? "#0ea5e9" : color, weight: sel ? 3 : layers.flood && FLOOD[sh.sector_id] ? 3 : 1.2, dashArray: layers.flood && FLOOD[sh.sector_id] ? "6 4" : undefined, fillColor: color, fillOpacity: sel ? 0.35 : 0.22 }}
             eventHandlers={{ click: () => !pickingOffice && onSelect(sh.sector_id) }}
           />
         );

@@ -227,3 +227,13 @@ a.btn { text-decoration: none; display: inline-block; }
 .btn, .chip, .quiz-opt { min-height: 40px; }
 .tabs a { display: inline-flex; align-items: center; gap: 5px; }
 @media (max-width: 860px) { .tabs a { display: flex; gap: 2px; } }
+
+.risk { border: 1px solid var(--line); border-radius: 12px; padding: 4px 14px 12px; margin: 14px 0; background: var(--bg); }
+.risk.has { border-color: #38bdf8; background: #f0f9ff; }
+.risk h3 { margin: 10px 0 6px; }
+.risk p { margin: 6px 0; font-size: 14px; }
+@media (prefers-color-scheme: dark) { .risk.has { background: #0c2433; } }
+.safety-section { margin: 18px 0; }
+.safety-list { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 8px; }
+.safety-list .check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.4; }
+.safety-list input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
