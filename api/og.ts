@@ -2,8 +2,8 @@
 // Node runtime: satori (layout → SVG) + resvg (SVG → PNG).
 import satori from "satori";
 import { Resvg } from "@resvg/resvg-js";
-import { parseResult } from "../src/lib/share";
-import { card } from "./_card";
+import { parseResult } from "../src/lib/share.js";
+import { card } from "./_card.js";
 
 type Font = { name: string; data: ArrayBuffer; weight: 400 | 800; style: "normal" };
 let fonts: Promise<Font[]> | null = null;

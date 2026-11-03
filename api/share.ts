@@ -1,7 +1,7 @@
 // GET /share?r=43:87,25:85 → tiny HTML page with rich preview tags for WhatsApp/LinkedIn/X,
 // which then sends people to the result page in the app.
-import { sectorById } from "../src/data/sectors";
-import { encodeResult, parseResult } from "../src/lib/share";
+import { sectorById } from "../src/data/sectors.js";
+import { encodeResult, parseResult } from "../src/lib/share.js";
 
 export const config = { runtime: "edge" };
 

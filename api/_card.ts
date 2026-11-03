@@ -1,7 +1,7 @@
 // Share card layout for @vercel/og (satori). Plain createElement, no JSX build step needed.
 import { createElement as h, type ReactElement } from "react";
-import { sectorById } from "../src/data/sectors";
-import type { ResultEntry } from "../src/lib/share";
+import { sectorById } from "../src/data/sectors.js";
+import type { ResultEntry } from "../src/lib/share.js";
 
 const hue = (m: number) => Math.round((m / 100) * 130);
 const short = (name: string) => name.replace(/\s*\(.*\)/, "");

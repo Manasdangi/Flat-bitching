@@ -1,6 +1,6 @@
 // Quiz results travel in URLs as r=43:87,25:85,41:80 (sector id : match %).
 // Used by the app and by the /api/og + /api/share edge functions.
-import { sectorById } from "../data/sectors";
+import { sectorById } from "../data/sectors.js";
 
 export type ResultEntry = { id: string; match: number };
 
