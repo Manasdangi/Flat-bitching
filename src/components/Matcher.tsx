@@ -58,9 +58,15 @@ export default function Matcher(p: Props) {
       <p className="muted">Set your priorities from 0 to 5. The map colours each sector by how well it matches.</p>
 
       <div className="chips">
-        {PRESETS.map((pr) => (
-          <button key={pr.label} className="chip" onClick={() => { p.setWeights({ ...ZERO_WEIGHTS, ...pr.w }); track("preset", { name: pr.label }); }}>{pr.label}</button>
-        ))}
+        {PRESETS.map((pr) => {
+          const on = PRIORITIES.every((k) => (p.weights[k.key] ?? 0) === (pr.w[k.key] ?? 0));
+          return (
+            <button key={pr.label} className={`chip${on ? " on" : ""}`} aria-pressed={on}
+              onClick={() => { if (on) { p.setWeights(ZERO_WEIGHTS); return; } p.setWeights({ ...ZERO_WEIGHTS, ...pr.w }); track("preset", { name: pr.label }); }}>
+              {on ? "✓ " : ""}{pr.label}
+            </button>
+          );
+        })}
         {active && <button className="chip" onClick={() => p.setWeights(ZERO_WEIGHTS)}>Reset</button>}
       </div>
 

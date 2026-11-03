@@ -5,6 +5,7 @@ import MapView from "./components/MapView";
 import SearchBar from "./components/SearchBar";
 import SectorPanel from "./components/SectorPanel";
 import Matcher from "./components/Matcher";
+import ThemeToggle from "./components/ThemeToggle";
 import RentSafety from "./components/RentSafety";
 import { Quiz, QuizResult } from "./components/Quiz";
 import Compare from "./components/Compare";
@@ -116,6 +117,7 @@ export default function App() {
           <a className={tab === "compare" ? "on" : ""} {...linkProps("/compare")}><i>⚖️</i><span>Compare{prefs.compare.length ? ` (${prefs.compare.length})` : ""}</span></a>
           <a className={tab === "shortlist" ? "on" : ""} {...linkProps("/shortlist")}><i>♥</i><span>Saved{saved.length ? ` (${saved.length})` : ""}</span></a>
         </nav>
+        <ThemeToggle />
       </header>
 
       <main className={`layout sheet-${sheet}`}>
