@@ -1,5 +1,6 @@
-// Reviews are stored in Firebase Firestore when VITE_FIREBASE_* env vars are set.
+// Reviews are stored in Supabase (Postgres + REST) when VITE_SUPABASE_* env vars are set.
 // Without them, reviews fall back to this browser's localStorage (only you see them).
+// Uses the REST API directly via fetch, so no SDK is added to the bundle.
 
 export type Review = {
   id?: string;
@@ -13,26 +14,14 @@ export type Review = {
 
 export const REVIEW_TAGS = ["Live here", "Lived here", "PG", "Woman reviewer", "Family", "Working nearby"];
 
-const env = import.meta.env;
-const config = {
-  apiKey: env.VITE_FIREBASE_API_KEY,
-  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: env.VITE_FIREBASE_PROJECT_ID,
-  appId: env.VITE_FIREBASE_APP_ID,
-};
+const URL_ = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 
-export const usingFirebase = Boolean(config.apiKey && config.projectId);
+export const usingSupabase = Boolean(URL_ && KEY);
 
-// Firebase is loaded lazily so the app stays light when reviews run in demo mode.
-let fbPromise: Promise<{ db: import("firebase/firestore").Firestore; fs: typeof import("firebase/firestore") }> | null = null;
-function getFb() {
-  if (!usingFirebase) return null;
-  fbPromise ??= Promise.all([import("firebase/app"), import("firebase/firestore")]).then(([app, fs]) => ({
-    db: fs.getFirestore(app.initializeApp(config)),
-    fs,
-  }));
-  return fbPromise;
-}
+const headers = () => ({ apikey: KEY!, "Content-Type": "application/json" });
+
+type Row = { id: string; sector_id: string; name: string; rating: number; tags: string[]; body: string; created_at: string };
 
 const LS_KEY = "gff-reviews";
 const readLocal = (): Review[] => {
@@ -40,15 +29,15 @@ const readLocal = (): Review[] => {
 };
 
 export async function listReviews(sectorId: string): Promise<Review[]> {
-  const fb = getFb();
-  if (fb) {
-    const { db, fs } = await fb;
-    const q = fs.query(fs.collection(db, "reviews"), fs.where("sectorId", "==", sectorId), fs.orderBy("createdAt", "desc"));
-    const snap = await fs.getDocs(q);
-    return snap.docs.map((d) => {
-      const data = d.data();
-      return { id: d.id, ...data, createdAt: data.createdAt?.toMillis?.() ?? Date.now() } as Review;
-    });
+  if (usingSupabase) {
+    const qs = new URLSearchParams({ sector_id: `eq.${sectorId}`, order: "created_at.desc", select: "*", limit: "100" });
+    const res = await fetch(`${URL_}/rest/v1/reviews?${qs}`, { headers: headers() });
+    if (!res.ok) throw new Error(`Load failed: ${res.status}`);
+    const rows: Row[] = await res.json();
+    return rows.map((r) => ({
+      id: r.id, sectorId: r.sector_id, name: r.name, rating: r.rating, tags: r.tags, text: r.body,
+      createdAt: new Date(r.created_at).getTime(),
+    }));
   }
   return readLocal().filter((r) => r.sectorId === sectorId).sort((a, b) => b.createdAt - a.createdAt);
 }
@@ -61,10 +50,13 @@ export async function addReview(r: Omit<Review, "id" | "createdAt">) {
     tags: r.tags.filter((t) => REVIEW_TAGS.includes(t)),
     text: r.text.trim().slice(0, 1000),
   };
-  const fb = getFb();
-  if (fb) {
-    const { db, fs } = await fb;
-    await fs.addDoc(fs.collection(db, "reviews"), { ...clean, createdAt: fs.serverTimestamp() });
+  if (usingSupabase) {
+    const res = await fetch(`${URL_}/rest/v1/reviews`, {
+      method: "POST",
+      headers: { ...headers(), Prefer: "return=minimal" },
+      body: JSON.stringify({ sector_id: clean.sectorId, name: clean.name, rating: clean.rating, tags: clean.tags, body: clean.text }),
+    });
+    if (!res.ok) throw new Error(`Save failed: ${res.status}`);
     return;
   }
   try {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { addReview, listReviews, REVIEW_TAGS, usingFirebase, type Review } from "../lib/reviews";
+import { addReview, listReviews, REVIEW_TAGS, usingSupabase, type Review } from "../lib/reviews";
 
 export default function Reviews({ sectorId }: { sectorId: string }) {
   const [items, setItems] = useState<Review[]>([]);
@@ -46,8 +46,8 @@ export default function Reviews({ sectorId }: { sectorId: string }) {
         <h3>Resident reviews {avg != null && <span className="muted">· ★ {avg.toFixed(1)} ({items.length})</span>}</h3>
         <button className="btn small" onClick={() => setShowForm((v) => !v)}>{showForm ? "Cancel" : "+ Add review"}</button>
       </div>
-      {!usingFirebase && (
-        <p className="note">Demo mode: reviews are saved only in this browser until Firebase is configured.</p>
+      {!usingSupabase && (
+        <p className="note">Demo mode: reviews are saved only in this browser until Supabase is configured.</p>
       )}
 
       {showForm && (
