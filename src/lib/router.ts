@@ -6,16 +6,19 @@ export type Route =
   | { view: "match" }
   | { view: "compare" }
   | { view: "shortlist" }
+  | { view: "quiz" }
+  | { view: "quizResult" }
   | { view: "sector"; id: string }
   | { view: "society"; slug: string };
 
 export function parse(path: string): Route {
-  const [, a, b] = path.replace(/\/+$/, "").split("/");
+  const [, a, b] = path.split("?")[0].replace(/\/+$/, "").split("/");
   if (a === "sector" && b) return { view: "sector", id: decodeURIComponent(b).toLowerCase() };
   if (a === "society" && b) return { view: "society", slug: decodeURIComponent(b) };
   if (a === "match") return { view: "match" };
   if (a === "compare") return { view: "compare" };
   if (a === "shortlist") return { view: "shortlist" };
+  if (a === "quiz") return b === "result" ? { view: "quizResult" } : { view: "quiz" };
   return { view: "explore" };
 }
 

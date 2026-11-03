@@ -5,6 +5,7 @@ import MapView from "./components/MapView";
 import SearchBar from "./components/SearchBar";
 import SectorPanel from "./components/SectorPanel";
 import Matcher from "./components/Matcher";
+import { Quiz, QuizResult } from "./components/Quiz";
 import Compare from "./components/Compare";
 import SocietyPage, { SocietyList } from "./components/SocietyPage";
 import ShortlistPage from "./components/Shortlist";
@@ -36,6 +37,7 @@ function seo(route: Route) {
     if (soc) return { title: `${soc.name} reviews, ${soc.sectors[0].name} Gurgaon | ${SITE}`, desc: `Resident reviews and ratings for ${soc.name} in ${soc.sectors.map((x) => x.name).join(", ")}, Gurgaon: cleanliness, safety, water, power and waterlogging.` };
   }
   if (route.view === "match") return { title: `Find your best Gurgaon sector | ${SITE}`, desc: "Set your priorities (women safety, metro, clean air, schools, commute, budget) and see which Gurgaon sectors match best." };
+  if (route.view === "quiz" || route.view === "quizResult") return { title: `Find your best Gurgaon sector in 60 seconds | ${SITE}`, desc: "Answer 6 quick questions and get your top 3 Gurgaon sectors, with a shareable result card." };
   if (route.view === "shortlist") return { title: `My shortlist | ${SITE}`, desc: "Your saved Gurgaon sectors and societies, with notes. Share the list with your partner or flatmates." };
   if (route.view === "compare") return { title: `Compare Gurgaon sectors | ${SITE}`, desc: "Compare Gurgaon sectors side by side: rent, metro, commute, hospitals and scores." };
   return { title: `${SITE}: choose the right sector in Gurgaon`, desc: `Map of ${SECTORS.length} Gurgaon sectors with rents, societies, PGs, metro, schools, tech hubs, live air quality and resident reviews.` };
@@ -79,7 +81,7 @@ export default function App() {
   const setOffice2 = (office2: Office) => setPrefs((p) => ({ ...p, office2 }));
   const setCompare = (compare: string[]) => setPrefs((p) => ({ ...p, compare }));
   const selectedId = route.view === "sector" ? route.id : null;
-  const tab = route.view === "sector" || route.view === "society" ? "explore" : route.view;
+  const tab = route.view === "sector" || route.view === "society" ? "explore" : route.view === "quiz" || route.view === "quizResult" ? "match" : route.view;
 
   // Bottom-sheet drag on phones: swipe up/down on the handle.
   const touchY = useRef<number | null>(null);
@@ -172,6 +174,10 @@ export default function App() {
               budget={prefs.budget} setBudget={(budget) => setPrefs((p) => ({ ...p, budget }))}
               onSelect={select}
             />
+          ) : route.view === "quiz" ? (
+            <Quiz onDone={(p) => { setWeights(p.weights); setOffice(p.office); setPrefs((x) => ({ ...x, budget: p.budget })); }} />
+          ) : route.view === "quizResult" ? (
+            <QuizResult params={new URLSearchParams(location.search)} weights={weights} office={prefs.office} budget={prefs.budget} onSelect={select} />
           ) : route.view === "shortlist" ? (
             <ShortlistPage weights={weights} office={prefs.office} compareIds={prefs.compare} setCompare={setCompare} />
           ) : route.view === "compare" ? (
@@ -180,6 +186,7 @@ export default function App() {
             <div className="panel-body">
               <h2>Explore Gurgaon, sector by sector</h2>
               <p>Tap a sector on the map or search above to see rents, metro access, societies, PGs, live air quality and resident reviews.</p>
+              <a className="btn" {...linkProps("/quiz")}>⚡ Find your sector in 60 seconds</a>
               <p>Not sure where to start? Open <a className="link" {...linkProps("/match")}>🎯 Match</a>, set what matters to you, and the map lights up with your best sectors.</p>
               <div className="quick">
                 <button className="btn small ghost" onClick={() => document.querySelector<HTMLButtonElement>(".locate-btn")?.click()}>📍 Which sector am I in?</button>

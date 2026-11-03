@@ -193,3 +193,15 @@ a.btn { text-decoration: none; display: inline-block; }
   .layout, .panel { display: block !important; position: static !important; height: auto !important; box-shadow: none !important; overflow: visible !important; }
   details.tool { border: none; }
 }
+
+/* Quiz */
+.quiz-bar { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; margin-bottom: 14px; }
+.quiz-bar i { display: block; height: 100%; background: var(--accent); transition: width .2s; }
+.quiz-options { display: grid; gap: 8px; margin-top: 8px; }
+.quiz-opt { text-align: left; padding: 14px 16px; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; font-size: 15px; cursor: pointer; color: inherit; }
+.quiz-opt:hover, .quiz-opt:focus-visible { border-color: var(--accent); background: var(--accent-soft); }
+.quiz-results { display: grid; gap: 10px; margin: 12px 0 16px; }
+.quiz-card { display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px 14px; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; cursor: pointer; color: inherit; }
+.quiz-card .grow { flex: 1; display: grid; gap: 2px; }
+.quiz-card small { color: var(--muted, #64748b); }
+.quiz-card .rank { font-weight: 800; font-size: 18px; opacity: .7; }
