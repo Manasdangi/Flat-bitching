@@ -14,8 +14,9 @@ import LatestReviews from "./components/LatestReviews";
 import { shortlist } from "./lib/store";
 import { DATA_UPDATED, OFFICES, SECTORS, SOURCES, sectorById } from "./data/sectors";
 import { useDriveTimes } from "./lib/geo";
+import { communityEnabled, loadCommunityScores } from "./lib/community";
 import { linkProps, navigate, useRoute, type Route } from "./lib/router";
-import { setActiveDrives, setSecondOffice, ZERO_WEIGHTS, type Office, type Weights } from "./lib/score";
+import { setActiveDrives, setCommunity, setSecondOffice, ZERO_WEIGHTS, type Office, type Weights } from "./lib/score";
 import { societyBySlug, SOCIETIES } from "./lib/societies";
 import { track } from "./lib/track";
 
@@ -68,6 +69,11 @@ export default function App() {
   const hub2Name = prefs.office2 && OFFICES.some((o) => o.name === prefs.office2!.name) ? prefs.office2.name : null;
   const drives2 = useDriveTimes(hub2Name);
   setActiveDrives(hub2Name, drives2);
+  const [, setCommunityTick] = useState(0);
+  useEffect(() => {
+    if (!communityEnabled) return;
+    loadCommunityScores().then((m) => { setCommunity(m); setCommunityTick((x) => x + 1); }).catch(() => {});
+  }, []);
   setSecondOffice(prefs.office ? prefs.office2 : null);
 
   // Per-page title + description for search engines and link previews.

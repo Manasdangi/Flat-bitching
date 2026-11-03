@@ -100,11 +100,28 @@ export function commute(sec: Sector, office: Office): Commute | null {
   return { roadKm, minutes, offpeak: null, real: false, score: band(minutes, [15, 25, 35, 50]) };
 }
 
+// Resident poll results nudge four scores. Shrinkage keeps a few votes from swinging a sector:
+// blended = (prior * K + residentMean * n) / (K + n), applied once a sector has MIN_VOTES votes on a question.
+type Community = Partial<Record<PriorityKey, { mean: number; n: number }>>;
+const community = new Map<string, Community>();
+export const COMMUNITY_MIN_VOTES = 5;
+const SHRINK_K = 10;
+export function setCommunity(next: Map<string, Community>) {
+  community.clear();
+  next.forEach((v, k) => community.set(k, v));
+}
+export const communityFor = (sectorId: string) => community.get(sectorId);
+const blend = (prior: number, c?: { mean: number; n: number }) =>
+  c && c.n >= COMMUNITY_MIN_VOTES ? Math.round(((prior * SHRINK_K + c.mean * c.n) / (SHRINK_K + c.n)) * 10) / 10 : prior;
+
 export function allScores(sec: Sector, office: Office): Record<PriorityKey, number | null> {
+  const cm = community.get(sec.id);
   return {
     ...sec.scores,
-    drain: drainFor(sec.id, sec.scores.drain),
-    water: waterScore(sec.id),
+    clean: blend(sec.scores.clean, cm?.clean),
+    safety: blend(sec.scores.safety, cm?.safety),
+    drain: blend(drainFor(sec.id, sec.scores.drain), cm?.drain),
+    water: blend(waterScore(sec.id), cm?.water),
     transit: transitScore(sec),
     afford: affordScore(sec),
     health: healthScore(sec),

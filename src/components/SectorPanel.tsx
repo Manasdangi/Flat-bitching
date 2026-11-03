@@ -1,6 +1,6 @@
 import { sectorById } from "../data/sectors";
 import { linkProps } from "../lib/router";
-import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type Office, type Weights } from "../lib/score";
+import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type Office, type Weights, COMMUNITY_MIN_VOTES, communityFor } from "../lib/score";
 import { isNamedSociety, slugify } from "../lib/societies";
 import { AqiBadge, SuggestFix } from "./Extras";
 import Reviews from "./Reviews";
@@ -22,7 +22,7 @@ type Props = {
 };
 
 export const Bar = ({ v }: { v: number | null }) => (
-  <span className="bar" aria-label={v == null ? "n/a" : `${v} of 5`}>
+  <span className="bar" aria-label={v == null ? "n/a" : `${Math.round(v * 10) / 10} of 5`}>
     {v == null ? <span className="muted">n/a</span> : <span className="fill" style={{ width: `${(v / 5) * 100}%` }} />}
   </span>
 );
@@ -99,7 +99,7 @@ export default function SectorPanel({ id, weights, office, office2, onClose, inC
       <h3>Scores</h3>
       <ul className="scores">
         {PRIORITIES.map((p) => (
-          <li key={p.key}><span>{p.icon} {p.label}</span><Bar v={sc[p.key]} /></li>
+          <li key={p.key}><span>{p.icon} {p.label}{(() => { const c = communityFor(s.id)?.[p.key]; return c && c.n >= COMMUNITY_MIN_VOTES ? <small className="muted"> · {c.n} resident votes</small> : null; })()}</span><Bar v={sc[p.key]} /></li>
         ))}
       </ul>
       {!office && <p className="note">Pick your office in the Match tab to see real drive times.</p>}

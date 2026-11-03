@@ -40,7 +40,7 @@ export function ResidentPolls({ sectorId }: { sectorId: string }) {
   return (
     <div className="community">
       <h3>🗳️ Ask residents</h3>
-      <p className="muted small-txt">One tap each, anonymous. Answer only if you live or have lived here. Results show after 5 votes.</p>
+      <p className="muted small-txt">One tap each, anonymous. Answer only if you live or have lived here. Once a question has 5+ votes, residents' answers start adjusting this sector's score.</p>
       {POLLS.map((p) => {
         const c = counts?.[p.key];
         const total = c ? c.yes + c.sometimes + c.no : 0;

@@ -1,5 +1,6 @@
 // Resident polls + anonymous rent reports (Supabase RPC/REST). No-ops when the backend isn't configured.
 import { hasBackend, insert, rpc } from "./api";
+import type { PriorityKey } from "./score";
 
 export const POLLS = [
   { key: "water", q: "Does water arrive every day?", icon: "🚰" },
@@ -22,6 +23,27 @@ export async function loadPolls(sectorId: string): Promise<PollCounts> {
 }
 
 const votedKey = (sectorId: string) => `gff-voted-${sectorId}`;
+const POLL_TO_PRIORITY = { water: "water", flood: "drain", night_safe: "safety", clean: "clean" } as const;
+const POINTS: Record<PollAnswer, number> = { yes: 5, sometimes: 3, no: 1 };
+
+/** All sectors' poll results as per-priority resident means (used to adjust scores). */
+export async function loadCommunityScores() {
+  const rows = await rpc<{ sector_id: string; question: string; answer: PollAnswer; n: number }>("poll_summary", {});
+  const acc = new Map<string, Partial<Record<PriorityKey, { sum: number; n: number }>>>();
+  for (const r of rows) {
+    const key = POLL_TO_PRIORITY[r.question as keyof typeof POLL_TO_PRIORITY];
+    if (!key || !POINTS[r.answer]) continue;
+    const n = Number(r.n);
+    const sec = acc.get(r.sector_id) ?? {};
+    const cur = sec[key] ?? { sum: 0, n: 0 };
+    sec[key] = { sum: cur.sum + POINTS[r.answer] * n, n: cur.n + n };
+    acc.set(r.sector_id, sec);
+  }
+  const out = new Map<string, Partial<Record<PriorityKey, { mean: number; n: number }>>>();
+  acc.forEach((sec, id) => out.set(id, Object.fromEntries(Object.entries(sec).map(([k, v]) => [k, { mean: v.sum / v.n, n: v.n }]))));
+  return out;
+}
+
 export const votedAlready = (sectorId: string): PollKey[] => {
   try { return JSON.parse(localStorage.getItem(votedKey(sectorId)) || "[]"); } catch { return []; }
 };
