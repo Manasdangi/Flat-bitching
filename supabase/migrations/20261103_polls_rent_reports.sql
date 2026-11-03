@@ -1,0 +1,6 @@
+-- Applied to the Supabase project as migration "polls_and_rent_reports".
+-- poll_votes: one-tap resident polls (yes/sometimes/no), 1 answer per sector+question per device/IP per 30 days, 30/day cap.
+-- rent_reports: anonymous rent reports (hidden flag for moderation), 1 per sector+home type per 30 days, 3/day cap.
+-- Device id / IP hash columns are filled by triggers and not readable by anon (column-level grants).
+-- Public aggregates: poll_counts(sector), rent_summary(sector).
+-- Full SQL: see the migration history in the Supabase dashboard (Database → Migrations).

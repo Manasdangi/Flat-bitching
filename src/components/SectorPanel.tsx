@@ -6,6 +6,7 @@ import { AqiBadge, SuggestFix } from "./Extras";
 import Reviews from "./Reviews";
 import { SaveButton } from "./Shortlist";
 import { FLOOD, FLOOD_SOURCE, WATER, WATER_SOURCE } from "../data/risk";
+import { RentReports, ResidentPolls } from "./ResidentData";
 import CostCalculator from "./CostCalculator";
 import Checklist from "./Checklist";
 import { badgesFor } from "../lib/presets";
@@ -87,6 +88,8 @@ export default function SectorPanel({ id, weights, office, office2, onClose, inC
       </div>
 
       <RiskCard id={s.id} />
+      <RentReports sector={s} />
+      <ResidentPolls sectorId={s.id} />
 
       <div className="tools">
         <CostCalculator sector={s} />

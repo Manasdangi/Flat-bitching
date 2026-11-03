@@ -237,3 +237,11 @@ a.btn { text-decoration: none; display: inline-block; }
 .safety-list { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 8px; }
 .safety-list .check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.4; }
 .safety-list input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+
+.community { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 4px; }
+.poll { padding: 8px 0; display: grid; gap: 4px; border-bottom: 1px dashed var(--line); }
+.poll-q { font-weight: 600; font-size: 14px; }
+.poll-bar { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: var(--line); }
+.poll-bar .y { background: #22c55e; } .poll-bar .s { background: #f59e0b; } .poll-bar .n { background: #ef4444; }
+.rent-rows { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; }
+.rent-rows li { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 14px; }

@@ -69,3 +69,9 @@ export async function insert(table: string, row: Record<string, unknown>): Promi
 export const isRateLimited = (e: unknown) => e instanceof ApiError && /rate_limited/.test(e.message);
 export const friendlyError = (e: unknown, fallback: string) =>
   isRateLimited(e) ? (e as Error).message.replace(/^rate_limited:\s*/, "Limit reached: ") : fallback;
+
+export async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T[]> {
+  const res = await call(`rpc/${fn}`, { method: "POST", body: JSON.stringify(args) });
+  if (!res.ok) throw await errorFrom(res);
+  return res.json();
+}
