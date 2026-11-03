@@ -3,6 +3,7 @@ import { nearestMetro } from "../lib/score";
 import { societyBySlug, SOCIETIES } from "../lib/societies";
 import { AqiBadge } from "./Extras";
 import Reviews from "./Reviews";
+import { SaveButton } from "./Shortlist";
 
 export default function SocietyPage({ slug, onClose }: { slug: string; onClose: () => void }) {
   const soc = societyBySlug(slug);
@@ -37,6 +38,7 @@ export default function SocietyPage({ slug, onClose }: { slug: string; onClose: 
         Rent and amenities below are for the sector; ask residents about this society in the reviews.
       </p>
       <AqiBadge lat={s.lat} lng={s.lng} />
+      <div className="actions"><SaveButton kind="society" id={soc.slug} /></div>
       <div className="facts">
         <div><span>Sector 2BHK rent</span><b>₹{s.rent2bhk[0]}k – ₹{s.rent2bhk[1]}k</b></div>
         <div><span>Nearest metro</span><b>{metro.station.name} · {metro.km.toFixed(1)} km</b></div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CircleMarker, GeoJSON, MapContainer, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
-import { useShapes } from "../lib/geo";
+import { sectorAt, useShapes } from "../lib/geo";
+import { track } from "../lib/track";
 import { LANDMARKS, METRO, SECTORS, sectorById } from "../data/sectors";
 import { matchColor, matchScore, type Office, type Weights } from "../lib/score";
 
@@ -11,6 +12,7 @@ type Props = {
   office: Office;
   pickingOffice: boolean;
   onPickOffice: (lat: number, lng: number) => void;
+  office2: Office;
   layers: { tech: boolean; hangout: boolean };
 };
 
@@ -44,12 +46,34 @@ function ZoomWatch({ onZoom }: { onZoom: (z: number) => void }) {
   return null;
 }
 
-export default function MapView({ selectedId, onSelect, weights, office, pickingOffice, onPickOffice, layers }: Props) {
+export default function MapView({ selectedId, onSelect, weights, office, office2, pickingOffice, onPickOffice, layers }: Props) {
   const [zoom, setZoom] = useState(12);
   const shapes = useShapes();
   const hasShape = new Set(shapes.map((x) => x.sector_id));
   const base = zoom >= 14 ? 15 : zoom >= 13 ? 12 : 9;
+  const [me, setMe] = useState<{ lat: number; lng: number } | null>(null);
+  const [locMsg, setLocMsg] = useState("");
+  const locate = () => {
+    if (!navigator.geolocation) return setLocMsg("Location isn't available on this device.");
+    setLocMsg("Finding you…");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setMe(p);
+        const hit = sectorAt(p.lat, p.lng, shapes, SECTORS);
+        track("locate", { found: Boolean(hit) });
+        if (hit) { setLocMsg(`You're ${hit.exact ? "in" : "near"} ${sectorById(hit.id)!.name}`); onSelect(hit.id); }
+        else setLocMsg("You're outside the sectors we cover.");
+        setTimeout(() => setLocMsg(""), 5000);
+      },
+      () => { setLocMsg("Couldn't get your location. Check location permission."); setTimeout(() => setLocMsg(""), 5000); },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
   return (
+    <>
+    <button className="locate-btn" onClick={locate} aria-label="Which sector am I in?" title="Which sector am I in?">📍</button>
+    {locMsg && <div className="map-hint">{locMsg}</div>}
     <MapContainer center={[28.45, 77.04]} zoom={12} className={`map z${Math.min(Math.max(zoom, 11), 14)} ${pickingOffice ? "picking" : ""}`} zoomControl={false}>
       <ZoomWatch onZoom={setZoom} />
       <TileLayer
@@ -106,6 +130,15 @@ export default function MapView({ selectedId, onSelect, weights, office, picking
         </CircleMarker>
       ))}
 
+      {me && <MeMarker me={me} />}
+
+      {office2 && (
+        <CircleMarker center={[office2.lat, office2.lng]} radius={10}
+          pathOptions={{ color: "#111827", fillColor: "#a855f7", fillOpacity: 1, weight: 3 }}>
+          <Tooltip permanent direction="top">🏢 {office2.name}</Tooltip>
+        </CircleMarker>
+      )}
+
       {office && (
         <CircleMarker center={[office.lat, office.lng]} radius={10}
           pathOptions={{ color: "#111827", fillColor: "#f97316", fillOpacity: 1, weight: 3 }}>
@@ -113,5 +146,16 @@ export default function MapView({ selectedId, onSelect, weights, office, picking
         </CircleMarker>
       )}
     </MapContainer>
+    </>
+  );
+}
+
+function MeMarker({ me }: { me: { lat: number; lng: number } }) {
+  const map = useMap();
+  useEffect(() => { map.flyTo([me.lat, me.lng], Math.max(map.getZoom(), 15), { duration: 0.6 }); }, [me, map]);
+  return (
+    <CircleMarker center={[me.lat, me.lng]} radius={8} pathOptions={{ color: "#fff", weight: 3, fillColor: "#2563eb", fillOpacity: 1 }}>
+      <Tooltip direction="top">You are here</Tooltip>
+    </CircleMarker>
   );
 }

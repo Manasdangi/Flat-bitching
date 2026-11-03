@@ -1,34 +1,56 @@
+import { useState } from "react";
 import { OFFICES, SECTORS } from "../data/sectors";
+import { PRESETS } from "../lib/presets";
+import { commute, matchScore, PRIORITIES, ZERO_WEIGHTS, type Office, type Weights } from "../lib/score";
+import { money } from "../lib/store";
 import { track } from "../lib/track";
-import { matchScore, PRIORITIES, ZERO_WEIGHTS, type Office, type Weights } from "../lib/score";
 
 type Props = {
   weights: Weights;
   setWeights: (w: Weights) => void;
   office: Office;
   setOffice: (o: Office) => void;
-  pickingOffice: boolean;
-  setPickingOffice: (v: boolean) => void;
+  office2: Office;
+  setOffice2: (o: Office) => void;
+  pickingOffice: 0 | 1 | 2;
+  setPickingOffice: (v: 0 | 1 | 2) => void;
   budget: number;
   setBudget: (n: number) => void;
   onSelect: (id: string) => void;
 };
 
-const PRESETS: { label: string; w: Partial<Weights> }[] = [
-  { label: "👩 Safe for women", w: { safety: 5, transit: 3, market: 3, clean: 2 } },
-  { label: "🚇 No car", w: { transit: 5, market: 4, commute: 3 } },
-  { label: "👨‍👩‍👧 Family", w: { safety: 4, green: 4, clean: 4, drain: 3, schools: 4, health: 3 } },
-  { label: "💸 Budget", w: { afford: 5, commute: 3, transit: 2 } },
-  { label: "🌿 Clean air", w: { air: 5, green: 4, clean: 3 } },
-  { label: "🧑‍💻 Young techie", w: { techhub: 5, nightlife: 4, transit: 3, afford: 2 } },
-];
+function OfficePicker({ value, onChange, picking, onPick, label }: {
+  value: Office; onChange: (o: Office) => void; picking: boolean; onPick: () => void; label: string;
+}) {
+  return (
+    <div className="row wrap">
+      <select aria-label={label}
+        value={OFFICES.find((o) => o.name === value?.name)?.id ?? (value ? "custom" : "")}
+        onChange={(e) => {
+          const o = OFFICES.find((x) => x.id === e.target.value);
+          onChange(o ? { name: o.name, lat: o.lat, lng: o.lng } : null);
+          if (o) track("office_set", { hub: o.name });
+        }}
+      >
+        <option value="">{label}</option>
+        {OFFICES.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+        {value && !OFFICES.some((o) => o.name === value.name) && <option value="custom">{value.name}</option>}
+      </select>
+      <button className={`btn small ${picking ? "" : "ghost"}`} onClick={onPick}>{picking ? "Tap the map…" : "📍 Pick on map"}</button>
+    </div>
+  );
+}
 
 export default function Matcher(p: Props) {
+  const { salary, people } = money.use();
+  const [showSalary, setShowSalary] = useState(false);
+  const [showSecond, setShowSecond] = useState(Boolean(p.office2));
   const active = Object.values(p.weights).some(Boolean);
   const ranked = SECTORS.map((s) => ({ s, m: matchScore(s, p.weights, p.office) ?? 0 }))
     .filter(({ s }) => !p.budget || s.rent2bhk[0] <= p.budget)
     .sort((a, b) => b.m - a.m)
     .slice(0, 10);
+  const salaryBudget = salary ? Math.round((salary * 0.3 * Math.max(1, people)) / 1000 / 5) * 5 : 0;
 
   return (
     <div className="panel-body">
@@ -43,29 +65,49 @@ export default function Matcher(p: Props) {
       </div>
 
       <h3>Your office</h3>
-      <div className="row wrap">
-        <select
-          value={OFFICES.find((o) => o.name === p.office?.name)?.id ?? (p.office ? "custom" : "")}
-          onChange={(e) => {
-            const o = OFFICES.find((x) => x.id === e.target.value);
-            p.setOffice(o ? { name: o.name, lat: o.lat, lng: o.lng } : null);
-            if (o) track("office_set", { hub: o.name });
-          }}
-        >
-          <option value="">No office selected</option>
-          {OFFICES.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
-          {p.office && !OFFICES.some((o) => o.name === p.office?.name) && <option value="custom">{p.office.name}</option>}
-        </select>
-        <button className={`btn small ${p.pickingOffice ? "" : "ghost"}`} onClick={() => p.setPickingOffice(!p.pickingOffice)}>
-          {p.pickingOffice ? "Tap the map…" : "📍 Pick on map"}
+      <OfficePicker value={p.office} onChange={p.setOffice} label="No office selected"
+        picking={p.pickingOffice === 1} onPick={() => p.setPickingOffice(p.pickingOffice === 1 ? 0 : 1)} />
+      {!showSecond ? (
+        <button className="link small-txt add-second" onClick={() => setShowSecond(true)} disabled={!p.office}>
+          + Add a second office (partner or flatmate)
         </button>
-      </div>
+      ) : (
+        <>
+          <h3>Second office <button className="link small-txt" onClick={() => { p.setOffice2(null); setShowSecond(false); }}>remove</button></h3>
+          <OfficePicker value={p.office2} onChange={p.setOffice2} label="Partner / flatmate office"
+            picking={p.pickingOffice === 2} onPick={() => p.setPickingOffice(p.pickingOffice === 2 ? 0 : 2)} />
+          {p.office && p.office2 && <p className="muted small-txt">The commute score now uses whichever of the two drives is longer, so the match is fair for both of you.</p>}
+        </>
+      )}
 
       <h3>Max 2BHK budget</h3>
       <div className="slider-row">
         <input type="range" min={0} max={100} step={5} value={p.budget} onChange={(e) => p.setBudget(+e.target.value)} />
         <b>{p.budget ? `₹${p.budget}k` : "Any"}</b>
       </div>
+      {!showSalary ? (
+        <button className="link small-txt" onClick={() => setShowSalary(true)}>Work out my budget from salary</button>
+      ) : (
+        <div className="salary-box">
+          <div className="calc-grid">
+            <label>Monthly in-hand salary
+              <input type="number" inputMode="numeric" min={0} step={5000} placeholder="e.g. 120000" value={salary || ""}
+                onChange={(e) => money.set((m) => ({ ...m, salary: Math.max(0, +e.target.value || 0) }))} />
+            </label>
+            <label>Earners sharing rent
+              <select value={people} onChange={(e) => money.set((m) => ({ ...m, people: +e.target.value }))}>
+                {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>
+          </div>
+          {salaryBudget > 0 && (
+            <p className="small-txt">30% of {people > 1 ? "combined " : ""}salary ≈ <b>₹{salaryBudget}k</b> for rent.{" "}
+              <button className="link" onClick={() => { p.setBudget(Math.min(100, salaryBudget)); track("budget_from_salary"); }}>Use this budget</button>
+            </p>
+          )}
+          <small className="muted">Stays on this device. Assumes everyone earns about the same.</small>
+        </div>
+      )}
 
       <h3>Priorities</h3>
       <ul className="sliders">
@@ -84,12 +126,19 @@ export default function Matcher(p: Props) {
       <h3>{active ? "Best matches" : "Set a priority to see matches"}</h3>
       {active && (
         <ol className="ranked">
-          {ranked.map(({ s, m }) => (
-            <li key={s.id} onClick={() => p.onSelect(s.id)}>
-              <span>{s.name}<small className="muted"> · {s.zone}</small></span>
-              <b>{m}%</b>
-            </li>
-          ))}
+          {ranked.map(({ s, m }) => {
+            const c1 = commute(s, p.office);
+            const c2 = commute(s, p.office2);
+            return (
+              <li key={s.id} onClick={() => p.onSelect(s.id)}>
+                <span>
+                  {s.name}<small className="muted"> · {s.zone}</small>
+                  {c1 && <small className="muted commute-line">🚗 {c1.minutes} min{c2 ? ` / ${c2.minutes} min` : ""} at peak</small>}
+                </span>
+                <b>{m}%</b>
+              </li>
+            );
+          })}
           {ranked.length === 0 && <li className="muted">Nothing fits that budget. Try raising it.</li>}
         </ol>
       )}

@@ -7,10 +7,13 @@ import SectorPanel from "./components/SectorPanel";
 import Matcher from "./components/Matcher";
 import Compare from "./components/Compare";
 import SocietyPage, { SocietyList } from "./components/SocietyPage";
+import ShortlistPage from "./components/Shortlist";
+import LatestReviews from "./components/LatestReviews";
+import { shortlist } from "./lib/store";
 import { DATA_UPDATED, OFFICES, SECTORS, SOURCES, sectorById } from "./data/sectors";
 import { useDriveTimes } from "./lib/geo";
 import { linkProps, navigate, useRoute, type Route } from "./lib/router";
-import { setActiveDrives, ZERO_WEIGHTS, type Office, type Weights } from "./lib/score";
+import { setActiveDrives, setSecondOffice, ZERO_WEIGHTS, type Office, type Weights } from "./lib/score";
 import { societyBySlug, SOCIETIES } from "./lib/societies";
 import { track } from "./lib/track";
 
@@ -33,6 +36,7 @@ function seo(route: Route) {
     if (soc) return { title: `${soc.name} reviews, ${soc.sectors[0].name} Gurgaon | ${SITE}`, desc: `Resident reviews and ratings for ${soc.name} in ${soc.sectors.map((x) => x.name).join(", ")}, Gurgaon: cleanliness, safety, water, power and waterlogging.` };
   }
   if (route.view === "match") return { title: `Find your best Gurgaon sector | ${SITE}`, desc: "Set your priorities (women safety, metro, clean air, schools, commute, budget) and see which Gurgaon sectors match best." };
+  if (route.view === "shortlist") return { title: `My shortlist | ${SITE}`, desc: "Your saved Gurgaon sectors and societies, with notes. Share the list with your partner or flatmates." };
   if (route.view === "compare") return { title: `Compare Gurgaon sectors | ${SITE}`, desc: "Compare Gurgaon sectors side by side: rent, metro, commute, hospitals and scores." };
   return { title: `${SITE}: choose the right sector in Gurgaon`, desc: `Map of ${SECTORS.length} Gurgaon sectors with rents, societies, PGs, metro, schools, tech hubs, live air quality and resident reviews.` };
 }
@@ -42,10 +46,11 @@ type Sheet = "peek" | "half" | "full";
 export default function App() {
   const route = useRoute();
   const [weights, setWeights] = usePersisted<Weights>("gff-weights", ZERO_WEIGHTS);
-  const [prefs, setPrefs] = usePersisted<{ office: Office; budget: number; compare: string[] }>(
-    "gff-prefs", { office: null, budget: 0, compare: [] },
+  const [prefs, setPrefs] = usePersisted<{ office: Office; office2: Office; budget: number; compare: string[] }>(
+    "gff-prefs", { office: null, office2: null, budget: 0, compare: [] },
   );
-  const [pickingOffice, setPickingOffice] = useState(false);
+  const [pickingOffice, setPickingOffice] = useState<0 | 1 | 2>(0);
+  const saved = shortlist.use();
   const [layers, setLayers] = usePersisted("gff-layers", { tech: true, hangout: true });
   const [sheet, setSheet] = useState<Sheet>("half");
   const panelRef = useRef<HTMLElement>(null);
@@ -54,6 +59,10 @@ export default function App() {
   const hubName = prefs.office && OFFICES.some((o) => o.name === prefs.office!.name) ? prefs.office.name : null;
   const drives = useDriveTimes(hubName);
   setActiveDrives(hubName, drives);
+  const hub2Name = prefs.office2 && OFFICES.some((o) => o.name === prefs.office2!.name) ? prefs.office2.name : null;
+  const drives2 = useDriveTimes(hub2Name);
+  setActiveDrives(hub2Name, drives2);
+  setSecondOffice(prefs.office ? prefs.office2 : null);
 
   // Per-page title + description for search engines and link previews.
   useEffect(() => {
@@ -67,6 +76,7 @@ export default function App() {
 
   const select = (id: string) => { navigate(`/sector/${id}`); track("sector_open", { sector: id }); };
   const setOffice = (office: Office) => setPrefs((p) => ({ ...p, office }));
+  const setOffice2 = (office2: Office) => setPrefs((p) => ({ ...p, office2 }));
   const setCompare = (compare: string[]) => setPrefs((p) => ({ ...p, compare }));
   const selectedId = route.view === "sector" ? route.id : null;
   const tab = route.view === "sector" || route.view === "society" ? "explore" : route.view;
@@ -93,6 +103,7 @@ export default function App() {
           <a className={tab === "compare" ? "on" : ""} {...linkProps("/compare")}>
             ⚖️ Compare{prefs.compare.length ? ` (${prefs.compare.length})` : ""}
           </a>
+          <a className={tab === "shortlist" ? "on" : ""} {...linkProps("/shortlist")}>♥{saved.length ? ` ${saved.length}` : " Saved"}</a>
         </nav>
       </header>
 
@@ -103,9 +114,14 @@ export default function App() {
             onSelect={select}
             weights={weights}
             office={prefs.office}
-            pickingOffice={pickingOffice}
+            office2={prefs.office ? prefs.office2 : null}
+            pickingOffice={pickingOffice > 0}
             layers={layers}
-            onPickOffice={(lat, lng) => { setOffice({ name: "My office (pinned)", lat, lng }); setPickingOffice(false); }}
+            onPickOffice={(lat, lng) => {
+              if (pickingOffice === 2) setOffice2({ name: "Second office (pinned)", lat, lng });
+              else setOffice({ name: "My office (pinned)", lat, lng });
+              setPickingOffice(0);
+            }}
           />
           {pickingOffice && <div className="map-hint">Tap your office location on the map</div>}
           <div className="legend">
@@ -137,6 +153,7 @@ export default function App() {
               id={route.id}
               weights={weights}
               office={prefs.office}
+              office2={prefs.office ? prefs.office2 : null}
               onClose={() => navigate("/")}
               inCompare={prefs.compare.includes(route.id)}
               onToggleCompare={() => {
@@ -150,10 +167,13 @@ export default function App() {
             <Matcher
               weights={weights} setWeights={(w) => { setWeights(w); }}
               office={prefs.office} setOffice={setOffice}
+              office2={prefs.office2} setOffice2={setOffice2}
               pickingOffice={pickingOffice} setPickingOffice={(v) => { setPickingOffice(v); if (v) setSheet("peek"); }}
               budget={prefs.budget} setBudget={(budget) => setPrefs((p) => ({ ...p, budget }))}
               onSelect={select}
             />
+          ) : route.view === "shortlist" ? (
+            <ShortlistPage weights={weights} office={prefs.office} compareIds={prefs.compare} setCompare={setCompare} />
           ) : route.view === "compare" ? (
             <Compare ids={prefs.compare} setIds={setCompare} weights={weights} office={prefs.office} onSelect={select} />
           ) : (
@@ -161,6 +181,11 @@ export default function App() {
               <h2>Explore Gurgaon, sector by sector</h2>
               <p>Tap a sector on the map or search above to see rents, metro access, societies, PGs, live air quality and resident reviews.</p>
               <p>Not sure where to start? Open <a className="link" {...linkProps("/match")}>🎯 Match</a>, set what matters to you, and the map lights up with your best sectors.</p>
+              <div className="quick">
+                <button className="btn small ghost" onClick={() => document.querySelector<HTMLButtonElement>(".locate-btn")?.click()}>📍 Which sector am I in?</button>
+                <a className="btn small ghost" {...linkProps("/shortlist")}>♥ My shortlist{saved.length ? ` (${saved.length})` : ""}</a>
+              </div>
+              <LatestReviews />
               <h3>Browse by zone</h3>
               {Array.from(new Set(SECTORS.map((s) => s.zone))).map((z) => (
                 <div key={z} className="zone">

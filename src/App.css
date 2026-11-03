@@ -142,3 +142,54 @@ select { max-width: 100%; }
 .soc-link { font-size: 13px; color: var(--accent); text-decoration: none; display: inline-block; margin-top: 2px; }
 .fix { margin: 10px 0; }
 a.link { text-decoration: none; }
+
+/* v3 tools */
+.btn.saved { background: #db2777; border-color: #db2777; color: #fff; }
+.badges { margin: 4px 0 8px; }
+.chip.badge { background: #fef3c7; border-color: #f59e0b; color: #92400e; cursor: default; }
+@media (prefers-color-scheme: dark) { .chip.badge { background: #3b2a07; color: #fcd34d; } }
+.tools { display: grid; gap: 8px; margin: 14px 0 4px; }
+details.tool { border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+details.tool > summary { cursor: pointer; padding: 10px 12px; font-weight: 600; list-style: none; }
+details.tool > summary::-webkit-details-marker { display: none; }
+details.tool > summary::after { content: "▾"; float: right; color: var(--muted); }
+details.tool[open] > summary::after { content: "▴"; }
+.tool-body { padding: 0 12px 12px; display: grid; gap: 10px; }
+.calc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.calc-grid label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.slider-label { display: block; font-size: 13px; color: var(--muted); }
+.slider-label input { display: block; width: 100%; margin-top: 6px; }
+.calc-grid input, .calc-grid select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); }
+.slider-label b { color: var(--text); }
+.calc-out { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.calc-out > div { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; display: grid; gap: 2px; }
+.calc-out span { font-size: 12px; color: var(--muted); }
+.calc-out b { font-size: 16px; }
+.calc-out small { font-size: 11px; }
+.calc-out .wide { grid-column: 1 / -1; }
+.afford.good b, .afford.good small { color: #16a34a; }
+.afford.warn b, .afford.warn small { color: #ca8a04; }
+.afford.bad b, .afford.bad small { color: #dc2626; }
+label.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; color: var(--text); cursor: pointer; }
+label.check input { margin-top: 3px; accent-color: var(--accent); }
+.checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.locate-btn { position: absolute; right: 12px; bottom: 28px; z-index: 1000; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); box-shadow: 0 4px 14px #0003; font-size: 20px; cursor: pointer; }
+.saved-list { list-style: none; padding: 0; display: grid; gap: 10px; }
+.saved-list li { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; }
+.saved-list textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font-size: 14px; }
+.pill { background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: 600; }
+.salary-box { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin-top: 6px; display: grid; gap: 6px; }
+.commute-line { display: block; }
+.add-second { margin-top: 6px; display: inline-block; }
+.add-second:disabled { opacity: .5; cursor: not-allowed; }
+.facts b.second { display: block; font-size: 13px; margin-top: 2px; }
+.quick { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 4px; }
+a.btn { text-decoration: none; display: inline-block; }
+.reviews.compact li { padding: 8px 10px; }
+.reviews.compact p { font-size: 13px; margin: 4px 0; }
+@media (max-width: 860px) { .locate-btn { top: 92px; bottom: auto; } }
+@media print {
+  .top, .map-wrap, .sheet-handle, .actions, .reviews, .review-form, section, .nearby, .scores, .facts, .two-col, .chips, .note, .fix, h3, details.tool:not([open]) { display: none !important; }
+  .layout, .panel { display: block !important; position: static !important; height: auto !important; box-shadow: none !important; overflow: visible !important; }
+  details.tool { border: none; }
+}

@@ -72,3 +72,28 @@ export function aqiBand(aqi: number) {
   if (aqi <= 300) return { label: "Very unhealthy", color: "#9333ea" };
   return { label: "Hazardous", color: "#7f1d1d" };
 }
+
+// ── Which sector is a point in? (ray casting on OSM outlines, else nearest centre) ──
+function inRing(lng: number, lat: number, ring: number[][]) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if ((yi > lat) !== (yj > lat) && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+function inGeometry(lng: number, lat: number, g: GeoJSON.Geometry): boolean {
+  if (g.type === "Polygon") return inRing(lng, lat, g.coordinates[0]) && !g.coordinates.slice(1).some((h) => inRing(lng, lat, h));
+  if (g.type === "MultiPolygon") return g.coordinates.some((p) => inRing(lng, lat, p[0]) && !p.slice(1).some((h) => inRing(lng, lat, h)));
+  return false;
+}
+export function sectorAt(lat: number, lng: number, shapes: Shape[], centres: { id: string; lat: number; lng: number }[]) {
+  const hit = shapes.find((s) => inGeometry(lng, lat, s.geojson));
+  if (hit) return { id: hit.sector_id, exact: true };
+  let best: { id: string; d: number } | null = null;
+  for (const c of centres) {
+    const d = Math.hypot((c.lat - lat) * 111, (c.lng - lng) * 98);
+    if (!best || d < best.d) best = { id: c.id, d };
+  }
+  return best && best.d <= 1.5 ? { id: best.id, exact: false } : null;
+}

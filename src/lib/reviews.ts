@@ -43,16 +43,17 @@ const readLocal = (): Review[] => {
   try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]").map((r: Partial<Review>) => ({ ...r, society: r.society ?? null, aspects: r.aspects ?? {} }) as Review); } catch { return []; }
 };
 
-export async function listReviews(filter: { sectorId?: string; society?: string }): Promise<Review[]> {
+export async function listReviews(filter: { sectorId?: string; society?: string; limit?: number }): Promise<Review[]> {
   if (usingSupabase) {
-    const params: Record<string, string> = { select: COLS, order: "created_at.desc", limit: "200" };
+    const params: Record<string, string> = { select: COLS, order: "created_at.desc", limit: String(filter.limit ?? 200) };
     if (filter.sectorId) params.sector_id = `eq.${filter.sectorId}`;
     if (filter.society) params.society = `eq.${filter.society}`;
     return (await select<Row>("reviews", params)).map(fromRow);
   }
   return readLocal()
     .filter((r) => (!filter.sectorId || r.sectorId === filter.sectorId) && (!filter.society || r.society === filter.society))
-    .sort((a, b) => b.createdAt - a.createdAt);
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, filter.limit ?? 200);
 }
 
 export async function addReview(r: Omit<Review, "id" | "createdAt">) {

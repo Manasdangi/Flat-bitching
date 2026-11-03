@@ -74,10 +74,13 @@ export const affordScore = (sec: Sector) => band((sec.rent2bhk[0] + sec.rent2bhk
 
 // Real road drive times (OSRM) for the selected tech hub, set by the app when an office is chosen.
 type DriveRow = { km: number; minutes_offpeak: number };
-let activeDrives: { office: string; rows: Map<string, DriveRow> } | null = null;
+const activeDrives = new Map<string, Map<string, DriveRow>>();
 export function setActiveDrives(office: string | null, rows: Map<string, DriveRow>) {
-  activeDrives = office ? { office, rows } : null;
+  if (office) activeDrives.set(office, rows);
 }
+// Optional second office (partner / flatmate). Commute score uses the worse of the two, so both stay fair.
+let secondOffice: Office = null;
+export function setSecondOffice(o: Office) { secondOffice = o; }
 const PEAK = 1.8;
 
 export type Commute = { roadKm: number; minutes: number; offpeak: number | null; real: boolean; score: number };
@@ -85,7 +88,7 @@ export type Commute = { roadKm: number; minutes: number; offpeak: number | null;
 /** Road commute. Uses real OSRM route data for tech hubs; falls back to a straight-line estimate for pinned offices. */
 export function commute(sec: Sector, office: Office): Commute | null {
   if (!office) return null;
-  const d = activeDrives?.office === office.name ? activeDrives.rows.get(sec.id) : undefined;
+  const d = activeDrives.get(office.name)?.get(sec.id);
   if (d) {
     const minutes = Math.round(d.minutes_offpeak * PEAK + 2);
     return { roadKm: d.km, minutes, offpeak: d.minutes_offpeak, real: true, score: band(minutes, [15, 25, 35, 50]) };
@@ -104,7 +107,9 @@ export function allScores(sec: Sector, office: Office): Record<PriorityKey, numb
     schools: schoolScore(sec),
     techhub: techScore(sec),
     nightlife: hangoutScore(sec),
-    commute: commute(sec, office)?.score ?? null,
+    commute: office
+      ? Math.min(commute(sec, office)!.score, secondOffice ? commute(sec, secondOffice)!.score : 5)
+      : null,
   };
 }
 

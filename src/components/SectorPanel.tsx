@@ -4,11 +4,16 @@ import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type 
 import { isNamedSociety, slugify } from "../lib/societies";
 import { AqiBadge, SuggestFix } from "./Extras";
 import Reviews from "./Reviews";
+import { SaveButton } from "./Shortlist";
+import CostCalculator from "./CostCalculator";
+import Checklist from "./Checklist";
+import { badgesFor } from "../lib/presets";
 
 type Props = {
   id: string;
   weights: Weights;
   office: Office;
+  office2: Office;
   onClose: () => void;
   inCompare: boolean;
   onToggleCompare: () => void;
@@ -22,11 +27,13 @@ export const Bar = ({ v }: { v: number | null }) => (
 
 const rupees = ([a, b]: [number, number]) => `₹${a}k – ₹${b}k`;
 
-export default function SectorPanel({ id, weights, office, onClose, inCompare, onToggleCompare }: Props) {
+export default function SectorPanel({ id, weights, office, office2, onClose, inCompare, onToggleCompare }: Props) {
   const s = sectorById(id);
   if (!s) return <div className="panel-body"><h2>Sector not found</h2><p>We don't cover this one yet.</p></div>;
   const metro = nearestMetro(s);
   const c = commute(s, office);
+  const c2 = commute(s, office2);
+  const badges = badgesFor(s.id);
   const sc = allScores(s, office);
   const m = matchScore(s, weights, office);
   const named = s.societies.filter(isNamedSociety);
@@ -48,11 +55,15 @@ export default function SectorPanel({ id, weights, office, onClose, inCompare, o
         </div>
         <button className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
       </div>
+      {badges.length > 0 && (
+        <div className="chips badges">{badges.map((b) => <span key={b} className="chip badge">🏆 Top pick: {b}</span>)}</div>
+      )}
       {m != null && <p className="match">Your match: <b>{m}%</b></p>}
       <p>{s.summary}</p>
       <AqiBadge lat={s.lat} lng={s.lng} />
 
       <div className="actions">
+        <SaveButton kind="sector" id={s.id} />
         <button className={`btn small ${inCompare ? "ghost" : ""}`} onClick={onToggleCompare}>
           {inCompare ? "✓ In compare" : "+ Compare"}
         </button>
@@ -68,9 +79,15 @@ export default function SectorPanel({ id, weights, office, onClose, inCompare, o
           <div className="wide">
             <span>Drive to {office.name}</span>
             <b>{c.roadKm.toFixed(1)} km · ~{c.minutes} min at peak{c.offpeak != null && <> · {c.offpeak} min off-peak</>}</b>
+            {c2 && office2 && <b className="second">{c2.roadKm.toFixed(1)} km · ~{c2.minutes} min at peak to {office2.name}</b>}
             <small className="muted">{c.real ? "Road route via OpenStreetMap; peak time estimated" : office.name.includes("pinned") ? "Rough estimate for a pinned location" : "Rough estimate (route data loading or unavailable)"}</small>
           </div>
         )}
+      </div>
+
+      <div className="tools">
+        <CostCalculator sector={s} />
+        <Checklist sectorId={s.id} />
       </div>
 
       <h3>Scores</h3>

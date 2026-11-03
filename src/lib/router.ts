@@ -5,6 +5,7 @@ export type Route =
   | { view: "explore" }
   | { view: "match" }
   | { view: "compare" }
+  | { view: "shortlist" }
   | { view: "sector"; id: string }
   | { view: "society"; slug: string };
 
@@ -14,11 +15,12 @@ export function parse(path: string): Route {
   if (a === "society" && b) return { view: "society", slug: decodeURIComponent(b) };
   if (a === "match") return { view: "match" };
   if (a === "compare") return { view: "compare" };
+  if (a === "shortlist") return { view: "shortlist" };
   return { view: "explore" };
 }
 
 export function navigate(path: string, replace = false) {
-  if (path === location.pathname) return;
+  if (path === location.pathname + location.search) return;
   history[replace ? "replaceState" : "pushState"](null, "", path);
   dispatchEvent(new PopStateEvent("popstate"));
   window.scrollTo?.({ top: 0 });
