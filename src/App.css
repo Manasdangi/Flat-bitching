@@ -266,3 +266,15 @@ a.btn { text-decoration: none; display: inline-block; }
 .safety-list.method { list-style: disc; padding-left: 20px; display: block; }
 .safety-list.method li { margin: 7px 0; font-size: 14px; line-height: 1.45; }
 .map-debug { position: fixed; z-index: 9999; left: 8px; right: 8px; top: calc(env(safe-area-inset-top, 0px) + 8px); padding: 8px 10px; border-radius: 8px; background: #111827; color: #fde68a; font: 12px/1.35 ui-monospace, monospace; word-break: break-word; }
+
+/* Map key: centre every label vertically with its dot/checkbox and with the "Map key" title */
+.legend { align-items: center; }
+.legend summary { line-height: 1.2; }
+.legend-body { align-items: center; }
+.legend-body > span, .legend-body > label { display: inline-flex; align-items: center; gap: 5px; line-height: 1.2; }
+.legend i, .legend i.dot { margin-right: 0; vertical-align: baseline; flex: none; }
+.legend input { margin: 0; }
+@media (min-width: 861px) { .legend-body { padding: 6px 10px 6px 0; } }
+
+/* Chips (sector links, filters): centre the label vertically and horizontally, whether <a> or <button> */
+.chip { display: inline-flex; align-items: center; justify-content: center; line-height: 1.2; text-decoration: none; box-sizing: border-box; }
