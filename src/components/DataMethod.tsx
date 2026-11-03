@@ -1,5 +1,6 @@
 import { linkProps } from "../lib/router";
 import { FLOOD_SOURCE, WATER_SOURCE } from "../data/risk";
+import { SRC } from "../data/evidence";
 import { MAX_COMMUNITY_SHIFT } from "../lib/score";
 
 const ext = (href: string, label: string) => <a className="link" href={href} target="_blank" rel="noreferrer">{label}</a>;
@@ -17,6 +18,10 @@ export default function DataMethod() {
           <li>Sector outlines and road drive times: {ext("https://www.openstreetmap.org/copyright", "OpenStreetMap")}. Peak-hour times are our estimate on top of the road distance.</li>
           <li>Air quality: live model estimate from {ext("https://open-meteo.com/", "Open-Meteo")} (CAMS), not a ground monitor.</li>
           <li>Waterlogging: compiled from {ext(FLOOD_SOURCE.url, FLOOD_SOURCE.label)}. Water shortages: {ext(WATER_SOURCE.url, WATER_SOURCE.label)}. These are news and local reports, not official surveys, and they were compiled in Nov 2026.</li>
+          <li>More flood reports: {ext(SRC.tribune2025.url, SRC.tribune2025.label)}, {ext(SRC.indiatv2025.url, SRC.indiatv2025.label)} and {ext(SRC.tribune2026.url, SRC.tribune2026.label)}. A sector named in these (and not already in our list) is marked medium risk.</li>
+          <li>Water: a second opinion from {ext(SRC.sqyWater.url, SRC.sqyWater.label)}. It's a real-estate portal, so we use it as a cross-check, and where it disagrees with residents or news reports we show both.</li>
+          <li>Women's safety: spots named by Gurugram Police ({ext(SRC.police2024.url, SRC.police2024.label)}). These are specific spots, not whole sectors, and date from 2024.</li>
+          <li>Rents: asking rents read from {ext(SRC.sqyRent.url, SRC.sqyRent.label)} listing pages for a sample of busy sectors, used to check and adjust our ranges. Asking prices run above final rents, and we only read the first page of each.</li>
           <li>Rent safety and Haryana tenancy rules come from property and legal explainers (linked on that page). They are general information, not legal advice.</li>
         </ul>
       </section>

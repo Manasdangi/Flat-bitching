@@ -7,6 +7,7 @@ import DataTrust from "./DataTrust";
 import Reviews from "./Reviews";
 import { SaveButton } from "./Shortlist";
 import { FLOOD, FLOOD_SOURCE, WATER, WATER_SOURCE } from "../data/risk";
+import { FLOOD_EV, SRC, WATER_EV } from "../data/evidence";
 import { RentReports, ResidentPolls } from "./ResidentData";
 import WomenSnapshot from "./WomenSnapshot";
 import { womenMode } from "../lib/store";
@@ -151,11 +152,19 @@ export default function SectorPanel({ id, weights, office, office2, onClose, inC
 
 function RiskCard({ id }: { id: string }) {
   const f = FLOOD[id], w = WATER[id];
+  const more = [...(FLOOD_EV[id] ?? []).map((e) => ({ ...e, topic: "☔" })), ...(WATER_EV[id] ?? []).map((e) => ({ ...e, topic: "🚰" }))];
+  const conflict = Boolean(w) && (WATER_EV[id] ?? []).some((e) => e.tone === "good");
   return (
     <div className={`risk ${f || w ? "has" : ""}`}>
       <h3>🌧️ Water &amp; flood check</h3>
       {w && <p>🚰 <b>{w.score === 1 ? "Severe water shortage reported." : "Water shortages reported."}</b> {w.note} <small className="muted">Ask the society about tanker costs before you sign.</small></p>}
       {f && <p>☔ <b>{f.level === "high" ? "High waterlogging risk." : "Waterlogging risk."}</b> {f.note} <small className="muted">Avoid basement or ground-floor flats here, and check for a stilt or pump.</small></p>}
+      {conflict && <p className="note">⚖️ <b>Sources disagree on water here.</b> Residents and news reports describe shortages, while a real-estate portal lists it as good. Ask the society directly before you decide.</p>}
+      {more.length > 0 && (
+        <ul className="more-reports">
+          {more.map((e, i) => <li key={i}>{e.topic} {e.note} <a className="link" href={SRC[e.src].url} target="_blank" rel="noreferrer">{SRC[e.src].label}</a></li>)}
+        </ul>
+      )}
       {!f && !w && <p className="muted">No water or flooding problems reported for this sector in the sources we checked. That is not a guarantee, so ask current residents.</p>}
       <small className="muted">Sources: <a href={WATER_SOURCE.url} target="_blank" rel="noreferrer">{WATER_SOURCE.label}</a>, <a href={FLOOD_SOURCE.url} target="_blank" rel="noreferrer">{FLOOD_SOURCE.label}</a>. Reports, not official data. </small>
       <SuggestFix sectorId={id} defaultTopic="water_flood" label="⚠️ Report wrong water or flood info" />

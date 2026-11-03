@@ -4,6 +4,7 @@ import { loadPolls, communityEnabled, type PollCounts } from "../lib/community";
 import { linkProps } from "../lib/router";
 import { aspectAverages, listReviews, type Review } from "../lib/reviews";
 import { allScores, nearby, nearestMetro } from "../lib/score";
+import { SAFETY_EV, SRC } from "../data/evidence";
 
 const pct = (c: { yes: number; sometimes: number; no: number } | undefined) => {
   const n = c ? c.yes + c.sometimes + c.no : 0;
@@ -48,6 +49,9 @@ export default function WomenSnapshot({ sector }: { sector: Sector }) {
         {hospital && <li>🏥 Nearest big hospital: {hospital.name}, {hospital.km.toFixed(1)} km</li>}
         <li>🛏️ PG availability: {sector.pg}</li>
       </ul>
+      {(SAFETY_EV[sector.id] ?? []).map((e) => (
+        <p key={e.note} className="note">⚠️ Police named {e.note} here as an unsafe spot for women. <small>That is one spot, not the whole sector, and the list dates from 2024, so ask locally. <a className="link" href={SRC[e.src].url} target="_blank" rel="noreferrer">{SRC[e.src].label}</a></small></p>
+      ))}
       {!night && !lit && !cab && !single && women.length === 0 && (
         <p className="muted small-txt">No resident answers yet for this sector. Add yours below: it takes a few seconds.</p>
       )}
