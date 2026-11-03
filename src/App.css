@@ -246,3 +246,12 @@ a.btn { text-decoration: none; display: inline-block; }
 .theme-btn { order: 10; display: inline-flex; flex-direction: column; align-items: center; gap: 0; min-width: 44px; padding: 4px 8px; border: 1px solid var(--line); background: var(--raise); color: inherit; border-radius: 10px; cursor: pointer; font-size: 18px; line-height: 1.1; }
 .theme-btn small { font-size: 10px; color: var(--muted); }
 @media (max-width: 860px) { .top { flex-wrap: nowrap; } }
+
+.women-card { border: 1px solid #f472b6; background: var(--risk-bg); border-radius: 12px; padding: 4px 14px 12px; margin: 14px 0; }
+.women-card h3 { margin: 10px 0 6px; }
+.women-score { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--raise); }
+.women-score b { font-size: 22px; }
+.women-score.good b { color: #16a34a; } .women-score.ok b { color: #d97706; } .women-score.low b { color: #dc2626; }
+.women-list { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; font-size: 14px; }
+.action-card.women { border-color: #f472b6; }
+.mode-line { margin-top: 10px; }

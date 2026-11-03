@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { OFFICES, SECTORS, sectorById } from "../data/sectors";
-import { answersToPrefs, QUESTIONS, topPicks } from "../lib/quiz";
+import { answersToPrefs, questionsFor, topPicks } from "../lib/quiz";
+import { womenMode } from "../lib/store";
 import { linkProps, navigate } from "../lib/router";
 import { cardUrl, encodeResult, parseResult, shareLink, type ResultEntry } from "../lib/share";
 import { track } from "../lib/track";
@@ -11,6 +12,8 @@ const short = (n: string) => n.replace(/\s*\(.*\)/, "");
 type QuizProps = { onDone: (p: { weights: Weights; budget: number; office: Office }) => void };
 
 export function Quiz({ onDone }: QuizProps) {
+  const women = womenMode.use();
+  const QUESTIONS = questionsFor(women);
   const total = QUESTIONS.length + 1; // + office step
   const [step, setStep] = useState(0);
   const [choices, setChoices] = useState<Record<string, number>>({});
@@ -18,7 +21,7 @@ export function Quiz({ onDone }: QuizProps) {
   const [started, setStarted] = useState(false);
 
   const finish = (o: Office, c = choices) => {
-    const p = answersToPrefs({ choices: c, office: o });
+    const p = answersToPrefs({ choices: c, office: o }, QUESTIONS);
     track("quiz_complete", { office: Boolean(o) });
     onDone(p);
     const top = topPicks(p.weights, p.office, p.budget);
@@ -29,8 +32,8 @@ export function Quiz({ onDone }: QuizProps) {
     return (
       <div className="panel-body quiz">
         <p className="eyebrow">60-second quiz</p>
-        <h2>Find your best Gurgaon sector</h2>
-        <p className="muted">Six taps. We'll weigh safety, metro, air, commute and budget for you and pick your top 3 of {SECTORS.length} sectors.</p>
+        <h2>{women ? "Find a safe sector for you" : "Find your best Gurgaon sector"}</h2>
+        <p className="muted">{women ? "A few taps about how you live and get home. " : ""}Six taps. We'll weigh safety, metro, air, commute and budget for you and pick your top 3 of {SECTORS.length} sectors.</p>
         <button className="btn" onClick={() => { setStarted(true); track("quiz_start"); }}>Start the quiz →</button>
       </div>
     );

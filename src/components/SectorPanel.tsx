@@ -7,6 +7,8 @@ import Reviews from "./Reviews";
 import { SaveButton } from "./Shortlist";
 import { FLOOD, FLOOD_SOURCE, WATER, WATER_SOURCE } from "../data/risk";
 import { RentReports, ResidentPolls } from "./ResidentData";
+import WomenSnapshot from "./WomenSnapshot";
+import { womenMode } from "../lib/store";
 import CostCalculator from "./CostCalculator";
 import Checklist from "./Checklist";
 import { badgesFor } from "../lib/presets";
@@ -30,6 +32,7 @@ export const Bar = ({ v }: { v: number | null }) => (
 const rupees = ([a, b]: [number, number]) => `₹${a}k – ₹${b}k`;
 
 export default function SectorPanel({ id, weights, office, office2, onClose, inCompare, onToggleCompare }: Props) {
+  const women = womenMode.use();
   const s = sectorById(id);
   if (!s) return <div className="panel-body"><h2>Sector not found</h2><p>We don't cover this one yet.</p></div>;
   const metro = nearestMetro(s);
@@ -71,6 +74,8 @@ export default function SectorPanel({ id, weights, office, office2, onClose, inC
         </button>
         <button className="btn small ghost" onClick={share}>Share</button>
       </div>
+
+      {women && <WomenSnapshot sector={s} />}
 
       <div className="facts">
         <div><span>2BHK rent</span><b>{rupees(s.rent2bhk)}</b></div>

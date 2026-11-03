@@ -6,17 +6,19 @@ import SearchBar from "./components/SearchBar";
 import SectorPanel from "./components/SectorPanel";
 import Matcher from "./components/Matcher";
 import ThemeToggle from "./components/ThemeToggle";
+import WomenGuide from "./components/WomenGuide";
 import RentSafety from "./components/RentSafety";
 import { Quiz, QuizResult } from "./components/Quiz";
 import Compare from "./components/Compare";
 import SocietyPage, { SocietyList } from "./components/SocietyPage";
 import ShortlistPage from "./components/Shortlist";
 import LatestReviews from "./components/LatestReviews";
-import { shortlist } from "./lib/store";
+import { shortlist, womenMode } from "./lib/store";
 import { DATA_UPDATED, OFFICES, SECTORS, SOURCES, sectorById } from "./data/sectors";
 import { useDriveTimes } from "./lib/geo";
 import { communityEnabled, loadCommunityScores } from "./lib/community";
 import { linkProps, navigate, useRoute, type Route } from "./lib/router";
+import { PRESETS } from "./lib/presets";
 import { setActiveDrives, setCommunity, setSecondOffice, ZERO_WEIGHTS, type Office, type Weights } from "./lib/score";
 import { societyBySlug, SOCIETIES } from "./lib/societies";
 import { track } from "./lib/track";
@@ -41,6 +43,7 @@ function seo(route: Route) {
   }
   if (route.view === "match") return { title: `Find your best Gurgaon sector | ${SITE}`, desc: "Set your priorities (women safety, metro, clean air, schools, commute, budget) and see which Gurgaon sectors match best." };
   if (route.view === "quiz" || route.view === "quizResult") return { title: `Find your best Gurgaon sector in 60 seconds | ${SITE}`, desc: "Answer 6 quick questions and get your top 3 Gurgaon sectors, with a shareable result card." };
+  if (route.view === "women") return { title: `Women's guide to renting and PG safety in Gurgaon | ${SITE}`, desc: "Checklists for single working women and PG residents: judging an area at night, PG safety checks, questions to ask landlords and getting home safely." };
   if (route.view === "rentSafety") return { title: `Rent safely in Gurgaon: tenant checklist | ${SITE}`, desc: "Avoid deposit scams and bad agreements: what to check before paying, what Haryana law says, and what to put in your rent agreement." };
   if (route.view === "shortlist") return { title: `My shortlist | ${SITE}`, desc: "Your saved Gurgaon sectors and societies, with notes. Share the list with your partner or flatmates." };
   if (route.view === "compare") return { title: `Compare Gurgaon sectors | ${SITE}`, desc: "Compare Gurgaon sectors side by side: rent, metro, commute, hospitals and scores." };
@@ -51,13 +54,14 @@ type Sheet = "peek" | "half" | "full";
 
 export default function App() {
   const route = useRoute();
-  const [storedWeights, setWeights] = usePersisted<Weights>("gff-weights", ZERO_WEIGHTS);
+  const [storedWeights, setWeights] = usePersisted<Weights>("gff-weights", womenMode.get() ? { ...ZERO_WEIGHTS, ...PRESETS[0].w } : ZERO_WEIGHTS);
   const weights = { ...ZERO_WEIGHTS, ...storedWeights };
   const [prefs, setPrefs] = usePersisted<{ office: Office; office2: Office; budget: number; compare: string[] }>(
     "gff-prefs", { office: null, office2: null, budget: 0, compare: [] },
   );
   const [pickingOffice, setPickingOffice] = useState<0 | 1 | 2>(0);
   const saved = shortlist.use();
+  const women = womenMode.use();
   const [layers, setLayers] = usePersisted("gff-layers", { tech: true, hangout: true, flood: false });
   const [sheet, setSheet] = useState<Sheet>("half");
   const [legendOpen, setLegendOpen] = useState(() => typeof window === "undefined" || window.innerWidth > 860);
@@ -92,7 +96,7 @@ export default function App() {
   const setOffice2 = (office2: Office) => setPrefs((p) => ({ ...p, office2 }));
   const setCompare = (compare: string[]) => setPrefs((p) => ({ ...p, compare }));
   const selectedId = route.view === "sector" ? route.id : null;
-  const tab = route.view === "sector" || route.view === "society" || route.view === "rentSafety" ? "explore" : route.view === "quizResult" ? "quiz" : route.view;
+  const tab = route.view === "sector" || route.view === "society" || route.view === "rentSafety" || route.view === "women" ? "explore" : route.view === "quizResult" ? "quiz" : route.view;
 
   // Bottom-sheet drag on phones: swipe up/down on the handle.
   const touchY = useRef<number | null>(null);
@@ -106,7 +110,7 @@ export default function App() {
           <span className="logo">🏙️</span>
           <div>
             <h1>Gurgaon Flat Finder</h1>
-            <p>Find the right sector for <i>your</i> priorities</p>
+            <p>{women ? "Find a safe place to live in Gurgaon" : <>Find the right sector for <i>your</i> priorities</>}</p>
           </div>
         </a>
         <SearchBar onSelect={select} />
@@ -193,6 +197,8 @@ export default function App() {
             <Quiz onDone={(p) => { setWeights(p.weights); setOffice(p.office); setPrefs((x) => ({ ...x, budget: p.budget })); }} />
           ) : route.view === "quizResult" ? (
             <QuizResult params={new URLSearchParams(location.search)} weights={weights} office={prefs.office} budget={prefs.budget} onSelect={select} />
+          ) : route.view === "women" ? (
+            <WomenGuide />
           ) : route.view === "rentSafety" ? (
             <RentSafety />
           ) : route.view === "shortlist" ? (
@@ -201,15 +207,20 @@ export default function App() {
             <Compare ids={prefs.compare} setIds={setCompare} weights={weights} office={prefs.office} onSelect={select} />
           ) : (
             <div className="panel-body">
-              <h2>Where should you live in Gurgaon?</h2>
-              <p className="muted">Tap a sector on the map, search above, or let us pick for you.</p>
+              <h2>{women ? "Where will you feel safe in Gurgaon?" : "Where should you live in Gurgaon?"}</h2>
+              <p className="muted">{women ? "Safety-first picks for single women and PG residents. Tap a sector, search above, or take the quiz." : "Tap a sector on the map, search above, or let us pick for you."}</p>
               <div className="actions-grid">
-                <a className="action-card primary" {...linkProps("/quiz")}><b>⚡ 60-second quiz</b><span>Answer 6 taps, get your top 3 sectors</span></a>
+                <a className="action-card primary" {...linkProps("/quiz")}><b>{women ? "⚡ Find a safe sector for me" : "⚡ 60-second quiz"}</b><span>Answer 6 taps, get your top 3 sectors</span></a>
+                {women && <a className="action-card women" {...linkProps("/women")}><b>👩 Women's guide</b><span>PG checklist, night safety, helplines</span></a>}
                 <a className="action-card" {...linkProps("/match")}><b>🎯 Set priorities</b><span>Safety, metro, air, commute, budget</span></a>
                 <button className="action-card" onClick={() => document.querySelector<HTMLButtonElement>(".locate-btn")?.click()}><b>📍 Where am I?</b><span>Find the sector you're standing in</span></button>
                 <a className="action-card" {...linkProps("/rent-safety")}><b>🛡️ Rent safely</b><span>Scam checks, deposit and agreement tips</span></a>
                 <a className="action-card" {...linkProps("/shortlist")}><b>♥ My shortlist</b><span>{saved.length ? `${saved.length} saved` : "Nothing saved yet"}</span></a>
               </div>
+              <p className="muted small-txt mode-line">
+                {women ? "👩 Women-first view is on: safety leads the map and quiz." : "Showing the general view."}{" "}
+                <button className="link" onClick={() => { womenMode.set(!women); track("women_mode", { on: !women }); }}>{women ? "Show for everyone" : "Switch to women-first"}</button>
+              </p>
               <LatestReviews />
               <h3>Browse by zone</h3>
               {Array.from(new Set(SECTORS.map((s) => s.zone))).map((z) => (

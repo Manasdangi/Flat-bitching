@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import type { Sector } from "../data/sectors";
 import { friendlyError } from "../lib/api";
 import {
-  addRentReport, communityEnabled, HOME_LABEL, loadPolls, loadRentSummary, POLLS, vote, votedAlready,
+  addRentReport, communityEnabled, HOME_LABEL, loadPolls, loadRentSummary, POLLS, vote, votedAlready, WOMEN_POLLS,
   type HomeType, type PollAnswer, type PollCounts, type PollKey, type RentRow,
 } from "../lib/community";
+import { womenMode } from "../lib/store";
 import { track } from "../lib/track";
 
 const MIN_POLL = 5; // votes needed before we show percentages
@@ -16,6 +17,7 @@ export function ResidentPolls({ sectorId }: { sectorId: string }) {
   const [counts, setCounts] = useState<PollCounts | null>(null);
   const [voted, setVoted] = useState<PollKey[]>(() => votedAlready(sectorId));
   const [msg, setMsg] = useState("");
+  const women = womenMode.use();
   useEffect(() => {
     let live = true;
     setVoted(votedAlready(sectorId)); setMsg(""); setCounts(null);
@@ -41,7 +43,7 @@ export function ResidentPolls({ sectorId }: { sectorId: string }) {
     <div className="community">
       <h3>🗳️ Ask residents</h3>
       <p className="muted small-txt">One tap each, anonymous. Answer only if you live or have lived here. Once a question has 5+ votes, residents' answers start adjusting this sector's score.</p>
-      {POLLS.map((p) => {
+      {[...POLLS].sort((a, b) => (women ? Number(WOMEN_POLLS.includes(b.key)) - Number(WOMEN_POLLS.includes(a.key)) : 0)).map((p) => {
         const c = counts?.[p.key];
         const total = c ? c.yes + c.sometimes + c.no : 0;
         const done = voted.includes(p.key);

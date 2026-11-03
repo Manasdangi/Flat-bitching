@@ -8,7 +8,11 @@ export const POLLS = [
   { key: "night_safe", q: "Safe to walk at 10pm?", icon: "🌙" },
   { key: "flood", q: "Does it stay dry in heavy rain?", icon: "☔" },
   { key: "clean", q: "Are roads and parks kept clean?", icon: "🧹" },
+  { key: "lit_streets", q: "Are streets well lit at night?", icon: "🔦" },
+  { key: "late_cab", q: "Is an auto or cab easy to get after 9pm?", icon: "🚕" },
+  { key: "single_friendly", q: "Do landlords and PGs here accept single women?", icon: "🏠" },
 ] as const;
+export const WOMEN_POLLS: PollKey[] = ["night_safe", "lit_streets", "late_cab", "single_friendly"];
 export type PollKey = (typeof POLLS)[number]["key"];
 export type PollAnswer = "yes" | "sometimes" | "no";
 export type PollCounts = Record<PollKey, Record<PollAnswer, number>>;
@@ -23,7 +27,7 @@ export async function loadPolls(sectorId: string): Promise<PollCounts> {
 }
 
 const votedKey = (sectorId: string) => `gff-voted-${sectorId}`;
-const POLL_TO_PRIORITY = { water: "water", flood: "drain", night_safe: "safety", clean: "clean" } as const;
+const POLL_TO_PRIORITY = { water: "water", flood: "drain", night_safe: "safety", lit_streets: "safety", clean: "clean" } as const;
 const POINTS: Record<PollAnswer, number> = { yes: 5, sometimes: 3, no: 1 };
 
 /** All sectors' poll results as per-priority resident means (used to adjust scores). */

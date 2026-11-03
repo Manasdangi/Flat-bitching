@@ -56,13 +56,55 @@ export const QUESTIONS: Question[] = [
   },
 ];
 
+// Women-first variant: asks about getting home at night instead of weekends/nightlife.
+export const QUESTIONS_WOMEN: Question[] = [
+  {
+    id: "who", title: "Who are you moving in as?",
+    options: [
+      { label: "👩 Woman living solo", w: { safety: 5, transit: 3, market: 2 } },
+      { label: "👯 Women flatmates", w: { safety: 4, afford: 3, transit: 2 } },
+      { label: "🏨 PG / hostel", w: { safety: 5, afford: 4, transit: 3 } },
+      { label: "👩‍👧 With family or kids", w: { safety: 4, schools: 4, green: 3, health: 3, water: 3 } },
+    ],
+  },
+  QUESTIONS[1],
+  {
+    id: "home", title: "How do you usually get home?",
+    options: [
+      { label: "🚗 Own car / scooter", w: { safety: 2 } },
+      { label: "🚇 Metro, then auto or cab", w: { transit: 5, safety: 3 } },
+      { label: "🚕 Office cab", w: { techhub: 2, safety: 3 } },
+      { label: "🚶 I walk the last stretch", w: { safety: 5, market: 3, transit: 3 } },
+    ],
+  },
+  {
+    id: "late", title: "How late do you usually get home?",
+    options: [
+      { label: "Before 8pm", w: { safety: 2 } },
+      { label: "Around 8–10pm", w: { safety: 4, transit: 2 } },
+      { label: "After 10pm", w: { safety: 5, transit: 3, market: 2 } },
+    ],
+  },
+  {
+    id: "hate", title: "What would ruin it for you?", hint: "Pick the one that bothers you most.",
+    options: [
+      { label: "🌙 Dark, empty streets", w: { safety: 5 } },
+      { label: "🗑️ Dirty roads & societies", w: { clean: 5, safety: 1 } },
+      { label: "🚰 Water shortage / tankers", w: { water: 5 } },
+      { label: "🌧️ Waterlogging", w: { drain: 5 } },
+      { label: "🚦 Long daily commute", w: { commute: 4, techhub: 3 } },
+    ],
+  },
+];
+export const questionsFor = (women: boolean) => (women ? QUESTIONS_WOMEN : QUESTIONS);
+
 export type Answers = { choices: Record<string, number>; office: Office };
 
 /** Sum the picked options' weights, clamped to the 0–5 scale used by the Matcher. */
-export function answersToPrefs(a: Answers): { weights: Weights; budget: number; office: Office } {
+export function answersToPrefs(a: Answers, questions: Question[] = QUESTIONS): { weights: Weights; budget: number; office: Office } {
   const weights: Weights = { ...ZERO_WEIGHTS };
   let budget = 0;
-  for (const q of QUESTIONS) {
+  for (const q of questions) {
     const o = q.options[a.choices[q.id]];
     if (!o) continue;
     if (o.budget != null) budget = o.budget;
