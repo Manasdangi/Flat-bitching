@@ -605,7 +605,7 @@ export const METRO: { name: string; line: "Yellow" | "Rapid"; lat: number; lng: 
 ];
 
 // Landmarks used to compute "nearby" for every sector. Locations are approximate.
-export type Landmark = { name: string; kind: "hospital" | "school" | "mall"; lat: number; lng: number; area: string };
+export type Landmark = { name: string; kind: "hospital" | "school" | "mall" | "tech" | "hangout"; lat: number; lng: number; area: string };
 export const LANDMARKS: Landmark[] = [
   // Hospitals
   { kind: "hospital", name: "Medanta – The Medicity", area: "Sector 38", lat: 28.4395, lng: 77.042 },
@@ -620,7 +620,6 @@ export const LANDMARKS: Landmark[] = [
   { kind: "hospital", name: "Signature Advanced Super Speciality Hospital", area: "Sector 37D", lat: 28.4520, lng: 76.9925 },
   // Malls & markets
   { kind: "mall", name: "Ambience Mall", area: "Sector 24 (NH-48)", lat: 28.5040, lng: 77.0960 },
-  { kind: "mall", name: "Cyber Hub", area: "DLF Cyber City", lat: 28.4955, lng: 77.0890 },
   { kind: "mall", name: "MG Road malls (Sahara, MGF Mega City, DLF Grand)", area: "Sector 28", lat: 28.4800, lng: 77.0825 },
   { kind: "mall", name: "MGF Metropolitan Mall", area: "Sector 25", lat: 28.4810, lng: 77.0860 },
   { kind: "mall", name: "Galleria Market", area: "DLF Phase 4", lat: 28.4675, lng: 77.0830 },
@@ -629,12 +628,32 @@ export const LANDMARKS: Landmark[] = [
   { kind: "mall", name: "Omaxe Celebration Mall", area: "Sohna Road", lat: 28.4140, lng: 77.0440 },
   { kind: "mall", name: "Spazedge Mall", area: "Sector 49", lat: 28.4110, lng: 77.0480 },
   { kind: "mall", name: "Airia Mall", area: "Sector 68", lat: 28.3815, lng: 77.0530 },
-  { kind: "mall", name: "Worldmark", area: "Sector 65", lat: 28.3960, lng: 77.0720 },
   { kind: "mall", name: "Elan Epic", area: "Sector 70", lat: 28.3920, lng: 77.0290 },
   { kind: "mall", name: "Elan Miracle", area: "Sector 84", lat: 28.4040, lng: 76.9640 },
   { kind: "mall", name: "Iris Broadway", area: "Sector 85", lat: 28.4120, lng: 76.9700 },
   { kind: "mall", name: "Ansal Plaza", area: "Palam Vihar", lat: 28.5070, lng: 77.0440 },
   { kind: "mall", name: "Star Mall", area: "Sector 30", lat: 28.4590, lng: 77.0600 },
+  // Tech & office hubs
+  { kind: "tech", name: "DLF Cyber City", area: "DLF Phase 2", lat: 28.4950, lng: 77.0885 },
+  { kind: "tech", name: "DLF Cyber Park", area: "Sector 25A, DLF Phase 3", lat: 28.4905, lng: 77.0965 },
+  { kind: "tech", name: "Udyog Vihar (Phases 1–5)", area: "Udyog Vihar", lat: 28.5050, lng: 77.0800 },
+  { kind: "tech", name: "Global Business Park", area: "MG Road, Sector 26", lat: 28.4805, lng: 77.1000 },
+  { kind: "tech", name: "Golf Course Road office towers", area: "Sectors 42–43", lat: 28.4560, lng: 77.0990 },
+  { kind: "tech", name: "Sector 44 offices", area: "Sector 44", lat: 28.4525, lng: 77.0780 },
+  { kind: "tech", name: "Unitech Cyber Park", area: "Sector 39", lat: 28.4440, lng: 77.0575 },
+  { kind: "tech", name: "Vatika Business Park & Sohna Road towers", area: "Sectors 48–49", lat: 28.4145, lng: 77.0455 },
+  { kind: "tech", name: "Golf Course Extension office belt", area: "Sector 62", lat: 28.4120, lng: 77.0880 },
+  { kind: "tech", name: "International Tech Park Gurgaon (ITPG)", area: "Sector 59", lat: 28.4030, lng: 77.1070 },
+  { kind: "tech", name: "SPR business parks (Vesta, Spaze)", area: "Sectors 69–71", lat: 28.3880, lng: 77.0260 },
+  // Happening places
+  { kind: "hangout", name: "Cyber Hub", area: "DLF Cyber City", lat: 28.4955, lng: 77.0890 },
+  { kind: "hangout", name: "Sector 29 market (pubs & breweries)", area: "Sector 29", lat: 28.4670, lng: 77.0630 },
+  { kind: "hangout", name: "Leisure Valley Park", area: "Sector 29", lat: 28.4695, lng: 77.0655 },
+  { kind: "hangout", name: "32nd Avenue", area: "Sector 15, NH-48", lat: 28.4570, lng: 77.0470 },
+  { kind: "hangout", name: "Golf Course Road nightlife", area: "Sector 43 / South Point", lat: 28.4500, lng: 77.0990 },
+  { kind: "hangout", name: "Sohna Road nightlife (ILD Trade Centre)", area: "Sector 47", lat: 28.4215, lng: 77.0410 },
+  { kind: "hangout", name: "Worldmark", area: "Sector 65", lat: 28.3960, lng: 77.0720 },
+  { kind: "hangout", name: "Aravalli Biodiversity Park", area: "MG Road", lat: 28.4895, lng: 77.1045 },
   // Schools
   { kind: "school", name: "Delhi Public School", area: "Sector 45", lat: 28.4450, lng: 77.0650 },
   { kind: "school", name: "Delhi Public School", area: "Sushant Lok", lat: 28.4600, lng: 77.0860 },
@@ -664,13 +683,12 @@ export const SOURCES = [
   { label: "NoBroker – Top projects on Dwarka Expressway", url: "https://www.nobroker.in/blog/top-projects-on-dwarka-expressway" },
   { label: "Sobha – SPR investment guide", url: "https://www.sobha.com/blog/southern-peripheral-road-spr-gurgaon-investment-guide/" },
   { label: "PropertyWala – Sector 71", url: "https://propertywala.com/sector_71_gurgaon" },
+  { label: "NoBroker – IT parks in Gurgaon", url: "https://www.nobroker.in/blog/top-it-parks-in-gurgaon/" },
+  { label: "Holidify – Nightlife in Gurgaon", url: "https://www.holidify.com/pages/nightlife-in-gurgaon-474.html" },
+  { label: "The Hosteller – Places to visit in Gurgaon", url: "https://www.thehosteller.com/blogs/places-to-visit-in-Gurgaon" },
   { label: "RentOk – Gurgaon rental guide (rent calibration)", url: "https://rentok.com/blogs/market-trends/best-areas-to-live-in-gurgaon-ultimate-rental-guide" },
 ];
 
-export const OFFICES: { id: string; name: string; lat: number; lng: number }[] = [
-  { id: "cyber", name: "Cyber City", lat: 28.495, lng: 77.0885 },
-  { id: "gcr", name: "Golf Course Road (Sec 42–43)", lat: 28.456, lng: 77.099 },
-  { id: "udyog", name: "Udyog Vihar", lat: 28.505, lng: 77.08 },
-  { id: "sohna", name: "Sohna Road (Sec 48–49)", lat: 28.415, lng: 77.045 },
-  { id: "gcer", name: "Golf Course Ext (Sec 62)", lat: 28.41, lng: 77.088 },
-];
+export const OFFICES: { id: string; name: string; lat: number; lng: number }[] = LANDMARKS
+  .filter((l) => l.kind === "tech")
+  .map((l, i) => ({ id: `hub${i}`, name: l.name, lat: l.lat, lng: l.lng }));

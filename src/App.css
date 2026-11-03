@@ -103,3 +103,5 @@ select { max-width: 100%; }
 .map.z11 .sec-label, .map.z12 .sec-label { font-size: 8.5px; }
 .map.z13 .sec-label { font-size: 10px; }
 .map.z14 .sec-label { font-size: 12px; }
+.legend label { display: inline-flex; align-items: center; gap: 2px; cursor: pointer; }
+.legend input { margin: 0 2px 0 0; width: 13px; height: 13px; accent-color: var(--accent); }

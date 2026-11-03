@@ -19,6 +19,7 @@ const PRESETS: { label: string; w: Partial<Weights> }[] = [
   { label: "👨‍👩‍👧 Family", w: { safety: 4, green: 4, clean: 4, drain: 3, schools: 4, health: 3 } },
   { label: "💸 Budget", w: { afford: 5, commute: 3, transit: 2 } },
   { label: "🌿 Clean air", w: { air: 5, green: 4, clean: 3 } },
+  { label: "🧑‍💻 Young techie", w: { techhub: 5, nightlife: 4, transit: 3, afford: 2 } },
 ];
 
 export default function Matcher(p: Props) {

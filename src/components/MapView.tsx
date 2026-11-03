@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
-import { METRO, SECTORS, sectorById } from "../data/sectors";
+import { LANDMARKS, METRO, SECTORS, sectorById } from "../data/sectors";
 import { matchColor, matchScore, type Office, type Weights } from "../lib/score";
 
 type Props = {
@@ -10,6 +10,7 @@ type Props = {
   office: Office;
   pickingOffice: boolean;
   onPickOffice: (lat: number, lng: number) => void;
+  layers: { tech: boolean; hangout: boolean };
 };
 
 function FlyTo({ id }: { id: string | null }) {
@@ -42,7 +43,7 @@ function ZoomWatch({ onZoom }: { onZoom: (z: number) => void }) {
   return null;
 }
 
-export default function MapView({ selectedId, onSelect, weights, office, pickingOffice, onPickOffice }: Props) {
+export default function MapView({ selectedId, onSelect, weights, office, pickingOffice, onPickOffice, layers }: Props) {
   const [zoom, setZoom] = useState(12);
   const base = zoom >= 14 ? 15 : zoom >= 13 ? 12 : 9;
   return (
@@ -78,6 +79,13 @@ export default function MapView({ selectedId, onSelect, weights, office, picking
           </CircleMarker>
         );
       })}
+
+      {LANDMARKS.filter((l) => (l.kind === "tech" && layers.tech) || (l.kind === "hangout" && layers.hangout)).map((l) => (
+        <CircleMarker key={l.kind + l.name} center={[l.lat, l.lng]} radius={zoom >= 13 ? 8 : 6}
+          pathOptions={{ color: "#fff", weight: 1.5, fillColor: l.kind === "tech" ? "#0f172a" : "#db2777", fillOpacity: 0.95 }}>
+          <Tooltip direction="top">{l.kind === "tech" ? "💼" : "🎉"} {l.name} · {l.area}</Tooltip>
+        </CircleMarker>
+      ))}
 
       {office && (
         <CircleMarker center={[office.lat, office.lng]} radius={10}

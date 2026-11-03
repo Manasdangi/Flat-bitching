@@ -69,7 +69,7 @@ export default function SectorPanel({ id, weights, office, onClose, inCompare, o
 
       <h3>Nearby</h3>
       <div className="nearby">
-        {([["hospital", "🏥 Hospitals"], ["school", "🎒 Schools"], ["mall", "🛍️ Malls & markets"]] as const).map(([k, label]) => {
+        {([["tech", "💼 Tech & office hubs"], ["hangout", "🎉 Happening places"], ["hospital", "🏥 Hospitals"], ["school", "🎒 Schools"], ["mall", "🛍️ Malls & markets"]] as const).map(([k, label]) => {
           const list = nearby(s, k);
           return (
             <div key={k}>

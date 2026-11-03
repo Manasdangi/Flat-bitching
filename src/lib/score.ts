@@ -13,6 +13,8 @@ export const PRIORITIES = [
   { key: "afford", label: "Affordable", icon: "💰" },
   { key: "health", label: "Near a big hospital", icon: "🏥" },
   { key: "schools", label: "Good schools nearby", icon: "🎒" },
+  { key: "techhub", label: "Near a tech hub", icon: "💼" },
+  { key: "nightlife", label: "Happening places nearby", icon: "🎉" },
   { key: "commute", label: "Short office commute", icon: "🏢" },
 ] as const;
 
@@ -61,6 +63,12 @@ export const schoolScore = (sec: Sector) => {
   return within3 >= 3 ? 5 : within3 === 2 ? 4 : within3 === 1 ? 3 : nearby(sec, "school", 1, 6).length ? 2 : 1;
 };
 
+export const techScore = (sec: Sector) => band(nearby(sec, "tech", 1, 99)[0]?.km ?? 99, [1.5, 3, 5, 8]);
+export const hangoutScore = (sec: Sector) => {
+  const n = nearby(sec, "hangout", 10, 3).length;
+  return n >= 3 ? 5 : n === 2 ? 4 : n === 1 ? 3 : nearby(sec, "hangout", 1, 6).length ? 2 : 1;
+};
+
 export const transitScore = (sec: Sector) => band(nearestMetro(sec).km, [1, 2, 3.5, 6]);
 export const affordScore = (sec: Sector) => band((sec.rent2bhk[0] + sec.rent2bhk[1]) / 2, [28, 36, 48, 70]);
 
@@ -78,6 +86,8 @@ export function allScores(sec: Sector, office: Office): Record<PriorityKey, numb
     afford: affordScore(sec),
     health: healthScore(sec),
     schools: schoolScore(sec),
+    techhub: techScore(sec),
+    nightlife: hangoutScore(sec),
     commute: commute(sec, office)?.score ?? null,
   };
 }

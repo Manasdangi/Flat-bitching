@@ -34,6 +34,7 @@ export default function App() {
     "gff-prefs", { office: null, budget: 0, compare: [] },
   );
   const [pickingOffice, setPickingOffice] = useState(false);
+  const [layers, setLayers] = usePersisted("gff-layers", { tech: true, hangout: true });
 
   useEffect(() => {
     const on = () => setRoute(parseHash());
@@ -76,6 +77,7 @@ export default function App() {
             weights={weights}
             office={prefs.office}
             pickingOffice={pickingOffice}
+            layers={layers}
             onPickOffice={(lat, lng) => { setOffice({ name: "My office (pinned)", lat, lng }); setPickingOffice(false); }}
           />
           {pickingOffice && <div className="map-hint">Tap your office location on the map</div>}
@@ -84,6 +86,8 @@ export default function App() {
             <span><i style={{ background: "hsl(130 75% 45%)" }} />High match</span>
             <span><i className="dot" style={{ background: "#ca8a04" }} />Yellow</span>
             <span><i className="dot" style={{ background: "#0284c7" }} />Rapid</span>
+            <label><input type="checkbox" checked={layers.tech} onChange={(e) => setLayers((l) => ({ ...l, tech: e.target.checked }))} /><i className="dot" style={{ background: "#0f172a" }} />Tech hubs</label>
+            <label><input type="checkbox" checked={layers.hangout} onChange={(e) => setLayers((l) => ({ ...l, hangout: e.target.checked }))} /><i className="dot" style={{ background: "#db2777" }} />Hangouts</label>
           </div>
         </div>
 
