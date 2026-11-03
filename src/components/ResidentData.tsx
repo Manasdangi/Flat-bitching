@@ -5,7 +5,7 @@ import {
   addRentReport, communityEnabled, HOME_LABEL, loadPolls, loadRentSummary, POLLS, vote, votedAlready, WOMEN_POLLS,
   type HomeType, type PollAnswer, type PollCounts, type PollKey, type RentRow,
 } from "../lib/community";
-import { RENT_CHECK, SRC } from "../data/evidence";
+import { RENT_CHECK } from "../data/evidence";
 import { womenMode } from "../lib/store";
 import { track } from "../lib/track";
 
@@ -110,7 +110,7 @@ export function RentReports({ sector }: { sector: Sector }) {
       <h3>💬 What residents actually pay</h3>
       {RENT_CHECK[sector.id] && (() => {
         const r = RENT_CHECK[sector.id];
-        return <p className="muted small-txt">Asking rents for 2 BHK on <a className="link" href={SRC.sqyRent.url} target="_blank" rel="noreferrer">Square Yards</a> ({r.date}): {r.median ? <>typical <b>₹{r.median}k</b>, </> : null}₹{r.min}k–₹{r.max}k{r.n ? ` across ${r.n} listings` : ""}, about ₹{r.sqft}/sq ft. Asking prices are usually a little above what people finally pay.</p>;
+        return <p className="muted small-txt">Asking rents for 2 BHK on <a className="link" href={`https://www.squareyards.com/rent/2-bhk-for-rent-in-sector-${sector.id}-gurgaon`} target="_blank" rel="noreferrer">Square Yards</a> ({r.date}): {r.median ? <>typical <b>₹{r.median}k</b>, </> : null}₹{r.min}k–₹{r.max}k{r.n ? ` across ${r.n} listings` : ""}, about ₹{r.sqft}/sq ft. Asking prices are usually a little above what people finally pay.</p>;
       })()}
       {rows == null ? <p className="muted">Loading…</p> : rows.length === 0 ? (
         <p className="muted">No reports yet. Be the first to share what you pay (anonymous).</p>

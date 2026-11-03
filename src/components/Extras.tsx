@@ -25,6 +25,15 @@ export function AqiBadge({ lat, lng }: { lat: number; lng: number }) {
   );
 }
 
+const HINTS: Record<string, string> = {
+  rent: "What should it say? e.g. 2BHK in Sobha City is ₹45–55k now",
+  society: "Which society is missing or wrong, and what should it say?",
+  water_flood: "What did you see? e.g. water comes daily here, or this lane floods every monsoon (add a link if you have one)",
+  safety: "What should it say? e.g. the road near the metro is well lit and busy until 11pm",
+  scores: "Which score feels off, and why?",
+  location: "What is wrong with the location or boundary?",
+};
+
 const TOPICS = [
   { v: "rent", l: "Rent is wrong" },
   { v: "society", l: "Society missing or wrong" },
@@ -68,7 +77,7 @@ export function SuggestFix({ sectorId, defaultTopic = "rent", label = "✏️ Su
           <select value={topic} onChange={(e) => setTopic(e.target.value)}>
             {TOPICS.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}
           </select>
-          <textarea rows={3} maxLength={1000} value={msg} placeholder="What should it say? e.g. 2BHK in Sobha City is ₹45–55k now"
+          <textarea rows={3} maxLength={1000} value={msg} placeholder={HINTS[topic] ?? "What should it say?"}
             onChange={(e) => setMsg(e.target.value)} />
           <div className="row">
             <button className="btn small" disabled={state === "saving"}>{state === "saving" ? "Sending…" : "Send"}</button>

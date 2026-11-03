@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { OFFICES, SECTORS, sectorById } from "../data/sectors";
 import { answersToPrefs, questionsFor, topPicks } from "../lib/quiz";
 import { womenMode } from "../lib/store";
@@ -86,6 +86,12 @@ export function QuizResult({ params, weights, office, budget, onSelect }: {
   const live = !shared && Object.values(weights).some(Boolean) ? topPicks(weights, office, budget) : null;
   const entries: (ResultEntry & { reasons?: string[] })[] = live ?? fromUrl;
   const [msg, setMsg] = useState("");
+
+  // Keep the address bar in step with what's shown: drive times load after the quiz ends and can reorder the picks.
+  const liveKey = live ? encodeResult(live) : null;
+  useEffect(() => {
+    if (liveKey && params.get("r") !== liveKey) navigate(`/quiz/result?r=${encodeURIComponent(liveKey)}`, true);
+  }, [liveKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!entries.length) {
     return (

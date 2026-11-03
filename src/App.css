@@ -263,3 +263,5 @@ a.btn { text-decoration: none; display: inline-block; }
 .tag.estimate { background: var(--warn-bg); color: var(--warn); }
 .tag.residents { background: var(--raise); color: var(--text); border: 1px solid var(--line); }
 .more-reports { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 5px; font-size: 13px; }
+.safety-list.method { list-style: disc; padding-left: 20px; display: block; }
+.safety-list.method li { margin: 7px 0; font-size: 14px; line-height: 1.45; }
