@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/share",
+      "destination": "/api/share"
+    },
+    {
       "source": "/((?!api/|share|fonts/|assets/|sw\\.js|manifest\\.webmanifest|sitemap\\.xml|robots\\.txt|og\\.png|favicon\\.svg|icon-.*\\.png|apple-touch-icon\\.png).*)",
       "destination": "/index.html"
     }
