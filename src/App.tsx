@@ -55,6 +55,7 @@ export default function App() {
   const saved = shortlist.use();
   const [layers, setLayers] = usePersisted("gff-layers", { tech: true, hangout: true });
   const [sheet, setSheet] = useState<Sheet>("half");
+  const [legendOpen, setLegendOpen] = useState(() => typeof window === "undefined" || window.innerWidth > 860);
   const panelRef = useRef<HTMLElement>(null);
 
   // Real drive times for the selected hub (custom pins fall back to estimates).
@@ -81,7 +82,7 @@ export default function App() {
   const setOffice2 = (office2: Office) => setPrefs((p) => ({ ...p, office2 }));
   const setCompare = (compare: string[]) => setPrefs((p) => ({ ...p, compare }));
   const selectedId = route.view === "sector" ? route.id : null;
-  const tab = route.view === "sector" || route.view === "society" ? "explore" : route.view === "quiz" || route.view === "quizResult" ? "match" : route.view;
+  const tab = route.view === "sector" || route.view === "society" ? "explore" : route.view === "quizResult" ? "quiz" : route.view;
 
   // Bottom-sheet drag on phones: swipe up/down on the handle.
   const touchY = useRef<number | null>(null);
@@ -99,13 +100,12 @@ export default function App() {
           </div>
         </a>
         <SearchBar onSelect={select} />
-        <nav className="tabs">
-          <a className={tab === "explore" ? "on" : ""} {...linkProps("/")}>🗺️ Explore</a>
-          <a className={tab === "match" ? "on" : ""} {...linkProps("/match")}>🎯 Match</a>
-          <a className={tab === "compare" ? "on" : ""} {...linkProps("/compare")}>
-            ⚖️ Compare{prefs.compare.length ? ` (${prefs.compare.length})` : ""}
-          </a>
-          <a className={tab === "shortlist" ? "on" : ""} {...linkProps("/shortlist")}>♥{saved.length ? ` ${saved.length}` : " Saved"}</a>
+        <nav className="tabs" aria-label="Main">
+          <a className={tab === "explore" ? "on" : ""} {...linkProps("/")}><i>🗺️</i><span>Explore</span></a>
+          <a className={tab === "quiz" ? "on" : ""} {...linkProps("/quiz")}><i>⚡</i><span>Quiz</span></a>
+          <a className={tab === "match" ? "on" : ""} {...linkProps("/match")}><i>🎯</i><span>Match</span></a>
+          <a className={tab === "compare" ? "on" : ""} {...linkProps("/compare")}><i>⚖️</i><span>Compare{prefs.compare.length ? ` (${prefs.compare.length})` : ""}</span></a>
+          <a className={tab === "shortlist" ? "on" : ""} {...linkProps("/shortlist")}><i>♥</i><span>Saved{saved.length ? ` (${saved.length})` : ""}</span></a>
         </nav>
       </header>
 
@@ -126,7 +126,9 @@ export default function App() {
             }}
           />
           {pickingOffice && <div className="map-hint">Tap your office location on the map</div>}
-          <div className="legend">
+          <details className="legend" open={legendOpen} onToggle={(e) => setLegendOpen((e.target as HTMLDetailsElement).open)}>
+            <summary>Map key</summary>
+            <div className="legend-body">
             <span><i style={{ background: "hsl(0 75% 45%)" }} />Low</span>
             <span><i style={{ background: "hsl(130 75% 45%)" }} />High match</span>
             <span><i className="dot" style={{ background: "#ca8a04" }} />Yellow</span>
@@ -134,6 +136,7 @@ export default function App() {
             <label><input type="checkbox" checked={layers.tech} onChange={(e) => setLayers((l) => ({ ...l, tech: e.target.checked }))} /><i className="dot" style={{ background: "#0f172a" }} />Tech hubs</label>
             <label><input type="checkbox" checked={layers.hangout} onChange={(e) => setLayers((l) => ({ ...l, hangout: e.target.checked }))} /><i className="dot" style={{ background: "#db2777" }} />Hangouts</label>
           </div>
+          </details>
         </div>
 
         <aside className="panel" ref={panelRef}>
@@ -184,13 +187,13 @@ export default function App() {
             <Compare ids={prefs.compare} setIds={setCompare} weights={weights} office={prefs.office} onSelect={select} />
           ) : (
             <div className="panel-body">
-              <h2>Explore Gurgaon, sector by sector</h2>
-              <p>Tap a sector on the map or search above to see rents, metro access, societies, PGs, live air quality and resident reviews.</p>
-              <a className="btn" {...linkProps("/quiz")}>⚡ Find your sector in 60 seconds</a>
-              <p>Not sure where to start? Open <a className="link" {...linkProps("/match")}>🎯 Match</a>, set what matters to you, and the map lights up with your best sectors.</p>
-              <div className="quick">
-                <button className="btn small ghost" onClick={() => document.querySelector<HTMLButtonElement>(".locate-btn")?.click()}>📍 Which sector am I in?</button>
-                <a className="btn small ghost" {...linkProps("/shortlist")}>♥ My shortlist{saved.length ? ` (${saved.length})` : ""}</a>
+              <h2>Where should you live in Gurgaon?</h2>
+              <p className="muted">Tap a sector on the map, search above, or let us pick for you.</p>
+              <div className="actions-grid">
+                <a className="action-card primary" {...linkProps("/quiz")}><b>⚡ 60-second quiz</b><span>Answer 6 taps, get your top 3 sectors</span></a>
+                <a className="action-card" {...linkProps("/match")}><b>🎯 Set priorities</b><span>Safety, metro, air, commute, budget</span></a>
+                <button className="action-card" onClick={() => document.querySelector<HTMLButtonElement>(".locate-btn")?.click()}><b>📍 Where am I?</b><span>Find the sector you're standing in</span></button>
+                <a className="action-card" {...linkProps("/shortlist")}><b>♥ My shortlist</b><span>{saved.length ? `${saved.length} saved` : "Nothing saved yet"}</span></a>
               </div>
               <LatestReviews />
               <h3>Browse by zone</h3>
