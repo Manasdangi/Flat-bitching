@@ -8,6 +8,7 @@ import Matcher from "./components/Matcher";
 import ThemeToggle from "./components/ThemeToggle";
 import WomenGuide from "./components/WomenGuide";
 import RentSafety from "./components/RentSafety";
+import DataMethod from "./components/DataMethod";
 import { Quiz, QuizResult } from "./components/Quiz";
 import Compare from "./components/Compare";
 import SocietyPage, { SocietyList } from "./components/SocietyPage";
@@ -44,6 +45,7 @@ function seo(route: Route) {
   if (route.view === "match") return { title: `Find your best Gurgaon sector | ${SITE}`, desc: "Set your priorities (women safety, metro, clean air, schools, commute, budget) and see which Gurgaon sectors match best." };
   if (route.view === "quiz" || route.view === "quizResult") return { title: `Find your best Gurgaon sector in 60 seconds | ${SITE}`, desc: "Answer 6 quick questions and get your top 3 Gurgaon sectors, with a shareable result card." };
   if (route.view === "women") return { title: `Women's guide to renting and PG safety in Gurgaon | ${SITE}`, desc: "Checklists for single working women and PG residents: judging an area at night, PG safety checks, questions to ask landlords and getting home safely." };
+  if (route.view === "data") return { title: `How we get our data | ${SITE}`, desc: "Where the Gurgaon Flat Finder data comes from, what is an estimate, how resident votes are protected from spam, and its known limits." };
   if (route.view === "rentSafety") return { title: `Rent safely in Gurgaon: tenant checklist | ${SITE}`, desc: "Avoid deposit scams and bad agreements: what to check before paying, what Haryana law says, and what to put in your rent agreement." };
   if (route.view === "shortlist") return { title: `My shortlist | ${SITE}`, desc: "Your saved Gurgaon sectors and societies, with notes. Share the list with your partner or flatmates." };
   if (route.view === "compare") return { title: `Compare Gurgaon sectors | ${SITE}`, desc: "Compare Gurgaon sectors side by side: rent, metro, commute, hospitals and scores." };
@@ -96,7 +98,7 @@ export default function App() {
   const setOffice2 = (office2: Office) => setPrefs((p) => ({ ...p, office2 }));
   const setCompare = (compare: string[]) => setPrefs((p) => ({ ...p, compare }));
   const selectedId = route.view === "sector" ? route.id : null;
-  const tab = route.view === "sector" || route.view === "society" || route.view === "rentSafety" || route.view === "women" ? "explore" : route.view === "quizResult" ? "quiz" : route.view;
+  const tab = route.view === "sector" || route.view === "society" || route.view === "rentSafety" || route.view === "women" || route.view === "data" ? "explore" : route.view === "quizResult" ? "quiz" : route.view;
 
   // Bottom-sheet drag on phones: swipe up/down on the handle.
   const touchY = useRef<number | null>(null);
@@ -199,6 +201,8 @@ export default function App() {
             <QuizResult params={new URLSearchParams(location.search)} weights={weights} office={prefs.office} budget={prefs.budget} onSelect={select} />
           ) : route.view === "women" ? (
             <WomenGuide />
+          ) : route.view === "data" ? (
+            <DataMethod />
           ) : route.view === "rentSafety" ? (
             <RentSafety />
           ) : route.view === "shortlist" ? (
@@ -215,6 +219,7 @@ export default function App() {
                 <a className="action-card" {...linkProps("/match")}><b>🎯 Set priorities</b><span>Safety, metro, air, commute, budget</span></a>
                 <button className="action-card" onClick={() => document.querySelector<HTMLButtonElement>(".locate-btn")?.click()}><b>📍 Where am I?</b><span>Find the sector you're standing in</span></button>
                 <a className="action-card" {...linkProps("/rent-safety")}><b>🛡️ Rent safely</b><span>Scam checks, deposit and agreement tips</span></a>
+                <a className="action-card" {...linkProps("/data")}><b>🔎 How we get our data</b><span>Sources, estimates and known limits</span></a>
                 <a className="action-card" {...linkProps("/shortlist")}><b>♥ My shortlist</b><span>{saved.length ? `${saved.length} saved` : "Nothing saved yet"}</span></a>
               </div>
               <p className="muted small-txt mode-line">

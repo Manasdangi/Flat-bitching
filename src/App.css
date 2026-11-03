@@ -255,3 +255,10 @@ a.btn { text-decoration: none; display: inline-block; }
 .women-list { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; font-size: 14px; }
 .action-card.women { border-color: #f472b6; }
 .mode-line { margin-top: 10px; }
+
+/* data trust */
+.trust { margin: 14px 0 8px; }
+.trust ul { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 6px; font-size: 13.5px; }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px; margin-right: 4px; background: var(--badge-bg); color: var(--accent); }
+.tag.estimate { background: var(--warn-bg); color: var(--warn); }
+.tag.residents { background: var(--raise); color: var(--text); border: 1px solid var(--line); }

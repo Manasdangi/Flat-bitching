@@ -29,14 +29,16 @@ const TOPICS = [
   { v: "rent", l: "Rent is wrong" },
   { v: "society", l: "Society missing or wrong" },
   { v: "scores", l: "Scores feel off" },
+  { v: "water_flood", l: "Water or flood info is wrong" },
+  { v: "safety", l: "Safety info is wrong" },
   { v: "location", l: "Location or boundary wrong" },
   { v: "other", l: "Something else" },
 ];
 
 /** Let residents suggest data fixes; the owner reviews them in Supabase. */
-export function SuggestFix({ sectorId }: { sectorId: string }) {
+export function SuggestFix({ sectorId, defaultTopic = "rent", label = "✏️ Suggest a correction" }: { sectorId: string; defaultTopic?: string; label?: string }) {
   const [open, setOpen] = useState(false);
-  const [topic, setTopic] = useState("rent");
+  const [topic, setTopic] = useState(defaultTopic);
   const [msg, setMsg] = useState("");
   const [state, setState] = useState<"idle" | "saving" | "done">("idle");
   const [err, setErr] = useState("");
@@ -60,7 +62,7 @@ export function SuggestFix({ sectorId }: { sectorId: string }) {
   return (
     <div className="fix">
       {!open ? (
-        <button className="link" onClick={() => setOpen(true)}>✏️ Suggest a correction</button>
+        <button className="link" onClick={() => setOpen(true)}>{label}</button>
       ) : (
         <form className="review-form" onSubmit={send}>
           <select value={topic} onChange={(e) => setTopic(e.target.value)}>

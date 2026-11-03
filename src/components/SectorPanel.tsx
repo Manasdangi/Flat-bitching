@@ -3,6 +3,7 @@ import { linkProps } from "../lib/router";
 import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type Office, type Weights, COMMUNITY_MIN_VOTES, communityFor } from "../lib/score";
 import { isNamedSociety, slugify } from "../lib/societies";
 import { AqiBadge, SuggestFix } from "./Extras";
+import DataTrust from "./DataTrust";
 import Reviews from "./Reviews";
 import { SaveButton } from "./Shortlist";
 import { FLOOD, FLOOD_SOURCE, WATER, WATER_SOURCE } from "../data/risk";
@@ -136,6 +137,7 @@ export default function SectorPanel({ id, weights, office, office2, onClose, inC
           : <span key={x} className="chip">{x}</span>)}
       </div>
 
+      <DataTrust sectorId={s.id} />
       <p className="note">
         Sector outlines and drive times come from OpenStreetMap. Rents are rough ranges from 2025–26 listings, nearby places are straight-line
         distances, and scores are editorial estimates until enough residents rate them. Visit at night and in monsoon before renting.
@@ -155,7 +157,8 @@ function RiskCard({ id }: { id: string }) {
       {w && <p>🚰 <b>{w.score === 1 ? "Severe water shortage reported." : "Water shortages reported."}</b> {w.note} <small className="muted">Ask the society about tanker costs before you sign.</small></p>}
       {f && <p>☔ <b>{f.level === "high" ? "High waterlogging risk." : "Waterlogging risk."}</b> {f.note} <small className="muted">Avoid basement or ground-floor flats here, and check for a stilt or pump.</small></p>}
       {!f && !w && <p className="muted">No water or flooding problems reported for this sector in the sources we checked. That is not a guarantee, so ask current residents.</p>}
-      <small className="muted">Sources: <a href={WATER_SOURCE.url} target="_blank" rel="noreferrer">{WATER_SOURCE.label}</a>, <a href={FLOOD_SOURCE.url} target="_blank" rel="noreferrer">{FLOOD_SOURCE.label}</a>. Reports, not official data. Tell us if something's off using "Suggest a fix" below.</small>
+      <small className="muted">Sources: <a href={WATER_SOURCE.url} target="_blank" rel="noreferrer">{WATER_SOURCE.label}</a>, <a href={FLOOD_SOURCE.url} target="_blank" rel="noreferrer">{FLOOD_SOURCE.label}</a>. Reports, not official data. </small>
+      <SuggestFix sectorId={id} defaultTopic="water_flood" label="⚠️ Report wrong water or flood info" />
     </div>
   );
 }

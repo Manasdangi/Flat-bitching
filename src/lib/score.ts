@@ -111,8 +111,14 @@ export function setCommunity(next: Map<string, Community>) {
   next.forEach((v, k) => community.set(k, v));
 }
 export const communityFor = (sectorId: string) => community.get(sectorId);
-const blend = (prior: number, c?: { mean: number; n: number }) =>
-  c && c.n >= COMMUNITY_MIN_VOTES ? Math.round(((prior * SHRINK_K + c.mean * c.n) / (SHRINK_K + c.n)) * 10) / 10 : prior;
+// Residents can move a score by at most this much, so a burst of votes can't flip a sector's picture.
+export const MAX_COMMUNITY_SHIFT = 1.2;
+const blend = (prior: number, c?: { mean: number; n: number }) => {
+  if (!c || c.n < COMMUNITY_MIN_VOTES) return prior;
+  const raw = (prior * SHRINK_K + c.mean * c.n) / (SHRINK_K + c.n);
+  const capped = Math.max(prior - MAX_COMMUNITY_SHIFT, Math.min(prior + MAX_COMMUNITY_SHIFT, raw));
+  return Math.round(capped * 10) / 10;
+};
 
 export function allScores(sec: Sector, office: Office): Record<PriorityKey, number | null> {
   const cm = community.get(sec.id);

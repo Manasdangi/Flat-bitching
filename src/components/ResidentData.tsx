@@ -9,6 +9,7 @@ import { womenMode } from "../lib/store";
 import { track } from "../lib/track";
 
 const MIN_POLL = 5; // votes needed before we show percentages
+const SOLID_POLL = 15; // below this, label it an early signal
 const MIN_RENT = 3; // reports needed before we show a rent figure
 const inr = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
 const ANSWERS: { v: PollAnswer; l: string }[] = [{ v: "yes", l: "Yes" }, { v: "sometimes", l: "Sometimes" }, { v: "no", l: "No" }];
@@ -42,7 +43,7 @@ export function ResidentPolls({ sectorId }: { sectorId: string }) {
   return (
     <div className="community">
       <h3>🗳️ Ask residents</h3>
-      <p className="muted small-txt">One tap each, anonymous. Answer only if you live or have lived here. Once a question has 5+ votes, residents' answers start adjusting this sector's score.</p>
+      <p className="muted small-txt">One tap each, anonymous. Answer only if you live or have lived here. Once a question has 5+ votes, residents' answers start adjusting this sector's score (by at most ~1 point).</p>
       {[...POLLS].sort((a, b) => (women ? Number(WOMEN_POLLS.includes(b.key)) - Number(WOMEN_POLLS.includes(a.key)) : 0)).map((p) => {
         const c = counts?.[p.key];
         const total = c ? c.yes + c.sometimes + c.no : 0;
@@ -58,7 +59,7 @@ export function ResidentPolls({ sectorId }: { sectorId: string }) {
               </div>
             ) : null}
             <small className="muted">
-              {total >= MIN_POLL && c ? `${Math.round((c.yes / total) * 100)}% yes · ${Math.round((c.sometimes / total) * 100)}% sometimes · ${Math.round((c.no / total) * 100)}% no · ${total} votes` : total ? `${total} vote${total > 1 ? "s" : ""} so far` : "No votes yet"}
+              {total >= MIN_POLL && c ? `${Math.round((c.yes / total) * 100)}% yes · ${Math.round((c.sometimes / total) * 100)}% sometimes · ${Math.round((c.no / total) * 100)}% no · ${total} votes${total < SOLID_POLL ? " · early signal, few votes" : ""}` : total ? `${total} vote${total > 1 ? "s" : ""} so far` : "No votes yet"}
             </small>
             {!done && (
               <div className="row wrap">
@@ -114,7 +115,7 @@ export function RentReports({ sector }: { sector: Sector }) {
             <li key={r.home_type}>
               <b>{HOME_LABEL[r.home_type]}</b>
               {r.n >= MIN_RENT
-                ? <span>{inr(r.median)}/mo <small className="muted">(typical {inr(r.p25)}–{inr(r.p75)} · {r.n} reports{r.avg_deposit ? ` · deposit ~${r.avg_deposit} mo` : ""})</small></span>
+                ? <span>{inr(r.median)}/mo <small className="muted">(typical {inr(r.p25)}–{inr(r.p75)} · {r.n} reports{r.n < 8 ? ", early signal" : ""}{r.avg_deposit ? ` · deposit ~${r.avg_deposit} mo` : ""})</small></span>
                 : <small className="muted">{r.n} report{r.n > 1 ? "s" : ""} so far, need {MIN_RENT} to show a figure</small>}
             </li>
           ))}
@@ -152,7 +153,7 @@ export function RentReports({ sector }: { sector: Sector }) {
             </div>
             {err && <p className="error">{err}</p>}
             <button className="btn small" disabled={state === "saving"}>{state === "saving" ? "Saving…" : "Submit anonymously"}</button>
-            <p className="muted small-txt">No name or phone is stored. Share only a rent you actually pay or paid in the last year. One report per home type per month.</p>
+            <p className="muted small-txt">No name or phone is stored. Share only a rent you actually pay or paid in the last year. One report per home type per month. Unusually high or low figures are held for review before they show.</p>
           </form>
         </details>
       )}
