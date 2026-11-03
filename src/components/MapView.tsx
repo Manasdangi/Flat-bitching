@@ -1,8 +1,9 @@
 import { FLOOD } from "../data/risk";
 import { useEffect, useState } from "react";
-import { CircleMarker, GeoJSON, MapContainer, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
+import { CircleMarker, GeoJSON, MapContainer, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { sectorAt, useShapes } from "../lib/geo";
 import { track } from "../lib/track";
+import Basemap from "./Basemap";
 import { LANDMARKS, METRO, SECTORS, sectorById } from "../data/sectors";
 import { matchColor, matchScore, type Office, type Weights } from "../lib/score";
 
@@ -77,10 +78,7 @@ export default function MapView({ selectedId, onSelect, weights, office, office2
     {locMsg && <div className="map-hint">{locMsg}</div>}
     <MapContainer center={[28.45, 77.04]} zoom={12} className={`map z${Math.min(Math.max(zoom, 11), 14)} ${pickingOffice ? "picking" : ""}`} zoomControl={false}>
       <ZoomWatch onZoom={setZoom} />
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      <Basemap />
       <FitAll />
       <FlyTo id={selectedId} />
       <ClickPicker active={pickingOffice} onPick={onPickOffice} />
