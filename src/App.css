@@ -100,3 +100,6 @@ select { max-width: 100%; }
 .nearby ul, .sources { margin: 4px 0 0; padding-left: 18px; font-size: 14px; }
 .nearby p { margin: 4px 0 0; font-size: 13px; }
 .sources a { color: var(--accent); }
+.map.z11 .sec-label, .map.z12 .sec-label { font-size: 8.5px; }
+.map.z13 .sec-label { font-size: 10px; }
+.map.z14 .sec-label { font-size: 12px; }

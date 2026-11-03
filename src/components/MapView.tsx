@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { METRO, SECTORS, sectorById } from "../data/sectors";
 import { matchColor, matchScore, type Office, type Weights } from "../lib/score";
@@ -36,9 +36,18 @@ function FitAll() {
   return null;
 }
 
+function ZoomWatch({ onZoom }: { onZoom: (z: number) => void }) {
+  const map = useMapEvents({ zoomend: () => onZoom(map.getZoom()) });
+  useEffect(() => onZoom(map.getZoom()), [map, onZoom]);
+  return null;
+}
+
 export default function MapView({ selectedId, onSelect, weights, office, pickingOffice, onPickOffice }: Props) {
+  const [zoom, setZoom] = useState(12);
+  const base = zoom >= 14 ? 15 : zoom >= 13 ? 12 : 9;
   return (
-    <MapContainer center={[28.45, 77.04]} zoom={12} className={`map ${pickingOffice ? "picking" : ""}`} zoomControl={false}>
+    <MapContainer center={[28.45, 77.04]} zoom={12} className={`map z${Math.min(Math.max(zoom, 11), 14)} ${pickingOffice ? "picking" : ""}`} zoomControl={false}>
+      <ZoomWatch onZoom={setZoom} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -61,7 +70,7 @@ export default function MapView({ selectedId, onSelect, weights, office, picking
           <CircleMarker
             key={s.id}
             center={[s.lat, s.lng]}
-            radius={sel ? 18 : 13}
+            radius={sel ? base + 5 : base}
             pathOptions={{ color: sel ? "#111827" : "#fff", weight: sel ? 3 : 1.5, fillColor: matchColor(m), fillOpacity: 0.85 }}
             eventHandlers={{ click: () => !pickingOffice && onSelect(s.id) }}
           >
