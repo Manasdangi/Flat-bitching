@@ -1,5 +1,5 @@
 // GET /api/og?r=43:87,25:85,41:80[&format=story] → PNG share card (1200×630 or 1080×1920).
-import { ImageResponse } from "@vercel/og";
+import { ImageResponse } from "../node_modules/@vercel/og/dist/index.edge.js";
 import { parseResult } from "../src/lib/share";
 import { card } from "./_card";
 
