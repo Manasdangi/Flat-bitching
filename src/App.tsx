@@ -240,7 +240,7 @@ export default function App() {
               ))}
               <h3>Societies ({SOCIETIES.length})</h3>
               <details><summary>Show all societies</summary><SocietyList /></details>
-              <p className="note">Covers {SECTORS.length} sectors (updated {DATA_UPDATED}). Sector outlines and drive times come from OpenStreetMap; other data is researched and approximate; reviews come from real users.</p>
+              <p className="note">Covers {SECTORS.length} sectors (updated {DATA_UPDATED}). Sector outlines (some are approximate estimates) and drive times come from OpenStreetMap; other data is researched and approximate; reviews come from real users.</p>
               <h3>Sources</h3>
               <ul className="sources">
                 {SOURCES.map((x) => <li key={x.url}><a href={x.url} target="_blank" rel="noreferrer">{x.label}</a></li>)}

@@ -15,7 +15,7 @@ export default function DataMethod() {
       <section className="safety-section">
         <h3>📍 Sourced from public data</h3>
         <ul className="safety-list method">
-          <li>Sector outlines and road drive times: {ext("https://www.openstreetmap.org/copyright", "OpenStreetMap")}. Peak-hour times are our estimate on top of the road distance.</li>
+          <li>Sector outlines and road drive times: {ext("https://www.openstreetmap.org/copyright", "OpenStreetMap")}. Outlines for about 20 sectors that OpenStreetMap has no boundary for are our approximate estimates. Peak-hour times are our estimate on top of the road distance.</li>
           <li>Air quality: live model estimate from {ext("https://open-meteo.com/", "Open-Meteo")} (CAMS), not a ground monitor.</li>
           <li>Waterlogging: compiled from {ext(FLOOD_SOURCE.url, FLOOD_SOURCE.label)}. Water shortages: {ext(WATER_SOURCE.url, WATER_SOURCE.label)}. These are news and local reports, not official surveys, and they were compiled in Nov 2026.</li>
           <li>More flood reports: {ext(SRC.tribune2025.url, SRC.tribune2025.label)}, {ext(SRC.indiatv2025.url, SRC.indiatv2025.label)} and {ext(SRC.tribune2026.url, SRC.tribune2026.label)}. A sector named in these (and not already in our list) is marked medium risk.</li>
