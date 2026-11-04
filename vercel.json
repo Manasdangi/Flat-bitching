@@ -1,4 +1,17 @@
 {
+  "redirects": [
+    {
+      "source": "/((?!google35d59337b48c50a0\\.html).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "gurgaon-flat-finder.vercel.app"
+        }
+      ],
+      "destination": "https://www.kahanrahe.online/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/share",
