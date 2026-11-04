@@ -304,3 +304,4 @@ a.btn { text-decoration: none; display: inline-block; }
 .office-pick .btn { flex: none; white-space: nowrap; }
 .panel-back { position: sticky; top: 0; z-index: 5; display: block; width: 100%; text-align: left; background: var(--card); border: 0; border-bottom: 1px solid var(--line); padding: 10px 18px; font-size: 14px; font-weight: 600; color: var(--accent); cursor: pointer; }
 .quiz-opt.on { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.btn { display: inline-flex; align-items: center; justify-content: center; text-align: center; line-height: 1.2; text-decoration: none; }
