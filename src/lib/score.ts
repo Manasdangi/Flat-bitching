@@ -81,8 +81,8 @@ export function setActiveDrives(office: string | null, rows: Map<string, DriveRo
   if (office) activeDrives.set(office, rows);
 }
 // Optional second office (partner / flatmate). Commute score uses the worse of the two, so both stay fair.
-let secondOffice: Office = null;
-export function setSecondOffice(o: Office) { secondOffice = o; }
+let extraOffices: Office[] = [];
+export function setExtraOffices(list: Office[]) { extraOffices = list.filter(Boolean); }
 const PEAK = 1.8;
 
 export type Commute = { roadKm: number; minutes: number; offpeak: number | null; real: boolean; score: number };
@@ -135,7 +135,7 @@ export function allScores(sec: Sector, office: Office): Record<PriorityKey, numb
     techhub: techScore(sec),
     nightlife: hangoutScore(sec),
     commute: office
-      ? Math.min(commute(sec, office)!.score, secondOffice ? commute(sec, secondOffice)!.score : 5)
+      ? Math.min(commute(sec, office)!.score, ...extraOffices.map((o) => commute(sec, o)!.score))
       : null,
   };
 }

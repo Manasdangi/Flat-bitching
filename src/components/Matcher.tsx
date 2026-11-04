@@ -12,8 +12,10 @@ type Props = {
   setOffice: (o: Office) => void;
   office2: Office;
   setOffice2: (o: Office) => void;
-  pickingOffice: 0 | 1 | 2;
-  setPickingOffice: (v: 0 | 1 | 2) => void;
+  office3: Office;
+  setOffice3: (o: Office) => void;
+  pickingOffice: 0 | 1 | 2 | 3;
+  setPickingOffice: (v: 0 | 1 | 2 | 3) => void;
   budget: number;
   setBudget: (n: number) => void;
   onSelect: (id: string) => void;
@@ -45,6 +47,14 @@ export default function Matcher(p: Props) {
   const { salary, people } = money.use();
   const [showSalary, setShowSalary] = useState(false);
   const [showSecond, setShowSecond] = useState(Boolean(p.office2));
+  const [showThird, setShowThird] = useState(Boolean(p.office3));
+  const offices = [p.office, p.office2, p.office3].filter(Boolean) as NonNullable<Office>[];
+  // With two or three offices pinned: rank sectors by the longest of the commutes (so nobody gets a terrible one), then by the average.
+  const bestForOffices = offices.length >= 2
+    ? SECTORS.filter((s) => !p.budget || s.rent2bhk[0] <= p.budget)
+        .map((s) => { const mins = offices.map((o) => commute(s, o)!.minutes); return { s, mins, worst: Math.max(...mins), avg: mins.reduce((a, b) => a + b, 0) / mins.length }; })
+        .sort((a, b) => a.worst - b.worst || a.avg - b.avg).slice(0, 8)
+    : [];
   const active = Object.values(p.weights).some(Boolean);
   const ranked = SECTORS.map((s) => ({ s, m: matchScore(s, p.weights, p.office) ?? 0 }))
     .filter(({ s }) => !p.budget || s.rent2bhk[0] <= p.budget)
@@ -82,7 +92,33 @@ export default function Matcher(p: Props) {
           <h3>Second office <button className="link small-txt" onClick={() => { p.setOffice2(null); setShowSecond(false); }}>remove</button></h3>
           <OfficePicker value={p.office2} onChange={p.setOffice2} label="Partner / flatmate office"
             picking={p.pickingOffice === 2} onPick={() => p.setPickingOffice(p.pickingOffice === 2 ? 0 : 2)} />
-          {p.office && p.office2 && <p className="muted small-txt">The commute score now uses whichever of the two drives is longer, so the match is fair for both of you.</p>}
+          {p.office && p.office2 && <p className="muted small-txt">The commute score now uses whichever drive is longest, so the match is fair for everyone.</p>}
+        </>
+      )}
+      {showSecond && !showThird && (
+        <button className="link small-txt add-second" onClick={() => setShowThird(true)} disabled={!p.office2}>+ Add a third office</button>
+      )}
+      {showThird && (
+        <>
+          <h3>Third office <button className="link small-txt" onClick={() => { p.setOffice3(null); setShowThird(false); }}>remove</button></h3>
+          <OfficePicker value={p.office3} onChange={p.setOffice3} label="Third office"
+            picking={p.pickingOffice === 3} onPick={() => p.setPickingOffice(p.pickingOffice === 3 ? 0 : 3)} />
+        </>
+      )}
+
+      {bestForOffices.length > 0 && (
+        <>
+          <h3>Best sectors for your {offices.length} offices</h3>
+          <p className="muted small-txt">Ranked by the longest peak-hour drive, so nobody has a terrible commute. Drive times are estimates.</p>
+          <ol className="ranked">
+            {bestForOffices.map(({ s, mins, worst }) => (
+              <li key={s.id} onClick={() => p.onSelect(s.id)}>
+                <span>{s.name}<small className="muted"> · {s.zone} · ₹{s.rent2bhk[0]}–{s.rent2bhk[1]}k</small>
+                  <small className="muted commute-line">🚗 {mins.join(" / ")} min at peak</small></span>
+                <b>{worst} min</b>
+              </li>
+            ))}
+          </ol>
         </>
       )}
 

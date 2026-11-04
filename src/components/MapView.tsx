@@ -15,6 +15,7 @@ type Props = {
   pickingOffice: boolean;
   onPickOffice: (lat: number, lng: number) => void;
   office2: Office;
+  office3?: Office;
   layers: { tech: boolean; hangout: boolean; flood?: boolean };
 };
 
@@ -48,7 +49,7 @@ function ZoomWatch({ onZoom }: { onZoom: (z: number) => void }) {
   return null;
 }
 
-export default function MapView({ selectedId, onSelect, weights, office, office2, pickingOffice, onPickOffice, layers }: Props) {
+export default function MapView({ selectedId, onSelect, weights, office, office2, office3, pickingOffice, onPickOffice, layers }: Props) {
   const [zoom, setZoom] = useState(12);
   const shapes = useShapes();
   const hasShape = new Set(shapes.map((x) => x.sector_id));
@@ -130,6 +131,13 @@ export default function MapView({ selectedId, onSelect, weights, office, office2
       ))}
 
       {me && <MeMarker me={me} />}
+
+      {office3 && (
+        <CircleMarker center={[office3.lat, office3.lng]} radius={10}
+          pathOptions={{ color: "#111827", fillColor: "#14b8a6", fillOpacity: 1, weight: 3 }}>
+          <Tooltip permanent direction="top">🏢 {office3.name}</Tooltip>
+        </CircleMarker>
+      )}
 
       {office2 && (
         <CircleMarker center={[office2.lat, office2.lng]} radius={10}

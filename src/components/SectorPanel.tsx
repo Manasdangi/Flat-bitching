@@ -22,6 +22,7 @@ type Props = {
   weights: Weights;
   office: Office;
   office2: Office;
+  office3?: Office;
   onClose: () => void;
   inCompare: boolean;
   onToggleCompare: () => void;
@@ -35,13 +36,14 @@ export const Bar = ({ v }: { v: number | null }) => (
 
 const rupees = ([a, b]: [number, number]) => `₹${a}k – ₹${b}k`;
 
-export default function SectorPanel({ id, weights, office, office2, onClose, inCompare, onToggleCompare }: Props) {
+export default function SectorPanel({ id, weights, office, office2, office3, onClose, inCompare, onToggleCompare }: Props) {
   const women = womenMode.use();
   const s = sectorById(id);
   if (!s) return <div className="panel-body"><h2>Sector not found</h2><p>We don't cover this one yet.</p></div>;
   const metro = nearestMetro(s);
   const c = commute(s, office);
   const c2 = commute(s, office2);
+  const c3 = commute(s, office3 ?? null);
   const badges = badgesFor(s.id);
   const sc = allScores(s, office);
   const m = matchScore(s, weights, office);
@@ -91,6 +93,7 @@ export default function SectorPanel({ id, weights, office, office2, onClose, inC
             <span>Drive to {office.name}</span>
             <b>{c.roadKm.toFixed(1)} km · ~{c.minutes} min at peak{c.offpeak != null && <> · {c.offpeak} min off-peak</>}</b>
             {c2 && office2 && <b className="second">{c2.roadKm.toFixed(1)} km · ~{c2.minutes} min at peak to {office2.name}</b>}
+            {c3 && office3 && <b className="second">{c3.roadKm.toFixed(1)} km · ~{c3.minutes} min at peak to {office3.name}</b>}
             <small className="muted">{c.real ? "Road route via OpenStreetMap; peak time estimated" : office.name.includes("pinned") ? "Rough estimate for a pinned location" : "Rough estimate (route data loading or unavailable)"}</small>
           </div>
         )}

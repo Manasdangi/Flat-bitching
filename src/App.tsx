@@ -21,7 +21,7 @@ import { useDriveTimes } from "./lib/geo";
 import { communityEnabled, loadCommunityScores } from "./lib/community";
 import { linkProps, navigate, useRoute, type Route } from "./lib/router";
 import { PRESETS } from "./lib/presets";
-import { setActiveDrives, setCommunity, setSecondOffice, ZERO_WEIGHTS, type Office, type Weights } from "./lib/score";
+import { setActiveDrives, setCommunity, setExtraOffices, ZERO_WEIGHTS, type Office, type Weights } from "./lib/score";
 import { societyBySlug, SOCIETIES } from "./lib/societies";
 import { track } from "./lib/track";
 
@@ -59,11 +59,13 @@ type Sheet = "peek" | "half" | "full";
 export default function App() {
   const route = useRoute();
   const [storedWeights, setWeights] = usePersisted<Weights>("gff-weights", womenMode.get() ? { ...ZERO_WEIGHTS, ...PRESETS[0].w } : ZERO_WEIGHTS);
-  const weights = { ...ZERO_WEIGHTS, ...storedWeights };
-  const [prefs, setPrefs] = usePersisted<{ office: Office; office2: Office; budget: number; compare: string[] }>(
-    "gff-prefs", { office: null, office2: null, budget: 0, compare: [] },
+  const [prefs, setPrefs] = usePersisted<{ office: Office; office2: Office; office3?: Office; budget: number; compare: string[] }>(
+    "gff-prefs", { office: null, office2: null, office3: null, budget: 0, compare: [] },
   );
-  const [pickingOffice, setPickingOffice] = useState<0 | 1 | 2>(0);
+  const baseWeights = { ...ZERO_WEIGHTS, ...storedWeights };
+  // With an office pinned but no priorities set, colour the map by commute so the best-placed sectors show up straight away.
+  const weights = !Object.values(baseWeights).some(Boolean) && prefs.office ? { ...baseWeights, commute: 5 } : baseWeights;
+  const [pickingOffice, setPickingOffice] = useState<0 | 1 | 2 | 3>(0);
   const saved = shortlist.use();
   const women = womenMode.use();
   const [layers, setLayers] = usePersisted("gff-layers", { tech: true, hangout: true, flood: false });
@@ -83,7 +85,10 @@ export default function App() {
     if (!communityEnabled) return;
     loadCommunityScores().then((m) => { setCommunity(m); setCommunityTick((x) => x + 1); }).catch(() => {});
   }, []);
-  setSecondOffice(prefs.office ? prefs.office2 : null);
+  const hub3Name = prefs.office3 && OFFICES.some((o) => o.name === prefs.office3!.name) ? prefs.office3.name : null;
+  const drives3 = useDriveTimes(hub3Name);
+  setActiveDrives(hub3Name, drives3);
+  setExtraOffices(prefs.office ? [prefs.office2, prefs.office3 ?? null] : []);
 
   // Per-page title + description for search engines and link previews.
   useEffect(() => {
@@ -98,6 +103,7 @@ export default function App() {
   const select = (id: string) => { navigate(`/sector/${id}`); track("sector_open", { sector: id }); };
   const setOffice = (office: Office) => setPrefs((p) => ({ ...p, office }));
   const setOffice2 = (office2: Office) => setPrefs((p) => ({ ...p, office2 }));
+  const setOffice3 = (office3: Office) => setPrefs((p) => ({ ...p, office3 }));
   const setCompare = (compare: string[]) => setPrefs((p) => ({ ...p, compare }));
   const selectedId = route.view === "sector" ? route.id : null;
   const tab = route.view === "sector" || route.view === "society" || route.view === "rentSafety" || route.view === "women" || route.view === "data" ? "explore" : route.view === "quizResult" ? "quiz" : route.view;
@@ -137,10 +143,12 @@ export default function App() {
             weights={weights}
             office={prefs.office}
             office2={prefs.office ? prefs.office2 : null}
+            office3={prefs.office ? prefs.office3 ?? null : null}
             pickingOffice={pickingOffice > 0}
             layers={layers}
             onPickOffice={(lat, lng) => {
-              if (pickingOffice === 2) setOffice2({ name: "Second office (pinned)", lat, lng });
+              if (pickingOffice === 3) setOffice3({ name: "Third office (pinned)", lat, lng });
+              else if (pickingOffice === 2) setOffice2({ name: "Second office (pinned)", lat, lng });
               else setOffice({ name: "My office (pinned)", lat, lng });
               setPickingOffice(0);
             }}
@@ -180,6 +188,7 @@ export default function App() {
               weights={weights}
               office={prefs.office}
               office2={prefs.office ? prefs.office2 : null}
+              office3={prefs.office ? prefs.office3 ?? null : null}
               onClose={() => navigate("/")}
               inCompare={prefs.compare.includes(route.id)}
               onToggleCompare={() => {
@@ -191,9 +200,10 @@ export default function App() {
             <SocietyPage slug={route.slug} onClose={() => navigate("/")} />
           ) : route.view === "match" ? (
             <Matcher
-              weights={weights} setWeights={(w) => { setWeights(w); }}
+              weights={baseWeights} setWeights={(w) => { setWeights(w); }}
               office={prefs.office} setOffice={setOffice}
               office2={prefs.office2} setOffice2={setOffice2}
+              office3={prefs.office3 ?? null} setOffice3={setOffice3}
               pickingOffice={pickingOffice} setPickingOffice={(v) => { setPickingOffice(v); if (v) setSheet("peek"); }}
               budget={prefs.budget} setBudget={(budget) => setPrefs((p) => ({ ...p, budget }))}
               onSelect={select}
