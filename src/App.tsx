@@ -9,6 +9,7 @@ import ThemeToggle from "./components/ThemeToggle";
 import WomenGuide from "./components/WomenGuide";
 import RentSafety from "./components/RentSafety";
 import DataMethod from "./components/DataMethod";
+import Ask from "./components/Ask";
 import { Quiz, QuizResult } from "./components/Quiz";
 import Compare from "./components/Compare";
 import SocietyPage, { SocietyList } from "./components/SocietyPage";
@@ -44,6 +45,7 @@ function seo(route: Route) {
   }
   if (route.view === "match") return { title: `Find your best Gurgaon sector | ${SITE}`, desc: "Set your priorities (women safety, metro, clean air, schools, commute, budget) and see which Gurgaon sectors match best." };
   if (route.view === "quiz" || route.view === "quizResult") return { title: `Find your best Gurgaon sector in 60 seconds | ${SITE}`, desc: "Answer 6 quick questions and get your top 3 Gurgaon sectors, with a shareable result card." };
+  if (route.view === "ask") return { title: `Ask about Gurgaon sectors | ${SITE}`, desc: "Ask questions about Gurgaon sectors: safest areas for women, rent and PG prices, metro access and flood risk. Answers come from our sector data." };
   if (route.view === "women") return { title: `Women's guide to renting and PG safety in Gurgaon | ${SITE}`, desc: "Checklists for single working women and PG residents: judging an area at night, PG safety checks, questions to ask landlords and getting home safely." };
   if (route.view === "data") return { title: `How we get our data | ${SITE}`, desc: "Where the Gurgaon Flat Finder data comes from, what is an estimate, how resident votes are protected from spam, and its known limits." };
   if (route.view === "rentSafety") return { title: `Rent safely in Gurgaon: tenant checklist | ${SITE}`, desc: "Avoid deposit scams and bad agreements: what to check before paying, what Haryana law says, and what to put in your rent agreement." };
@@ -121,6 +123,7 @@ export default function App() {
           <a className={tab === "quiz" ? "on" : ""} {...linkProps("/quiz")}><i>⚡</i><span>Quiz</span></a>
           <a className={tab === "match" ? "on" : ""} {...linkProps("/match")}><i>🎯</i><span>Match</span></a>
           <a className={tab === "compare" ? "on" : ""} {...linkProps("/compare")}><i>⚖️</i><span>Compare{prefs.compare.length ? ` (${prefs.compare.length})` : ""}</span></a>
+          <a className={tab === "ask" ? "on" : ""} {...linkProps("/ask")}><i>💬</i><span>Ask AI</span></a>
           <a className={tab === "shortlist" ? "on" : ""} {...linkProps("/shortlist")}><i>♥</i><span>Saved{saved.length ? ` (${saved.length})` : ""}</span></a>
         </nav>
         <ThemeToggle />
@@ -201,6 +204,8 @@ export default function App() {
             <QuizResult params={new URLSearchParams(location.search)} weights={weights} office={prefs.office} budget={prefs.budget} onSelect={select} />
           ) : route.view === "women" ? (
             <WomenGuide />
+          ) : route.view === "ask" ? (
+            <Ask />
           ) : route.view === "data" ? (
             <DataMethod />
           ) : route.view === "rentSafety" ? (

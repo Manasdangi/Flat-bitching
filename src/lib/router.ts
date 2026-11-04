@@ -10,6 +10,7 @@ export type Route =
   | { view: "rentSafety" }
   | { view: "women" }
   | { view: "data" }
+  | { view: "ask" }
   | { view: "quizResult" }
   | { view: "sector"; id: string }
   | { view: "society"; slug: string };
@@ -23,6 +24,7 @@ export function parse(path: string): Route {
   if (a === "shortlist") return { view: "shortlist" };
   if (a === "women") return { view: "women" };
   if (a === "data") return { view: "data" };
+  if (a === "ask") return { view: "ask" };
   if (a === "rent-safety") return { view: "rentSafety" };
   if (a === "quiz") return b === "result" ? { view: "quizResult" } : { view: "quiz" };
   return { view: "explore" };

@@ -284,3 +284,16 @@ a.btn { text-decoration: none; display: inline-block; }
 .verdict.fair, .verdict.low { border-left-color: #16a34a; }
 .verdict.high { border-left-color: #ca8a04; }
 .verdict.far-high, .verdict.far-low { border-left-color: #dc2626; }
+
+/* Ask AI */
+.ask-starters { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.ask-starters .chip { text-align: left; cursor: pointer; }
+.ask-log { display: flex; flex-direction: column; gap: 10px; margin: 14px 0; }
+.ask-msg { padding: 10px 12px; border-radius: 12px; line-height: 1.5; white-space: pre-wrap; max-width: 92%; }
+.ask-msg.user { align-self: flex-end; background: var(--accent, #4f46e5); color: #fff; }
+.ask-msg.assistant { align-self: flex-start; background: var(--card-2, rgba(127,127,160,.14)); }
+.ask-msg.err { align-self: flex-start; background: rgba(220,38,38,.14); }
+.ask-form { display: flex; gap: 8px; position: sticky; bottom: 0; padding: 8px 0; background: var(--card); }
+.ask-form input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: inherit; font: inherit; }
+.ask-form .cta { border: 0; cursor: pointer; }
+.ask-form .cta:disabled { opacity: .5; cursor: default; }
