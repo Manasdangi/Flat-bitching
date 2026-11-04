@@ -150,7 +150,9 @@ function render(p: Page | null): string {
     html = html.replace(/<script type="module"[\s\S]*?<\/script>/g, "").replace(/<link rel="(modulepreload|stylesheet)"[^>]*>/g, "")
       .replace("</head>", `<style>${CSS}</style>${ld}</head>`).replace(/<div id="root"><\/div>/, body).replace(/<noscript>[\s\S]*?<\/noscript>/, "");
   } else {
-    html = html.replace("</head>", `${ld}</head>`).replace(/<div id="root"><\/div>/, `<div id="root"><div style="max-width:760px;margin:0 auto;padding:16px;font:16px/1.6 system-ui,sans-serif">${body}</div></div>`);
+    // App pages: crawlers get the full content, but people get a branded splash (not an unstyled page) until React mounts and replaces #root.
+    const BOOT = `<style>.boot{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#fff;color:#1e1b4b;font:600 18px/1.3 system-ui,sans-serif}.boot i{width:28px;height:28px;border:3px solid #c7d2fe;border-top-color:#4f46e5;border-radius:50%;animation:bs .8s linear infinite}@keyframes bs{to{transform:rotate(360deg)}}.seo{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .boot{background:#0f1020;color:#e0e7ff}}:root[data-theme=dark] .boot{background:#0f1020;color:#e0e7ff}</style>`;
+    html = html.replace("</head>", `${ld}${BOOT}</head>`).replace(/<div id="root"><\/div>/, `<div id="root"><div class="boot"><i></i>Gurgaon Flat Finder</div><div class="seo">${body}</div></div>`);
   }
   return html;
 }
