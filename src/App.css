@@ -1,4 +1,5 @@
-.app { display: flex; flex-direction: column; height: 100dvh; }
+.app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+html, body { overflow: hidden; overscroll-behavior: none; } /* the app scrolls inside its panels, so the top bar never moves */
 .top { display: flex; align-items: center; gap: 16px; padding: 10px 16px; background: var(--card); border-bottom: 1px solid var(--line); flex-wrap: wrap; z-index: 1000; }
 .brand { display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
 .logo { font-size: 28px; }
@@ -195,6 +196,7 @@ a.btn { text-decoration: none; display: inline-block; }
 @media (max-width: 860px) { .locate-btn { top: 12px; bottom: auto; } }
 @media print {
   .top, .map-wrap, .sheet-handle, .actions, .reviews, .review-form, section, .nearby, .scores, .facts, .two-col, .chips, .note, .fix, h3, details.tool:not([open]) { display: none !important; }
+  html, body, .app { overflow: visible !important; height: auto !important; }
   .layout, .panel { display: block !important; position: static !important; height: auto !important; box-shadow: none !important; overflow: visible !important; }
   details.tool { border: none; }
 }
