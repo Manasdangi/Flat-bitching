@@ -133,10 +133,10 @@ ${rows(l.map((x) => x.s), (s) => [`${metroOf(s).m.name}`, `${metroOf(s).d.toFixe
 GUIDES.push({
   slug: "gurgaon-2bhk-rent-under-30000",
   title: "Gurgaon sectors where a 2 BHK costs under ₹30,000 a month (2026)",
-  desc: "Gurgaon sectors where 2 BHK rents start under ₹30k, with the full rent range, PG rent and metro distance for each.",
+  desc: "Gurgaon sectors where the whole 2 BHK rent range is under ₹30k, PG rent and metro distance for each.",
   build: () => {
-    const l = SECTORS.filter((s) => s.rent2bhk[0] <= 30).sort((a, b) => a.rent2bhk[0] - b.rent2bhk[0]);
-    return `<p>These sectors have 2 BHK listings starting at ₹30k or less. The top of the range is what newer or better-maintained societies ask, so check the real listings in the society you like.</p>
+    const l = SECTORS.filter((s) => s.rent2bhk[1] <= 30).sort((a, b) => a.rent2bhk[0] + a.rent2bhk[1] - (b.rent2bhk[0] + b.rent2bhk[1]));
+    return `<p>In these sectors even the top of our 2 BHK range is ₹30k or less. Newer or better-maintained societies sit at the high end, so check real listings in the society you like.</p>
 ${rows(l, (s) => [rent(s.rent2bhk), rent(s.pgRent), `${metroOf(s).d.toFixed(1)} km`, `${s.scores.safety}/5`], ["Sector", "2 BHK rent", "PG rent", "Metro", "Safety"])}${stamp}`;
   },
 });
