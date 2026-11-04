@@ -124,7 +124,7 @@ export default function Matcher(p: Props) {
           <ol className="ranked">
             {bestForOffices.map(({ s, mins, worst }) => (
               <li key={s.id} onClick={() => p.onSelect(s.id)}>
-                <span>{s.name}<small className="muted"> · {s.zone} · ₹{s.rent2bhk[0]}–{s.rent2bhk[1]}k</small>
+                <span>{s.name}<small className="muted"> · {s.zone} · 2BHK ₹{s.rent2bhk[0]}–{s.rent2bhk[1]}k/mo</small>
                   <small className="muted commute-line">🚗 {mins.join(" / ")} min at peak</small></span>
                 <b>{worst} min</b>
               </li>
