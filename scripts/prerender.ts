@@ -7,6 +7,8 @@ import { SOCIETIES } from "../src/lib/societies";
 
 const SITE = "https://www.kahanrahe.online";
 const NAME = "Gurgaon Flat Finder";
+const BRAND = "Kahan Rahe";
+const HOME_TITLE = `${BRAND}: Gurgaon Flat Finder. Best sectors, rent, PG and safety map`;
 const tpl = readFileSync("dist/index.html", "utf8");
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const km = (aLat: number, aLng: number, bLat: number, bLng: number) => Math.hypot((aLat - bLat) * 111, (aLng - bLng) * 98);
@@ -26,7 +28,7 @@ table{border-collapse:collapse;width:100%;font-size:15px}th,td{border-bottom:1px
 function sectorPage(s: Sector): Page {
   const mt = metroOf(s), f = FLOOD[s.id], w = WATER[s.id];
   const near = SECTORS.filter((x) => x.id !== s.id).map((x) => ({ x, d: km(s.lat, s.lng, x.lat, x.lng) })).sort((a, b) => a.d - b.d).slice(0, 5);
-  const title = `${s.name}, Gurgaon: rent, societies, reviews | ${NAME}`;
+  const title = `${s.name}, Gurgaon: rent, PG, safety and reviews | ${BRAND}`;
   const desc = `${s.name} (${s.zone}): 2BHK ${rent(s.rent2bhk)}, PG ${rent(s.pgRent)}, nearest metro ${mt.m.name} (${mt.d.toFixed(1)} km), flood and water notes, societies and resident reviews. ${s.summary}`.slice(0, 300);
   const body = `<main><nav aria-label="Breadcrumb">${link("/", "Gurgaon sectors")} › ${esc(s.zone)}</nav>
 <h1>${esc(s.name)}, Gurgaon</h1><p>${esc(s.summary)}</p>
@@ -37,8 +39,14 @@ function sectorPage(s: Sector): Page {
 <h2>Water and flooding</h2><p>${f ? `Waterlogging risk (${f.level}): ${esc(f.note)} ` : ""}${w ? `Water: ${esc(w.note)}` : ""}${!f && !w ? "No water or flooding problems reported in the sources we checked. Ask current residents." : ""}</p>
 <h2>Societies</h2><ul>${s.societies.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
 <h2>Nearby sectors</h2><ul>${near.map(({ x, d }) => `<li>${link(`/sector/${x.id}`, x.name)} (${d.toFixed(1)} km)</li>`).join("")}</ul>
+<h2>More guides</h2><ul><li>${link("/guides/best-sectors-gurgaon-single-women", "Best sectors in Gurgaon for single working women")}</li><li>${link("/guides/pg-rent-gurgaon-by-sector", "PG rent in Gurgaon by sector")}</li><li>${link("/guides/gurgaon-sectors-near-metro", "Gurgaon sectors near a metro station")}</li></ul>
 <p class="note">Rents are rough ranges from 2025–26 listings and scores are editorial estimates, updated ${DATA_UPDATED}. ${link("/data", "How we get our data")}.</p></main>`;
   const ld = [
+    faq([
+      [`What is the rent for a 2 BHK in ${s.name}, Gurgaon?`, `Roughly ${rent(s.rent2bhk)} per month based on 2025–26 listings. It varies by society, floor and furnishing.`],
+      [`How much is a PG in ${s.name}, Gurgaon?`, `Single-occupancy PGs are roughly ${rent(s.pgRent)} per month, and PG availability here is ${s.pg.toLowerCase()}.`],
+      [`Which metro station is nearest to ${s.name}?`, `${mt.m.name}, about ${mt.d.toFixed(1)} km in a straight line from the sector centre. The actual walk or ride is longer.`],
+    ]),
     { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
       { "@type": "ListItem", position: 1, name: NAME, item: SITE + "/" },
       { "@type": "ListItem", position: 2, name: s.name, item: `${SITE}/sector/${s.id}` }] },
@@ -48,12 +56,15 @@ function sectorPage(s: Sector): Page {
   return { path: `/sector/${s.id}`, title, desc, body, ld };
 }
 
+const faq = (qa: [string, string][]) => ({ "@context": "https://schema.org", "@type": "FAQPage",
+  mainEntity: qa.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) });
+
 const pages: Page[] = [];
 for (const s of SECTORS) pages.push(sectorPage(s));
 for (const soc of SOCIETIES) {
   pages.push({
     path: `/society/${soc.slug}`,
-    title: `${soc.name} reviews, ${soc.sectors[0].name} Gurgaon | ${NAME}`,
+    title: `${soc.name}, ${soc.sectors[0].name} Gurgaon: reviews and rent | ${BRAND}`,
     desc: `Resident reviews and ratings for ${soc.name} in ${soc.sectors.map((x) => x.name).join(", ")}, Gurgaon: cleanliness, safety, water, power and waterlogging.`,
     body: `<main><h1>${esc(soc.name)}, Gurgaon</h1><p>Located in ${soc.sectors.map((x) => link(`/sector/${x.id}`, x.name)).join(", ")}.</p>
 <p>Typical 2 BHK rent in the sector: ${soc.sectors.map((x) => `${esc(x.name)} ${rent(x.rent2bhk)}`).join("; ")}.</p>
@@ -119,22 +130,59 @@ GUIDES.push({
 ${rows(l.map((x) => x.s), (s) => [`${metroOf(s).m.name}`, `${metroOf(s).d.toFixed(1)} km`, rent(s.rent2bhk)], ["Sector", "Station", "Distance", "2 BHK"])}${stamp}`;
   },
 });
-for (const g of GUIDES) pages.push({
-  path: `/guides/${g.slug}`, title: `${g.title} | ${NAME}`, desc: g.desc, standalone: true,
-  body: `<main><nav>${link("/", NAME)} › ${link("/guides", "Guides")}</nav><h1>${esc(g.title)}</h1>${g.build()}<p><a class="cta" href="/">Open the map</a></p></main>`,
-  ld: [{ "@context": "https://schema.org", "@type": "Article", headline: g.title, description: g.desc, dateModified: new Date().toISOString().slice(0, 10), author: { "@type": "Organization", name: NAME } }],
+GUIDES.push({
+  slug: "gurgaon-2bhk-rent-under-30000",
+  title: "Gurgaon sectors where a 2 BHK costs under ₹30,000 a month (2026)",
+  desc: "Gurgaon sectors where 2 BHK rents start under ₹30k, with the full rent range, PG rent and metro distance for each.",
+  build: () => {
+    const l = SECTORS.filter((s) => s.rent2bhk[0] <= 30).sort((a, b) => a.rent2bhk[0] - b.rent2bhk[0]);
+    return `<p>These sectors have 2 BHK listings starting at ₹30k or less. The top of the range is what newer or better-maintained societies ask, so check the real listings in the society you like.</p>
+${rows(l, (s) => [rent(s.rent2bhk), rent(s.pgRent), `${metroOf(s).d.toFixed(1)} km`, `${s.scores.safety}/5`], ["Sector", "2 BHK rent", "PG rent", "Metro", "Safety"])}${stamp}`;
+  },
 });
-pages.push({ path: "/guides", title: `Gurgaon renting guides | ${NAME}`, desc: "Data-driven guides to renting in Gurgaon: safest sectors for women, PG rents, waterlogging, metro access and budget.", standalone: true,
+GUIDES.push({
+  slug: "gurgaon-sectors-better-air-green",
+  title: "Gurgaon sectors with better air and more green space (2026)",
+  desc: "Gurgaon sectors ranked by our air-quality and green-cover scores, with rent and metro distance.",
+  build: () => {
+    const l = [...SECTORS].sort((a, b) => (b.scores.air + b.scores.green) - (a.scores.air + a.scores.green) || a.rent2bhk[0] - b.rent2bhk[0]).slice(0, 15);
+    return `<p>Gurgaon air is poor in winter everywhere, so these scores show relative differences (traffic, construction dust, parks nearby), not clean air. Use a purifier whichever sector you pick.</p>
+${rows(l, (s) => [`${s.scores.air}/5`, `${s.scores.green}/5`, rent(s.rent2bhk), `${metroOf(s).d.toFixed(1)} km`], ["Sector", "Air", "Green", "2 BHK", "Metro"])}${stamp}`;
+  },
+});
+GUIDES.push({
+  slug: "gurgaon-sectors-by-zone",
+  title: "Gurgaon sectors by zone: Golf Course Road, Sohna Road, Dwarka Expressway and more",
+  desc: "How Gurgaon's main zones differ on rent, PG supply, safety and metro access, with every sector listed.",
+  build: () => ZONES.map((z) => {
+    const l = SECTORS.filter((s) => s.zone === z);
+    const avg = (f: (s: Sector) => number) => Math.round(l.reduce((t, s) => t + f(s), 0) / l.length);
+    return `<h2>${esc(z)}</h2><p>${l.length} sectors. Typical 2 BHK about ₹${avg((s) => (s.rent2bhk[0] + s.rent2bhk[1]) / 2)}k per month, single PG about ₹${avg((s) => (s.pgRent[0] + s.pgRent[1]) / 2)}k, average safety score ${(l.reduce((t, s) => t + s.scores.safety, 0) / l.length).toFixed(1)}/5.</p><p>${l.map((s) => link(`/sector/${s.id}`, s.name)).join(" · ")}</p>`;
+  }).join("") + stamp,
+});
+for (const g of GUIDES) pages.push({
+  path: `/guides/${g.slug}`, title: `${g.title} | ${BRAND}`, desc: g.desc, standalone: true,
+  body: `<main><nav>${link("/", NAME)} › ${link("/guides", "Guides")}</nav><h1>${esc(g.title)}</h1>${g.build()}<h2>More guides</h2><ul>${GUIDES.filter((x) => x.slug !== g.slug).map((x) => `<li>${link(`/guides/${x.slug}`, x.title)}</li>`).join("")}</ul><p><a class="cta" href="/">Open the map</a></p></main>`,
+  ld: [
+    { "@context": "https://schema.org", "@type": "Article", headline: g.title, description: g.desc, dateModified: DATA_UPDATED, mainEntityOfPage: `${SITE}/guides/${g.slug}`,
+      image: `${SITE}/og.png`, author: { "@type": "Organization", name: BRAND, url: SITE + "/" }, publisher: { "@type": "Organization", name: BRAND, url: SITE + "/" } },
+    { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+      { "@type": "ListItem", position: 1, name: BRAND, item: SITE + "/" },
+      { "@type": "ListItem", position: 2, name: "Guides", item: SITE + "/guides" },
+      { "@type": "ListItem", position: 3, name: g.title, item: `${SITE}/guides/${g.slug}` }] },
+  ],
+});
+pages.push({ path: "/guides", title: `Gurgaon renting guides: rent, PG, safety, metro | ${BRAND}`, desc: "Data-driven guides to renting in Gurgaon: safest sectors for women, PG rents, waterlogging, metro access and budget.", standalone: true,
   body: `<main><h1>Gurgaon renting guides</h1><ul>${GUIDES.map((g) => `<li>${link(`/guides/${g.slug}`, g.title)}</li>`).join("")}</ul><p><a class="cta" href="/">Open the map</a></p></main>` });
 
-const home = `<main><h1>${NAME}: choose the right sector in Gurgaon</h1><p>Map of ${SECTORS.length} Gurgaon sectors with rents, societies, PGs, metro, schools, tech hubs, live air quality and resident reviews.</p>
+const home = `<main><h1>${BRAND}: find where to live in Gurgaon</h1><p>${BRAND} (${NAME}) maps ${SECTORS.length} Gurgaon sectors with rent, PG prices, women-safety scores, flood risk, metro distance, societies and resident reviews.</p>
 <h2>Guides</h2><ul>${GUIDES.map((g) => `<li>${link(`/guides/${g.slug}`, g.title)}</li>`).join("")}</ul>
 ${ZONES.map((z) => `<h2>${esc(z)}</h2><ul>${SECTORS.filter((s) => s.zone === z).map((s) => `<li>${link(`/sector/${s.id}`, s.name)}</li>`).join("")}</ul>`).join("")}</main>`;
 
 function render(p: Page | null): string {
   let html = tpl;
-  const title = p?.title ?? `${NAME}: choose the right sector in Gurgaon`;
-  const desc = p?.desc ?? `Map of ${SECTORS.length} Gurgaon sectors with rents, societies, PGs, metro, schools, tech hubs, live air quality and resident reviews.`;
+  const title = p?.title ?? HOME_TITLE;
+  const desc = p?.desc ?? `Kahan Rahe (kahanrahe.online) maps ${SECTORS.length} Gurgaon sectors with rent, PG prices, women-safety scores, flood risk, metro distance and resident reviews. Find where to live in Gurgaon.`;
   const url = SITE + (p?.path ?? "/");
   const body = p?.body ?? home;
   html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`)
@@ -145,7 +193,8 @@ function render(p: Page | null): string {
     .replace(/(<meta property="og:url" content=")[^"]*"/, `$1${url}"`)
     .replace(/(<meta name="twitter:title" content=")[^"]*"/, `$1${esc(title)}"`)
     .replace(/(<meta name="twitter:description" content=")[^"]*"/, `$1${esc(desc)}"`);
-  const ld = (p?.ld ?? [{ "@context": "https://schema.org", "@type": "WebSite", name: NAME, url: SITE + "/" }]).map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join("");
+  const ld = (p?.ld ?? [{ "@context": "https://schema.org", "@type": "WebSite", name: BRAND, alternateName: [NAME, "kahanrahe", "Kahan Rahe Gurgaon"], url: SITE + "/", inLanguage: "en-IN" },
+    { "@context": "https://schema.org", "@type": "Organization", name: BRAND, url: SITE + "/", logo: SITE + "/apple-touch-icon.png" }]).map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join("");
   if (p?.standalone) {
     html = html.replace(/<script type="module"[\s\S]*?<\/script>/g, "").replace(/<link rel="(modulepreload|stylesheet)"[^>]*>/g, "")
       .replace("</head>", `<style>${CSS}</style>${ld}</head>`).replace(/<div id="root"><\/div>/, body).replace(/<noscript>[\s\S]*?<\/noscript>/, "");
