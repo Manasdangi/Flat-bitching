@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://gurgaon-flat-finder.vercel.app/sitemap.xml
+Sitemap: https://www.kahanrahe.online/sitemap.xml

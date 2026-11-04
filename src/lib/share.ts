@@ -21,7 +21,7 @@ export function parseResult(r: string | null | undefined): ResultEntry[] {
     .filter((e) => /^[a-z0-9-]{1,20}$/.test(e.id) && sectorById(e.id) && Number.isFinite(e.match));
 }
 
-export const SITE_URL = "https://gurgaon-flat-finder.vercel.app";
+export const SITE_URL = "https://www.kahanrahe.online";
 export const shareLink = (entries: ResultEntry[]) => `${SITE_URL}/share?r=${encodeURIComponent(encodeResult(entries))}`;
 export const cardUrl = (entries: ResultEntry[], format: "og" | "story" = "og", origin = SITE_URL) =>
   `${origin}/api/og?r=${encodeURIComponent(encodeResult(entries))}${format === "story" ? "&format=story" : ""}`;

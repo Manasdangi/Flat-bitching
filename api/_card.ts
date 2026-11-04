@@ -73,7 +73,7 @@ export function card(entries: ResultEntry[], format: "og" | "story"): ReactEleme
       "div",
       { style: { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: story ? 32 : 22, opacity: 0.95, width: inner } },
       h("div", { style: { display: "flex" } }, "Find yours in 60 seconds"),
-      h("div", { style: { display: "flex", fontWeight: 800, fontSize: story ? 30 : 22 } }, "gurgaon-flat-finder.vercel.app"),
+      h("div", { style: { display: "flex", fontWeight: 800, fontSize: story ? 30 : 22 } }, "kahanrahe.online"),
     ),
   );
 }

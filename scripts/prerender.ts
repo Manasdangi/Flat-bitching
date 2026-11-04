@@ -5,7 +5,7 @@ import { SECTORS, ZONES, METRO, DATA_UPDATED, type Sector } from "../src/data/se
 import { FLOOD, WATER } from "../src/data/risk";
 import { SOCIETIES } from "../src/lib/societies";
 
-const SITE = "https://gurgaon-flat-finder.vercel.app";
+const SITE = "https://www.kahanrahe.online";
 const NAME = "Gurgaon Flat Finder";
 const tpl = readFileSync("dist/index.html", "utf8");
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

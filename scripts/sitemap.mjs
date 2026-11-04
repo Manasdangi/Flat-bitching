@@ -1,7 +1,7 @@
 // Generates public/sitemap.xml from the sector + society data (runs before every build).
 import { readFileSync, writeFileSync } from "node:fs";
 
-const SITE = "https://gurgaon-flat-finder.vercel.app";
+const SITE = "https://www.kahanrahe.online";
 const src = readFileSync(new URL("../src/data/sectors.ts", import.meta.url), "utf8");
 const sectorBlocks = [...src.matchAll(/^  s\("([^"]+)",[\s\S]*?\n    \[([^\]]*)\], "(?:High|Medium|Low)"/gm)];
 const GENERIC = /(plots|floors|housing|flats|PGs|Mostly|houses|launches|societies|hospital|mall|Builder|limited)/i;

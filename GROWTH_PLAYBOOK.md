@@ -3,7 +3,7 @@
 ## A. One-time setup (about 30 minutes total)
 
 1. **Google Search Console** (search.google.com/search-console)
-   - Add property → "URL prefix" → `https://gurgaon-flat-finder.vercel.app`
+   - Add property → "URL prefix" → `https://www.kahanrahe.online`
    - Verify with the HTML tag method: copy the `<meta name="google-site-verification" ...>` tag and send it to Claude, who adds it to the site.
    - Sitemaps → submit `sitemap.xml`.
    - URL inspection → paste `/`, `/guides`, `/guides/best-sectors-gurgaon-single-women` → "Request indexing".
