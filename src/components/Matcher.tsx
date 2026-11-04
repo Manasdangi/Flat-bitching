@@ -53,15 +53,15 @@ export default function Matcher(p: Props) {
   // With two or three offices pinned: blend how short the longest commute is (so nobody gets a terrible one) with the user's other priorities.
   const otherW = { ...p.weights, commute: 0 };
   const hasOther = Object.values(otherW).some(Boolean);
-  const bestForOffices = offices.length >= 2
+  const bestForOffices = offices.length >= 1 || hasOther
     ? SECTORS.filter((s) => !p.budget || s.rent2bhk[0] <= p.budget)
         .map((s) => {
-          const mins = offices.map((o) => commute(s, o)!.minutes);
-          const worst = Math.max(...mins);
-          const avg = mins.reduce((a, b) => a + b, 0) / mins.length;
-          const commuteScore = Math.max(0, Math.min(100, 100 - ((worst - 15) / 45) * 100));
+          const mins = offices.map((o) => commute(s, o)?.minutes ?? 0);
+          const worst = mins.length ? Math.max(...mins) : 0;
+          const avg = mins.length ? mins.reduce((a, b) => a + b, 0) / mins.length : 0;
+          const commuteScore = mins.length ? Math.max(0, Math.min(100, 100 - ((worst - 15) / 45) * 100)) : 0;
           const other = hasOther ? matchScore(s, otherW, null) ?? 0 : 0;
-          const total = hasOther ? (p.weights.commute ? 0.5 : 0.25) * commuteScore + (p.weights.commute ? 0.5 : 0.75) * other : commuteScore;
+          const total = !mins.length ? other : hasOther ? (p.weights.commute ? 0.5 : 0.25) * commuteScore + (p.weights.commute ? 0.5 : 0.75) * other : commuteScore;
           return { s, mins, worst, avg, total };
         })
         .sort((a, b) => b.total - a.total || a.worst - b.worst).slice(0, 8)
@@ -119,14 +119,14 @@ export default function Matcher(p: Props) {
 
       {bestForOffices.length > 0 && (
         <>
-          <h3>Best sectors for your {offices.length} offices</h3>
-          <p className="muted small-txt">Ranked by your priorities and budget, plus the longest peak-hour drive so nobody has a terrible commute. Drive times are estimates.</p>
+          <h3>{offices.length > 1 ? `Best sectors for your ${offices.length} offices` : "Best sectors for you"}</h3>
+          <p className="muted small-txt">{offices.length > 1 ? "Ranked by your priorities and budget, plus the longest peak-hour drive so nobody has a terrible commute. " : "Ranked by your priorities, budget and drive to your office. "}Drive times are estimates.</p>
           <ol className="ranked">
             {bestForOffices.map(({ s, mins, worst }) => (
               <li key={s.id} onClick={() => p.onSelect(s.id)}>
                 <span>{s.name}<small className="muted"> · {s.zone} · 2BHK ₹{s.rent2bhk[0]}–{s.rent2bhk[1]}k/mo</small>
-                  <small className="muted commute-line">🚗 {mins.join(" / ")} min at peak</small></span>
-                <b>{worst} min</b>
+                  {mins.length > 0 && <small className="muted commute-line">🚗 {mins.join(" / ")} min at peak</small>}</span>
+                {mins.length > 0 && <b>{worst} min</b>}
               </li>
             ))}
           </ol>
