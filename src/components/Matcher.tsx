@@ -50,10 +50,21 @@ export default function Matcher(p: Props) {
   const [showThird, setShowThird] = useState(Boolean(p.office3));
   const offices = [p.office, p.office2, p.office3].filter(Boolean) as NonNullable<Office>[];
   // With two or three offices pinned: rank sectors by the longest of the commutes (so nobody gets a terrible one), then by the average.
+  // With two or three offices pinned: blend how short the longest commute is (so nobody gets a terrible one) with the user's other priorities.
+  const otherW = { ...p.weights, commute: 0 };
+  const hasOther = Object.values(otherW).some(Boolean);
   const bestForOffices = offices.length >= 2
     ? SECTORS.filter((s) => !p.budget || s.rent2bhk[0] <= p.budget)
-        .map((s) => { const mins = offices.map((o) => commute(s, o)!.minutes); return { s, mins, worst: Math.max(...mins), avg: mins.reduce((a, b) => a + b, 0) / mins.length }; })
-        .sort((a, b) => a.worst - b.worst || a.avg - b.avg).slice(0, 8)
+        .map((s) => {
+          const mins = offices.map((o) => commute(s, o)!.minutes);
+          const worst = Math.max(...mins);
+          const avg = mins.reduce((a, b) => a + b, 0) / mins.length;
+          const commuteScore = Math.max(0, Math.min(100, 100 - ((worst - 15) / 45) * 100));
+          const other = hasOther ? matchScore(s, otherW, null) ?? 0 : 0;
+          const total = hasOther ? (p.weights.commute ? 0.5 : 0.25) * commuteScore + (p.weights.commute ? 0.5 : 0.75) * other : commuteScore;
+          return { s, mins, worst, avg, total };
+        })
+        .sort((a, b) => b.total - a.total || a.worst - b.worst).slice(0, 8)
     : [];
   const active = Object.values(p.weights).some(Boolean);
   const ranked = SECTORS.map((s) => ({ s, m: matchScore(s, p.weights, p.office) ?? 0 }))
@@ -109,7 +120,7 @@ export default function Matcher(p: Props) {
       {bestForOffices.length > 0 && (
         <>
           <h3>Best sectors for your {offices.length} offices</h3>
-          <p className="muted small-txt">Ranked by the longest peak-hour drive, so nobody has a terrible commute. Drive times are estimates.</p>
+          <p className="muted small-txt">Ranked by your priorities and budget, plus the longest peak-hour drive so nobody has a terrible commute. Drive times are estimates.</p>
           <ol className="ranked">
             {bestForOffices.map(({ s, mins, worst }) => (
               <li key={s.id} onClick={() => p.onSelect(s.id)}>
