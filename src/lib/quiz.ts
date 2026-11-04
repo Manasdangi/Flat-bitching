@@ -3,7 +3,7 @@ import { allScores, matchScore, PRIORITIES, ZERO_WEIGHTS, type Office, type Prio
 import type { ResultEntry } from "./share";
 
 export type Option = { label: string; w?: Partial<Weights>; budget?: number };
-export type Question = { id: string; title: string; hint?: string; options: Option[] };
+export type Question = { id: string; title: string; hint?: string; multi?: boolean; options: Option[] };
 
 // Office is asked separately (it is a picker, not a fixed list of options).
 export const QUESTIONS: Question[] = [
@@ -35,7 +35,7 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: "vibe", title: "Your ideal weekend?",
+    id: "vibe", title: "Your ideal weekend?", hint: "Pick all that apply.", multi: true,
     options: [
       { label: "🍸 Cafes & nightlife", w: { nightlife: 5, market: 2 } },
       { label: "🌳 Parks & quiet", w: { green: 5, air: 3 } },
@@ -44,7 +44,7 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: "hate", title: "What would ruin it for you?", hint: "Pick the one that bothers you most.",
+    id: "hate", title: "What would ruin it for you?", hint: "Pick all that bother you.", multi: true,
     options: [
       { label: "🗑️ Dirty roads & societies", w: { clean: 5 } },
       { label: "🌫️ Bad air", w: { air: 5, green: 2 } },
@@ -86,7 +86,7 @@ export const QUESTIONS_WOMEN: Question[] = [
     ],
   },
   {
-    id: "hate", title: "What would ruin it for you?", hint: "Pick the one that bothers you most.",
+    id: "hate", title: "What would ruin it for you?", hint: "Pick all that bother you.", multi: true,
     options: [
       { label: "🌙 Dark, empty streets", w: { safety: 5 } },
       { label: "🗑️ Dirty roads & societies", w: { clean: 5, safety: 1 } },
@@ -98,17 +98,19 @@ export const QUESTIONS_WOMEN: Question[] = [
 ];
 export const questionsFor = (women: boolean) => (women ? QUESTIONS_WOMEN : QUESTIONS);
 
-export type Answers = { choices: Record<string, number>; office: Office };
+export type Answers = { choices: Record<string, number[]>; office: Office };
 
 /** Sum the picked options' weights, clamped to the 0–5 scale used by the Matcher. */
 export function answersToPrefs(a: Answers, questions: Question[] = QUESTIONS): { weights: Weights; budget: number; office: Office } {
   const weights: Weights = { ...ZERO_WEIGHTS };
   let budget = 0;
   for (const q of questions) {
-    const o = q.options[a.choices[q.id]];
-    if (!o) continue;
-    if (o.budget != null) budget = o.budget;
-    for (const [k, v] of Object.entries(o.w ?? {})) weights[k as PriorityKey] += v as number;
+    for (const i of a.choices[q.id] ?? []) {
+      const o = q.options[i];
+      if (!o) continue;
+      if (o.budget != null) budget = o.budget;
+      for (const [k, v] of Object.entries(o.w ?? {})) weights[k as PriorityKey] += v as number;
+    }
   }
   if (a.office) { weights.commute += 4; weights.techhub += 1; }
   for (const p of PRIORITIES) weights[p.key] = Math.min(5, weights[p.key]);

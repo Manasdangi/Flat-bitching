@@ -16,7 +16,7 @@ export function Quiz({ onDone }: QuizProps) {
   const QUESTIONS = questionsFor(women);
   const total = QUESTIONS.length + 1; // + office step
   const [step, setStep] = useState(0);
-  const [choices, setChoices] = useState<Record<string, number>>({});
+  const [choices, setChoices] = useState<Record<string, number[]>>({});
   const [office, setOffice] = useState<Office>(null);
   const [started, setStarted] = useState(false);
 
@@ -49,10 +49,19 @@ export function Quiz({ onDone }: QuizProps) {
           <h2>{q.title}</h2>
           {q.hint && <p className="muted">{q.hint}</p>}
           <div className="quiz-options">
-            {q.options.map((o, i) => (
-              <button key={o.label} className="quiz-opt" onClick={() => { setChoices({ ...choices, [q.id]: i }); setStep(step + 1); }}>{o.label}</button>
-            ))}
+            {q.options.map((o, i) => {
+              const on = (choices[q.id] ?? []).includes(i);
+              return q.multi ? (
+                <button key={o.label} className={`quiz-opt${on ? " on" : ""}`} aria-pressed={on}
+                  onClick={() => setChoices({ ...choices, [q.id]: on ? (choices[q.id] ?? []).filter((x) => x !== i) : [...(choices[q.id] ?? []), i] })}>
+                  {on ? "✓ " : ""}{o.label}
+                </button>
+              ) : (
+                <button key={o.label} className="quiz-opt" onClick={() => { setChoices({ ...choices, [q.id]: [i] }); setStep(step + 1); }}>{o.label}</button>
+              );
+            })}
           </div>
+          {q.multi && <button className="btn" style={{ marginTop: 12 }} onClick={() => setStep(step + 1)}>{(choices[q.id] ?? []).length ? "Next →" : "Skip →"}</button>}
         </>
       ) : (
         <>
