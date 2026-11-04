@@ -297,3 +297,6 @@ a.btn { text-decoration: none; display: inline-block; }
 .ask-form input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: inherit; font: inherit; }
 .ask-form .cta { border: 0; cursor: pointer; }
 .ask-form .cta:disabled { opacity: .5; cursor: default; }
+.office-pick { flex-wrap: nowrap; }
+.office-pick select { flex: 1 1 0; min-width: 0; }
+.office-pick .btn { flex: none; white-space: nowrap; }

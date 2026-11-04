@@ -25,7 +25,7 @@ function OfficePicker({ value, onChange, picking, onPick, label }: {
   value: Office; onChange: (o: Office) => void; picking: boolean; onPick: () => void; label: string;
 }) {
   return (
-    <div className="row wrap">
+    <div className="row office-pick">
       <select aria-label={label}
         value={OFFICES.find((o) => o.name === value?.name)?.id ?? (value ? "custom" : "")}
         onChange={(e) => {
