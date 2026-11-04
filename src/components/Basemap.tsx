@@ -66,7 +66,18 @@ function OlaVector({ dark, onFail }: { dark: boolean; onFail: (why: string) => v
         let loaded = false;
         const giveUp = window.setTimeout(() => { if (!loaded) onFail("timeout: map not loaded after 12s"); }, 12000); // never leave a blank map
         timers.push(giveUp);
-        m.once("load", () => { loaded = true; window.clearTimeout(giveUp); });
+        // Hide Ola's shop / EV charger / petrol pump labels: they sit on top of our sector numbers. Roads, parks and area names stay.
+        const hidePois = () => {
+          try {
+            for (const l of m.getStyle().layers ?? []) {
+              const sl = String((l as { "source-layer"?: string })["source-layer"] ?? "");
+              if (l.type === "symbol" && (/poi|ev_|charg|fuel|petrol|shop|amenit/i.test(sl) || /poi|charg|fuel|petrol|shop/i.test(l.id)))
+                m.setLayoutProperty(l.id, "visibility", "none");
+            }
+          } catch { /* style not ready yet */ }
+        };
+        m.on("styledata", hidePois);
+        m.once("load", () => { loaded = true; window.clearTimeout(giveUp); hidePois(); });
         m.on("error", (e) => {
           const ev = e as unknown as { error?: { status?: number; message?: string }; sourceId?: string; tile?: unknown };
           const status = ev.error?.status;
