@@ -19,7 +19,7 @@ import { shortlist, womenMode } from "./lib/store";
 import { DATA_UPDATED, OFFICES, SECTORS, SOURCES, sectorById } from "./data/sectors";
 import { useDriveTimes } from "./lib/geo";
 import { communityEnabled, loadCommunityScores } from "./lib/community";
-import { linkProps, navigate, useRoute, type Route } from "./lib/router";
+import { goBack, linkProps, navigate, useRoute, type Route } from "./lib/router";
 import { PRESETS } from "./lib/presets";
 import { setActiveDrives, setCommunity, setExtraOffices, ZERO_WEIGHTS, type Office, type Weights } from "./lib/score";
 import { societyBySlug, SOCIETIES } from "./lib/societies";
@@ -181,6 +181,10 @@ export default function App() {
               if (Math.abs(dy) > 30) { e.preventDefault(); step(dy < 0 ? 1 : -1); }
             }}
           ><span /></button>
+
+          {route.view !== "explore" && route.view !== "sector" && (
+            <button className="panel-back" onClick={() => goBack("/")} aria-label="Back">← Back</button>
+          )}
 
           {route.view === "sector" ? (
             <SectorPanel
