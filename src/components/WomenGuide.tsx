@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { linkProps } from "../lib/router";
+import { HomeSafe } from "./WomenTools";
 
 type Section = { title: string; icon: string; intro?: string; items: string[] };
 
@@ -75,6 +76,9 @@ export default function WomenGuide() {
         </div>
         <small className="muted">{HELPLINES.map((h) => `${h.n}: ${h.label}`).join(" · ")}. Check that they work from your phone.</small>
       </div>
+
+      <p><a className="btn small" {...linkProps("/women/best")}>🌙 See the best sectors for women</a></p>
+      <HomeSafe />
 
       {SECTIONS.map((s) => (
         <section key={s.title} className="safety-section">
