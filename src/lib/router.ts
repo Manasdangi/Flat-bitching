@@ -30,8 +30,14 @@ export function parse(path: string): Route {
   return { view: "explore" };
 }
 
+let pushed = 0; // in-app pages pushed this visit: lets "Back" go to the previous page instead of leaving the site
+export function goBack(fallback = "/") {
+  if (pushed > 0) { pushed--; history.back(); } else navigate(fallback, true);
+}
+
 export function navigate(path: string, replace = false) {
   if (path === location.pathname + location.search) return;
+  if (!replace) pushed++;
   history[replace ? "replaceState" : "pushState"](null, "", path);
   dispatchEvent(new PopStateEvent("popstate"));
   window.scrollTo?.({ top: 0 });

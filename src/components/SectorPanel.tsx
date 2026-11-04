@@ -1,5 +1,5 @@
 import { sectorById } from "../data/sectors";
-import { linkProps } from "../lib/router";
+import { goBack, linkProps } from "../lib/router";
 import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type Office, type Weights, COMMUNITY_MIN_VOTES, communityFor } from "../lib/score";
 import { isNamedSociety, slugify } from "../lib/societies";
 import { AqiBadge, SuggestFix } from "./Extras";
@@ -60,9 +60,12 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
   return (
     <article className="panel-body">
       <div className="row between">
-        <div>
-          <p className="eyebrow">{s.zone}</p>
-          <h2>{s.name}</h2>
+        <div className="row">
+          <button className="icon-btn" onClick={() => goBack("/")} aria-label="Back">←</button>
+          <div>
+            <p className="eyebrow">{s.zone}</p>
+            <h2>{s.name}</h2>
+          </div>
         </div>
         <button className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
       </div>
