@@ -7,6 +7,10 @@ export const SRC = {
   tribune70: { label: "The Tribune, 29 Oct 2026", url: "https://www.tribuneindia.com/news/gurugram/2-women-out-for-a-walk-harassed-by-suv-borne-man-in-gurugrams-sector-70/" },
   safetipinHubs: { label: "Safetipin women's safety audit of Gurgaon hubs (undated)", url: "https://safetyscore.safetipin.com/media/56/in-gurgaon-going-to-office-is-a-risky-business/" },
   sqy56: { label: "Square Yards resident reviews, Sector 56 (82 reviews, Jan 2026)", url: "https://www.squareyards.com/reviews/locality/sector-56/63763" },
+  sqy49: { label: "Square Yards resident reviews, Sector 49 (83 reviews, Jan 2026)", url: "https://www.squareyards.com/reviews/locality/sector-49/63749" },
+  sqy57: { label: "Square Yards resident reviews, Sector 57 (61 reviews, Mar 2026)", url: "https://www.squareyards.com/reviews/locality/sector-57/63765" },
+  sqy65: { label: "Square Yards resident reviews, Sector 65 (53 reviews, Mar 2026)", url: "https://www.squareyards.com/reviews/locality/sector-65-in-gurgaon/63781" },
+  sqy67: { label: "Square Yards resident reviews, Sector 67 (52 reviews, Feb 2026)", url: "https://www.squareyards.com/reviews/locality/sector-67-in-gurgaon/63785" },
   police2024: { label: "The Tribune, 8 Jul 2024", url: "https://www.tribuneindia.com/news/haryana/gurugram-police-identify-over-25-unsafe-spots-for-women-637807" },
   sqyWater: { label: "Square Yards, Apr 2026", url: "https://www.squareyards.com/gurugram/infra/water-supply" },
   sqyRent: { label: "Square Yards listings", url: "https://www.squareyards.com/rent/2-bhk-for-rent-in-gurgaon" },
@@ -40,11 +44,14 @@ export const WATER_EV: Record<string, Evidence[]> = {
 
 /** Named spots police flagged as unsafe for women (2024). A spot, not the whole sector. */
 export const SAFETY_EV: Record<string, Evidence[]> = {
-  "49": [{ src: "police2024", note: "Vatika Chowk", tone: "bad" }],
+  "49": [{ src: "police2024", note: "Vatika Chowk", tone: "bad" }, { src: "sqy49", note: "Residents: many feel safe in gated societies with 24/7 security. Others mention dim or broken streetlights in some lanes and an older report of thefts.", tone: "info" }],
   "52": [{ src: "police2024", note: "Government Girls' College area", tone: "bad" }],
   "22": [{ src: "police2024", note: "an area in the sector", tone: "bad" }],
   "29": [{ src: "police2024", note: "an area in the sector", tone: "bad" }],
   "48": [{ src: "police2024", note: "an area in the sector", tone: "bad" }],
+  "57": [{ src: "sqy57", note: "Residents are mixed: some feel safe in gated, well-lit lanes. Many report dim or broken streetlights, dark corners and little police patrolling at night.", tone: "info" }],
+  "65": [{ src: "sqy65", note: "Residents are mixed: secure inside gated societies, but poor lighting on service lanes, dark stretches and weak patrolling are mentioned.", tone: "info" }],
+  "67": [{ src: "sqy67", note: "Residents mostly feel safe inside gated societies. Some report missing streetlights on service roads and isolated spots after dark, including phone snatching.", tone: "info" }],
   "34": [{ src: "safetipinHubs", note: "Audited area scored 2.1 out of 5 for women's safety (0-1 poor, 1-3.4 average, above 3.4 good).", tone: "bad" }],
   "44": [{ src: "safetipinHubs", note: "Audited area scored 1.5 out of 5 for women's safety (0-1 poor, 1-3.4 average, above 3.4 good).", tone: "bad" }],
   "56": [{ src: "sqy56", note: "Residents are mixed: many call it secure with night patrols, others mention poorly lit back streets and blind spots.", tone: "info" }],
