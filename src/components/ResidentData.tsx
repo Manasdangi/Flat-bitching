@@ -15,7 +15,7 @@ const MIN_RENT = 3; // reports needed before we show a rent figure
 const inr = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
 const ANSWERS: { v: PollAnswer; l: string }[] = [{ v: "yes", l: "Yes" }, { v: "sometimes", l: "Sometimes" }, { v: "no", l: "No" }];
 
-export function ResidentPolls({ sectorId }: { sectorId: string }) {
+export function ResidentPolls({ sectorId, only }: { sectorId: string; only?: PollKey[] }) {
   const [counts, setCounts] = useState<PollCounts | null>(null);
   const [voted, setVoted] = useState<PollKey[]>(() => votedAlready(sectorId));
   const [msg, setMsg] = useState("");
@@ -45,7 +45,7 @@ export function ResidentPolls({ sectorId }: { sectorId: string }) {
     <div className="community">
       <h3>🗳️ Ask residents</h3>
       <p className="muted small-txt">One tap each, anonymous. Answer only if you live or have lived here. Once a question has 5+ votes, residents' answers start adjusting this sector's score (by at most ~1 point).</p>
-      {[...POLLS].sort((a, b) => (women ? Number(WOMEN_POLLS.includes(b.key)) - Number(WOMEN_POLLS.includes(a.key)) : 0)).map((p) => {
+      {[...POLLS].filter((p) => !only || only.includes(p.key)).sort((a, b) => (women ? Number(WOMEN_POLLS.includes(b.key)) - Number(WOMEN_POLLS.includes(a.key)) : 0)).map((p) => {
         const c = counts?.[p.key];
         const total = c ? c.yes + c.sometimes + c.no : 0;
         const done = voted.includes(p.key);

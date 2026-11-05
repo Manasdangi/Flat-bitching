@@ -55,7 +55,7 @@ export default function WomenSnapshot({ sector }: { sector: Sector }) {
         <p key={e.note} className="note">{e.tone === "info" ? "💬" : "⚠️"} {e.tone === "info" ? "Residents say" : "Reported"}: {e.note} <small>{e.src === "safetipinHubs" || e.src === "sqy56" ? "From a public audit or reviews, not our own data." : "One news report, not a pattern."} <a className="link" href={SRC[e.src].url} target="_blank" rel="noreferrer">{SRC[e.src].label}</a></small></p>
       ))}
       {!night && !lit && !cab && !single && women.length === 0 && (
-        <p className="muted small-txt">No resident answers yet for this sector. Add yours below: it takes a few seconds.</p>
+        <p className="muted small-txt">No resident answers yet for this sector. Do you live here? <a className="link" {...linkProps(`/rate?sector=${sector.id}`)}>Rate it in 30 seconds</a>, or share that link with someone who does.</p>
       )}
       <p className="small-txt"><a className="link" {...linkProps("/women")}>Women's renting &amp; PG safety guide →</a></p>
     </div>

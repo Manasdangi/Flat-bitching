@@ -8,6 +8,7 @@ import Matcher from "./components/Matcher";
 import ThemeToggle from "./components/ThemeToggle";
 import WomenGuide from "./components/WomenGuide";
 import WomenBest from "./components/WomenBest";
+import RateYourSector from "./components/RateYourSector";
 import RentSafety from "./components/RentSafety";
 import DataMethod from "./components/DataMethod";
 import Ask from "./components/Ask";
@@ -217,6 +218,8 @@ export default function App() {
             <Quiz onDone={(p) => { setWeights(p.weights); setOffice(p.office); setPrefs((x) => ({ ...x, budget: p.budget })); }} />
           ) : route.view === "quizResult" ? (
             <QuizResult params={new URLSearchParams(location.search)} weights={weights} office={prefs.office} budget={prefs.budget} onSelect={select} />
+          ) : route.view === "rate" ? (
+            <RateYourSector />
           ) : route.view === "womenBest" ? (
             <WomenBest onSelect={select} />
           ) : route.view === "women" ? (
@@ -237,6 +240,7 @@ export default function App() {
               <p className="muted">{women ? "Safety-first picks for single women and PG residents. Tap a sector, search above, or take the quiz." : "Tap a sector on the map, search above, or let us pick for you."}</p>
               <div className="actions-grid">
                 <a className="action-card primary" {...linkProps("/quiz")}><b>{women ? "⚡ Find a safe sector for me" : "⚡ 60-second quiz"}</b><span>Answer 6 taps, get your top 3 sectors</span></a>
+                <a className="action-card" {...linkProps("/rate")}><b>🗳️ Rate your sector</b><span>30 seconds, helps other women</span></a>
                 {women && <a className="action-card women" {...linkProps("/women/best")}><b>🌙 Best sectors for women</b><span>Ranked by night safety, metro and cost</span></a>}
                 {women && <a className="action-card women" {...linkProps("/women")}><b>👩 Women's guide</b><span>PG checklist, night safety, helplines</span></a>}
                 <a className="action-card" {...linkProps("/match")}><b>🎯 Set priorities</b><span>Safety, metro, air, commute, budget</span></a>
