@@ -76,14 +76,23 @@ export default function Matcher(p: Props) {
   return (
     <div className="panel-body">
       <h2>What matters to you?</h2>
-      <p className="muted">Set your priorities from 0 to 5. The map colours each sector by how well it matches.</p>
+      <p className="muted">Pick one or more profiles, or set each priority from 0 to 5. The map colours each sector by how well it matches.</p>
 
       <div className="chips">
         {PRESETS.map((pr) => {
-          const on = PRIORITIES.every((k) => (p.weights[k.key] ?? 0) === (pr.w[k.key] ?? 0));
+          // A preset is "on" when every priority it sets is at least that high. Several can be on at once: the highest value per priority wins.
+          const isOn = (x: typeof pr) => Object.entries(x.w).every(([k, v]) => (p.weights[k as keyof Weights] ?? 0) >= (v ?? 0));
+          const on = isOn(pr);
           return (
             <button key={pr.label} className={`chip${on ? " on" : ""}`} aria-pressed={on}
-              onClick={() => { if (on) { p.setWeights(ZERO_WEIGHTS); return; } p.setWeights({ ...ZERO_WEIGHTS, ...pr.w }); track("preset", { name: pr.label }); }}>
+              onClick={() => {
+                const rest = PRESETS.filter((x) => x.label !== pr.label && isOn(x));
+                const picked = on ? rest : [...rest, pr];
+                const w: Weights = { ...ZERO_WEIGHTS };
+                for (const x of picked) for (const [k, v] of Object.entries(x.w)) w[k as keyof Weights] = Math.max(w[k as keyof Weights] ?? 0, v ?? 0);
+                p.setWeights(w);
+                if (!on) track("preset", { name: pr.label });
+              }}>
               {on ? "✓ " : ""}{pr.label}
             </button>
           );
