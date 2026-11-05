@@ -4,6 +4,7 @@ export const SRC = {
   tribune2026: { label: "The Tribune, 8 Aug 2026", url: "https://www.tribuneindia.com/news/haryana/97mm-rainfall-floods-millennium-city-again-old-gurugram-areas-worst-hit/" },
   tribune2025: { label: "The Tribune, 27 Aug 2025", url: "https://www.tribuneindia.com/news/haryana/despite-rs-500-cr-spend-gurugram-sinks-every-monsoon" },
   indiatv2025: { label: "India TV, 3 Sep 2025", url: "https://www.indiatvnews.com/haryana/clogged-drains-encroachments-how-gurugrams-urban-failures-fuel-monsoon-flooding-every-year-2025-09-03-1006468" },
+  tribune70: { label: "The Tribune, 29 Oct 2026", url: "https://www.tribuneindia.com/news/gurugram/2-women-out-for-a-walk-harassed-by-suv-borne-man-in-gurugrams-sector-70/" },
   police2024: { label: "The Tribune, 8 Jul 2024", url: "https://www.tribuneindia.com/news/haryana/gurugram-police-identify-over-25-unsafe-spots-for-women-637807" },
   sqyWater: { label: "Square Yards, Apr 2026", url: "https://www.squareyards.com/gurugram/infra/water-supply" },
   sqyRent: { label: "Square Yards listings", url: "https://www.squareyards.com/rent/2-bhk-for-rent-in-gurgaon" },
@@ -42,6 +43,7 @@ export const SAFETY_EV: Record<string, Evidence[]> = {
   "22": [{ src: "police2024", note: "an area in the sector", tone: "bad" }],
   "29": [{ src: "police2024", note: "an area in the sector", tone: "bad" }],
   "48": [{ src: "police2024", note: "an area in the sector", tone: "bad" }],
+  "70": [{ src: "tribune70", note: "Two women returning to their PG near Tulip Chowk were followed by a man in an SUV (Oct 2026). The woman said lighting was poor and patrols were missing. No arrest was reported.", tone: "bad" }],
 };
 
 /** Asking rents for 2 BHK read from Square Yards listing pages (first page of results only), ₹ thousand/month. */

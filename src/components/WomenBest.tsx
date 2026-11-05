@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { linkProps } from "../lib/router";
+import { confidence } from "../lib/confidence";
 import { nightHome, rankedForWomen, livingCosts } from "../lib/women";
 
 /** Safest sectors for women, ranked, with filters for budget, PG and metro. */
@@ -38,7 +39,7 @@ export default function WomenBest({ onSelect }: { onSelect: (id: string) => void
             return (
               <li key={s.id} onClick={() => onSelect(s.id)}>
                 <span>{s.name}<small className="muted"> · {s.zone}</small>
-                  <small className="muted commute-line">🌙 Getting home: {n.label} · {pgOnly ? `PG about ₹${c.pg}k` : `2BHK ₹${s.rent2bhk[0]}–${s.rent2bhk[1]}k`}</small></span>
+                  <small className="muted commute-line">🌙 Getting home: {n.label} · data: {confidence(s.id).level.toLowerCase()} · {pgOnly ? `PG about ₹${c.pg}k` : `2BHK ₹${s.rent2bhk[0]}–${s.rent2bhk[1]}k`}</small></span>
                 <b>{w}</b>
               </li>
             );

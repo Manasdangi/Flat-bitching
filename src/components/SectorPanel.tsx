@@ -17,6 +17,7 @@ import Checklist from "./Checklist";
 import RentCheck from "./RentCheck";
 import VisitPlanner from "./VisitPlanner";
 import { badgesFor } from "../lib/presets";
+import { confidence } from "../lib/confidence";
 
 type Props = {
   id: string;
@@ -75,6 +76,7 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
       )}
       {m != null && <p className="match">Your match: <b>{m}%</b></p>}
       <p>{s.summary}</p>
+      {(() => { const cf = confidence(s.id); return <p className="note">📊 Data confidence: <b>{cf.level}</b>. {cf.why}. <a className="link" {...linkProps("/data")}>How reliable is this?</a></p>; })()}
       <AqiBadge lat={s.lat} lng={s.lng} />
 
       <div className="actions">

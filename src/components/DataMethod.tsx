@@ -51,6 +51,8 @@ export default function DataMethod() {
         <ul className="safety-list method">
           <li>Anonymous voting can't fully stop a determined person from gaming a sector. That is why community input is capped.</li>
           <li>A sector with no reported flood or water problem may simply have little coverage. It isn't a guarantee.</li>
+          <li>No public source scores women's safety sector by sector. Safetipin's street audits of Gurugram cover the whole city and found lighting, visibility and public transport to be weak spots. Police lists name single spots, not sectors. So our safety scores are estimates, and the <b>Data confidence</b> tag on each sector shows how much real evidence stands behind it.</li>
+          <li>Social media posts (Instagram, YouTube, Facebook) are not used: we can't verify them, so we only use dated news reports, audits and resident votes.</li>
           <li>Conditions change every monsoon. Ask current residents and the society before signing anything.</li>
         </ul>
       </section>
