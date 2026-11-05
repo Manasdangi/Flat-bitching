@@ -1,5 +1,6 @@
 import { SECTORS, type Sector } from "../data/sectors";
-import { nearestMetro } from "./score";
+import { nearby, nearestMetro } from "./score";
+import { FLOOD, WATER } from "../data/risk";
 
 const metroScore = (km: number) => (km <= 1 ? 5 : km <= 2 ? 4 : km <= 3.5 ? 3 : km <= 5 ? 2 : 1);
 const mid = ([a, b]: [number, number]) => (a + b) / 2;
@@ -36,9 +37,30 @@ export function livingCosts(s: Sector) {
   };
 }
 
-export const rankedForWomen = (opts: { budget: number; pgOnly: boolean; metro: boolean }) =>
-  SECTORS.filter((s) => (!opts.budget || (opts.pgOnly ? s.pgRent[0] : s.rent2bhk[0]) <= opts.budget)
-    && (!opts.pgOnly || s.pg !== "Low")
-    && (!opts.metro || nearestMetro(s).km <= 2))
+export type WomenFilters = { budget: number; pgOnly: boolean; metro: boolean; noFlood?: boolean; noWater?: boolean; lively?: boolean; safe4?: boolean };
+
+export const rankedForWomen = (o: WomenFilters) =>
+  SECTORS.filter((s) => (!o.budget || (o.pgOnly ? s.pgRent[0] : s.rent2bhk[0]) <= o.budget)
+    && (!o.pgOnly || s.pg !== "Low")
+    && (!o.metro || nearestMetro(s).km <= 2)
+    && (!o.noFlood || !FLOOD[s.id])
+    && (!o.noWater || !WATER[s.id])
+    && (!o.lively || s.scores.market >= 4)
+    && (!o.safe4 || s.scores.safety >= 4))
     .map((s) => ({ s, w: womenScore(s) }))
     .sort((a, b) => b.w - a.w);
+
+/** Plain-text safety card for one sector, to send to family or a friend. */
+export function areaCardText(s: Sector, url: string) {
+  const n = nightHome(s), m = nearestMetro(s), h = nearby(s, "hospital", 1, 99)[0];
+  return [
+    `${s.name}, Gurgaon: area safety card`,
+    `Women's score: ${womenScore(s)}/100 · Getting home after dark: ${n.label}`,
+    `Nearest metro: ${m.station.name} (${m.km.toFixed(1)} km)`,
+    h && `Nearest big hospital: ${h.name} (${h.km.toFixed(1)} km)`,
+    FLOOD[s.id] && "Waterlogging reported in monsoon",
+    WATER[s.id] && "Water shortages reported",
+    "Emergency 112 · Women helpline 1091 / 181",
+    url,
+  ].filter(Boolean).join("\n");
+}

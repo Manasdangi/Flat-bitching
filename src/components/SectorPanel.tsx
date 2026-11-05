@@ -10,7 +10,7 @@ import { FLOOD, FLOOD_SOURCE, WATER, WATER_SOURCE } from "../data/risk";
 import { FLOOD_EV, SRC, WATER_EV } from "../data/evidence";
 import { RentReports, ResidentPolls } from "./ResidentData";
 import WomenSnapshot from "./WomenSnapshot";
-import { NightAndCost, PgScorecard } from "./WomenTools";
+import { AskOwner, NightAndCost, PgScorecard } from "./WomenTools";
 import { womenMode } from "../lib/store";
 import CostCalculator from "./CostCalculator";
 import Checklist from "./Checklist";
@@ -86,7 +86,7 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
       </div>
 
       {women && <WomenSnapshot sector={s} />}
-      {women && <NightAndCost sector={s} />}
+      {women && <NightAndCost sector={s} office={office} />}
 
       <div className="facts">
         <div><span>2BHK rent</span><b>{rupees(s.rent2bhk)}</b></div>
@@ -110,6 +110,7 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
 
       <div className="tools">
         {women && <PgScorecard sectorId={s.id} />}
+        {women && <AskOwner sector={s} />}
         <RentCheck sector={s} />
         <CostCalculator sector={s} />
         <VisitPlanner sector={s} />

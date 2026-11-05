@@ -1,18 +1,24 @@
 import { useState } from "react";
 import type { Sector } from "../data/sectors";
-import { livingCosts, nightHome } from "../lib/women";
+import { areaCardText, livingCosts, nightHome } from "../lib/women";
+import { commute, type Office } from "../lib/score";
 import { createStore } from "../lib/store";
 import { track } from "../lib/track";
 
 /** Getting-home score and PG vs shared flat costs for one sector. */
-export function NightAndCost({ sector }: { sector: Sector }) {
+export function NightAndCost({ sector, office }: { sector: Sector; office?: Office }) {
   const n = nightHome(sector), c = livingCosts(sector);
+  const cm = commute(sector, office ?? null);
   const tone = n.score >= 4 ? "good" : n.score >= 3 ? "ok" : "low";
   return (
     <div className="women-card">
       <h3>🌙 Getting home after dark</h3>
       <div className={`women-score ${tone}`}><b>{n.score}/5</b><span>{n.label}. Nearest metro {n.km.toFixed(1)} km away.</span></div>
-      <ul className="women-list">{n.tips.map((t) => <li key={t}>{t}</li>)}</ul>
+      <ul className="women-list">
+        {n.tips.map((t) => <li key={t}>{t}</li>)}
+        {cm && office && <li>🚕 Late-night cab home from {office.name}: about <b>{cm.offpeak ?? Math.max(10, Math.round(cm.minutes * 0.6))} min</b> on empty roads ({cm.roadKm.toFixed(1)} km)</li>}
+      </ul>
+      <AreaCardButton sector={sector} />
       <h3>💰 PG or a shared flat?</h3>
       <div className="facts">
         <div><span>PG, single room</span><b>~₹{c.pg}k</b></div>
@@ -105,5 +111,50 @@ export function HomeSafe() {
         <button className="btn small ghost" onClick={() => send("I've reached home safe. Thanks!", "arrived")}>Send "reached home"</button>
       </div>
     </section>
+  );
+}
+
+function AreaCardButton({ sector }: { sector: Sector }) {
+  const [done, setDone] = useState(false);
+  const go = async () => {
+    track("area_card_share", { sector: sector.id });
+    const text = areaCardText(sector, `${location.origin}/sector/${sector.id}`);
+    try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard?.writeText(text); setDone(true); } } catch { /* cancelled */ }
+  };
+  return <p><button className="btn small ghost" onClick={go}>{done ? "Copied!" : "📤 Share this area's safety card"}</button></p>;
+}
+
+const QUESTIONS = [
+  "What are the rules on visitors, guests and late entry? Please share them in writing.",
+  "Is there a curfew or gate closing time?",
+  "Does the owner live in the building, and how much notice is given before anyone enters my room or flat?",
+  "Are guards and CCTV in place at the gate and in common areas?",
+  "Is a single woman tenant fine here, and are there any rules not in the agreement?",
+  "What is the deposit, and in how many days is it refunded after I leave?",
+  "What is the notice period and lock-in?",
+  "Who do I call at night if there is a problem?",
+];
+
+/** Build a polite message to the owner or PG with the questions that matter. Copy it or send on WhatsApp. */
+export function AskOwner({ sector }: { sector: Sector }) {
+  const [picked, setPicked] = useState<number[]>([0, 1, 4, 5]);
+  const [copied, setCopied] = useState(false);
+  const text = `Hi, I'm interested in the place in ${sector.name}. Before I visit, could you please confirm:\n` + picked.sort((a, b) => a - b).map((i, n) => `${n + 1}. ${QUESTIONS[i]}`).join("\n") + "\nThank you!";
+  return (
+    <details className="tool">
+      <summary>💬 Questions to ask the owner or PG</summary>
+      <div className="tool-body">
+        <p className="muted small-txt">Tick what you want to ask, then send it before you visit. Clear answers in writing protect you later.</p>
+        <ul className="checklist">
+          {QUESTIONS.map((q, i) => (
+            <li key={q}><label className="check"><input type="checkbox" checked={picked.includes(i)} onChange={() => setPicked(picked.includes(i) ? picked.filter((x) => x !== i) : [...picked, i])} /> {q}</label></li>
+          ))}
+        </ul>
+        <div className="row wrap">
+          <button className="btn small" disabled={!picked.length} onClick={() => { track("ask_owner", { sector: sector.id, via: "whatsapp" }); window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener"); }}>Send on WhatsApp</button>
+          <button className="btn small ghost" disabled={!picked.length} onClick={async () => { try { await navigator.clipboard.writeText(text); setCopied(true); } catch { /* blocked */ } }}>{copied ? "Copied!" : "Copy message"}</button>
+        </div>
+      </div>
+    </details>
   );
 }

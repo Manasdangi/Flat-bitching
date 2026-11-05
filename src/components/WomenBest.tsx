@@ -7,7 +7,9 @@ export default function WomenBest({ onSelect }: { onSelect: (id: string) => void
   const [pgOnly, setPgOnly] = useState(false);
   const [metro, setMetro] = useState(false);
   const [budget, setBudget] = useState(0);
-  const list = rankedForWomen({ budget, pgOnly, metro }).slice(0, 15);
+  const [f, setF] = useState({ noFlood: false, noWater: false, lively: false, safe4: false });
+  const flip = (k: keyof typeof f) => setF({ ...f, [k]: !f[k] });
+  const list = rankedForWomen({ budget, pgOnly, metro, ...f }).slice(0, 15);
   return (
     <div className="panel-body">
       <p className="eyebrow">For women</p>
@@ -17,6 +19,12 @@ export default function WomenBest({ onSelect }: { onSelect: (id: string) => void
         <button className={`chip${!pgOnly ? " on" : ""}`} aria-pressed={!pgOnly} onClick={() => setPgOnly(false)}>🏠 Flats</button>
         <button className={`chip${pgOnly ? " on" : ""}`} aria-pressed={pgOnly} onClick={() => setPgOnly(true)}>🛏️ PG</button>
         <button className={`chip${metro ? " on" : ""}`} aria-pressed={metro} onClick={() => setMetro(!metro)}>🚇 Metro within 2 km</button>
+      </div>
+      <h3>My dealbreakers</h3>
+      <div className="chips">
+        {([["safe4", "🛡️ Safety 4+ only"], ["lively", "🌃 Busy and open late"], ["noFlood", "☔ No waterlogging"], ["noWater", "🚰 No water shortage"]] as const).map(([k, label]) => (
+          <button key={k} className={`chip${f[k] ? " on" : ""}`} aria-pressed={f[k]} onClick={() => flip(k)}>{f[k] ? "✓ " : ""}{label}</button>
+        ))}
       </div>
       <h3>{pgOnly ? "Max PG rent (single room)" : "Max 2BHK rent"}</h3>
       <div className="slider-row">

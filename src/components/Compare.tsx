@@ -1,6 +1,8 @@
 import { SECTORS, sectorById } from "../data/sectors";
 import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type Office, type Weights } from "../lib/score";
 import { Bar } from "./SectorPanel";
+import { womenMode } from "../lib/store";
+import { nightHome, womenScore } from "../lib/women";
 
 type Props = {
   ids: string[];
@@ -11,6 +13,7 @@ type Props = {
 };
 
 export default function Compare({ ids, setIds, weights, office, onSelect }: Props) {
+  const women = womenMode.use();
   const list = ids.map(sectorById).filter(Boolean) as NonNullable<ReturnType<typeof sectorById>>[];
   const add = (id: string) => id && !ids.includes(id) && ids.length < 3 && setIds([...ids, id]);
 
@@ -43,6 +46,8 @@ export default function Compare({ ids, setIds, weights, office, onSelect }: Prop
               {Object.values(weights).some(Boolean) && (
                 <tr><td>Your match</td>{list.map((s) => <td key={s.id}><b>{matchScore(s, weights, office)}%</b></td>)}</tr>
               )}
+              {women && <tr><td>👩 Women's score</td>{list.map((s) => <td key={s.id}><b>{womenScore(s)}</b>/100</td>)}</tr>}
+              {women && <tr><td>🌙 Getting home</td>{list.map((s) => <td key={s.id}>{nightHome(s).label}</td>)}</tr>}
               <tr><td>2BHK rent</td>{list.map((s) => <td key={s.id}>₹{s.rent2bhk[0]}–{s.rent2bhk[1]}k</td>)}</tr>
               <tr><td>PG</td>{list.map((s) => <td key={s.id}>₹{s.pgRent[0]}–{s.pgRent[1]}k · {s.pg}</td>)}</tr>
               <tr><td>Metro</td>{list.map((s) => { const m = nearestMetro(s); return <td key={s.id}>{m.station.name}<br /><small>{m.km.toFixed(1)} km</small></td>; })}</tr>
