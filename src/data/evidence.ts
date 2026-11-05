@@ -5,6 +5,8 @@ export const SRC = {
   tribune2025: { label: "The Tribune, 27 Aug 2025", url: "https://www.tribuneindia.com/news/haryana/despite-rs-500-cr-spend-gurugram-sinks-every-monsoon" },
   indiatv2025: { label: "India TV, 3 Sep 2025", url: "https://www.indiatvnews.com/haryana/clogged-drains-encroachments-how-gurugrams-urban-failures-fuel-monsoon-flooding-every-year-2025-09-03-1006468" },
   tribune70: { label: "The Tribune, 29 Oct 2026", url: "https://www.tribuneindia.com/news/gurugram/2-women-out-for-a-walk-harassed-by-suv-borne-man-in-gurugrams-sector-70/" },
+  safetipinHubs: { label: "Safetipin women's safety audit of Gurgaon hubs (undated)", url: "https://safetyscore.safetipin.com/media/56/in-gurgaon-going-to-office-is-a-risky-business/" },
+  sqy56: { label: "Square Yards resident reviews, Sector 56 (82 reviews, Jan 2026)", url: "https://www.squareyards.com/reviews/locality/sector-56/63763" },
   police2024: { label: "The Tribune, 8 Jul 2024", url: "https://www.tribuneindia.com/news/haryana/gurugram-police-identify-over-25-unsafe-spots-for-women-637807" },
   sqyWater: { label: "Square Yards, Apr 2026", url: "https://www.squareyards.com/gurugram/infra/water-supply" },
   sqyRent: { label: "Square Yards listings", url: "https://www.squareyards.com/rent/2-bhk-for-rent-in-gurgaon" },
@@ -43,6 +45,9 @@ export const SAFETY_EV: Record<string, Evidence[]> = {
   "22": [{ src: "police2024", note: "an area in the sector", tone: "bad" }],
   "29": [{ src: "police2024", note: "an area in the sector", tone: "bad" }],
   "48": [{ src: "police2024", note: "an area in the sector", tone: "bad" }],
+  "34": [{ src: "safetipinHubs", note: "Audited area scored 2.1 out of 5 for women's safety (0-1 poor, 1-3.4 average, above 3.4 good).", tone: "bad" }],
+  "44": [{ src: "safetipinHubs", note: "Audited area scored 1.5 out of 5 for women's safety (0-1 poor, 1-3.4 average, above 3.4 good).", tone: "bad" }],
+  "56": [{ src: "sqy56", note: "Residents are mixed: many call it secure with night patrols, others mention poorly lit back streets and blind spots.", tone: "info" }],
   "70": [{ src: "tribune70", note: "Two women returning to their PG near Tulip Chowk were followed by a man in an SUV (Oct 2026). The woman said lighting was poor and patrols were missing. No arrest was reported.", tone: "bad" }],
 };
 

@@ -52,7 +52,7 @@ export default function WomenSnapshot({ sector }: { sector: Sector }) {
       {(SAFETY_EV[sector.id] ?? []).map((e) => e.src === "police2024" ? (
         <p key={e.note} className="note">⚠️ Police named {e.note} here as an unsafe spot for women. <small>That is one spot, not the whole sector, and the list dates from 2024, so ask locally. <a className="link" href={SRC[e.src].url} target="_blank" rel="noreferrer">{SRC[e.src].label}</a></small></p>
       ) : (
-        <p key={e.note} className="note">⚠️ Reported: {e.note} <small>One news report, not a pattern. <a className="link" href={SRC[e.src].url} target="_blank" rel="noreferrer">{SRC[e.src].label}</a></small></p>
+        <p key={e.note} className="note">{e.tone === "info" ? "💬" : "⚠️"} {e.tone === "info" ? "Residents say" : "Reported"}: {e.note} <small>{e.src === "safetipinHubs" || e.src === "sqy56" ? "From a public audit or reviews, not our own data." : "One news report, not a pattern."} <a className="link" href={SRC[e.src].url} target="_blank" rel="noreferrer">{SRC[e.src].label}</a></small></p>
       ))}
       {!night && !lit && !cab && !single && women.length === 0 && (
         <p className="muted small-txt">No resident answers yet for this sector. Add yours below: it takes a few seconds.</p>
