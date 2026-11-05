@@ -70,9 +70,10 @@ input[type=range] { accent-color: var(--accent); width: 100%; }
 select, .review-form input, textarea { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
 select { max-width: 100%; }
 .ranked { padding-left: 22px; margin: 0; }
-.ranked li { padding: 8px 6px; border-bottom: 1px solid var(--line); cursor: pointer; }
-.ranked li span { display: inline-block; width: calc(100% - 50px); }
-.ranked li b { float: right; }
+.ranked li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 6px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.ranked li span { flex: 1 1 auto; min-width: 0; }
+.ranked li b { flex: none; white-space: nowrap; text-align: right; }
+.ranked li small { display: block; }
 .ranked li:hover { background: var(--accent-soft); }
 
 .review-form { display: grid; gap: 8px; margin: 10px 0; }
