@@ -18,7 +18,9 @@ function limited(ip: string) {
 }
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 
-export default {
+export const config = { runtime: "edge" }; // bundled like api/share.ts, so the src/ imports resolve
+
+const handlers = {
   async fetch(req: Request) {
     if (req.method !== "POST") return json({ error: "method" }, 405);
     const origin = req.headers.get("origin") ?? "";
@@ -65,3 +67,5 @@ export default {
     }
   },
 };
+
+export default function handler(req: Request) { return handlers.fetch(req); }
