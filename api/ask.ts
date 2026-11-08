@@ -44,7 +44,7 @@ const handlers = {
         const r = await fetch("https://api.anthropic.com/v1/messages", {
           method: "POST", signal: AbortSignal.timeout(25_000),
           headers: { "Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01" },
-          body: JSON.stringify({ model: CLAUDE_MODEL, temperature: 0.2, max_tokens: 450,
+          body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 450,
             system: [{ type: "text", text: SYSTEM + dataset(), cache_control: { type: "ephemeral" } }], messages: msgs }),
         });
         if (!r.ok) { console.error("ask upstream", r.status, (await r.text()).slice(0, 200)); return json({ error: "upstream" }, 502); }
