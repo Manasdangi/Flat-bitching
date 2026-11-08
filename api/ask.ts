@@ -44,11 +44,12 @@ const handlers = {
         const r = await fetch("https://api.anthropic.com/v1/messages", {
           method: "POST", signal: AbortSignal.timeout(25_000),
           headers: { "Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01" },
-          body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 450,
+          body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 2000,
             system: [{ type: "text", text: SYSTEM + dataset(), cache_control: { type: "ephemeral" } }], messages: msgs }),
         });
         if (!r.ok) { console.error("ask upstream", r.status, (await r.text()).slice(0, 200)); return json({ error: "upstream" }, 502); }
-        const j = await r.json() as { content?: { type: string; text?: string }[] };
+        const j = await r.json() as { content?: { type: string; text?: string }[]; stop_reason?: string; usage?: unknown };
+        if (!j.content?.some((c) => c.type === "text" && c.text)) console.error("ask empty", j.stop_reason, JSON.stringify(j.content)?.slice(0, 200), JSON.stringify(j.usage));
         const answer = j.content?.filter((c) => c.type === "text").map((c) => c.text).join("").trim();
         return answer ? json({ answer }) : json({ error: "empty" }, 502);
       }
