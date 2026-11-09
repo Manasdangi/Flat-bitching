@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Sector } from "../data/sectors";
 import { communityEnabled, loadRentSummary, type RentRow } from "../lib/community";
 import { track } from "../lib/track";
+import { Tool } from "./Tool";
 
 type Kind = "2bhk" | "pg";
 const inr = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
@@ -42,8 +43,7 @@ export default function RentCheck({ sector }: { sector: Sector }) {
   };
 
   return (
-    <details className="tool">
-      <summary>💰 Is my rent fair?</summary>
+    <Tool title={<>💰 Is my rent fair?</>}>
       <form className="tool-body" onSubmit={check}>
         <p className="muted small-txt">Enter the rent you were quoted in {sector.name}. Nothing is saved or sent.</p>
         <div className="calc-grid">
@@ -73,6 +73,6 @@ export default function RentCheck({ sector }: { sector: Sector }) {
           </div>
         )}
       </form>
-    </details>
+    </Tool>
   );
 }

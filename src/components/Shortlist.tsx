@@ -38,6 +38,17 @@ function sharedFromUrl(): Pick<SavedItem, "kind" | "id">[] {
   ];
 }
 
+/** Saved places and Compare live under one "Shortlist" tab; this switches between the two. */
+export function ShortlistTabs({ active, compareCount }: { active: "saved" | "compare"; compareCount: number }) {
+  const saved = shortlist.use().length;
+  return (
+    <div className="seg" role="tablist" aria-label="Shortlist">
+      <a role="tab" aria-selected={active === "saved"} className={active === "saved" ? "on" : ""} {...linkProps("/shortlist")}>♥ Saved{saved ? ` (${saved})` : ""}</a>
+      <a role="tab" aria-selected={active === "compare"} className={active === "compare" ? "on" : ""} {...linkProps("/compare")}>⚖️ Compare{compareCount ? ` (${compareCount})` : ""}</a>
+    </div>
+  );
+}
+
 export default function ShortlistPage({ weights, office, compareIds, setCompare }: {
   weights: Weights; office: Office; compareIds: string[]; setCompare: (ids: string[]) => void;
 }) {
@@ -77,6 +88,7 @@ export default function ShortlistPage({ weights, office, compareIds, setCompare 
 
   return (
     <div className="panel-body">
+      <ShortlistTabs active="saved" compareCount={compareIds.length} />
       <h2>♥ My shortlist</h2>
       {items.length === 0 ? (
         <>

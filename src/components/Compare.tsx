@@ -4,6 +4,7 @@ import { Bar } from "./SectorPanel";
 import { womenMode } from "../lib/store";
 import { nightHome, womenScore } from "../lib/women";
 import { shortlist } from "../lib/store";
+import { ShortlistTabs } from "./Shortlist";
 
 type Props = {
   ids: string[];
@@ -42,6 +43,7 @@ export default function Compare({ ids, setIds, weights, office, onSelect }: Prop
 
   return (
     <div className="panel-body">
+      <ShortlistTabs active="compare" compareCount={ids.length} />
       <h2>Compare sectors</h2>
       <p className="muted">Add up to 3 sectors, either here or with “+ Compare” on a sector. The best value in each row is highlighted.</p>
       {list.length < 3 && (topMatches.length > 0 || saved.length > 0) && (

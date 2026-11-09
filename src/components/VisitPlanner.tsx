@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Sector } from "../data/sectors";
 import { track } from "../lib/track";
+import { Tool } from "./Tool";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const local = (d: Date) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
@@ -55,8 +56,7 @@ export default function VisitPlanner({ sector }: { sector: Sector }) {
   };
 
   return (
-    <details className="tool">
-      <summary>📅 Plan a visit and tell a friend</summary>
+    <Tool title={<>📅 Plan a visit and tell a friend</>}>
       <div className="tool-body">
         <p className="muted small-txt">Pick a time, then send the plan to a friend or family member. Nothing is saved or sent from here.</p>
         <div className="calc-grid">
@@ -83,6 +83,6 @@ export default function VisitPlanner({ sector }: { sector: Sector }) {
           <button className="btn small ghost" onClick={ics} disabled={!ok}>Apple / Outlook (.ics)</button>
         </div>
       </div>
-    </details>
+    </Tool>
   );
 }

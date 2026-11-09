@@ -94,6 +94,7 @@ export default function Matcher(p: Props) {
 
   return (
     <div className="panel-body">
+      <a className="quiz-cta" {...linkProps("/quiz")}><b>⚡ Not sure? Take the 60-second quiz</b><span>6 taps, we set your priorities and pick your top 3</span></a>
       <h2>What matters to you?</h2>
       <p className="muted">Pick one or more profiles, or set each priority from 0 to 5. The map colours each sector by how well it matches.</p>
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Tool } from "./Tool";
 import type { Sector } from "../data/sectors";
 import { areaCardText, livingCosts, nightHome } from "../lib/women";
 import { commute, type Office } from "../lib/score";
@@ -62,8 +63,7 @@ export function PgScorecard({ sectorId }: { sectorId: string }) {
   };
   const toggle = (id: string) => store.set((s) => ({ ...s, [key]: { ...s[key], ticks: s[key].ticks.includes(id) ? s[key].ticks.filter((x) => x !== id) : [...s[key].ticks, id] } }));
   return (
-    <details className="tool">
-      <summary>🛏️ PG safety scorecard{entries.length ? <span className="muted"> ({entries.length} saved)</span> : null}</summary>
+    <Tool title={<>🛏️ PG safety scorecard{entries.length ? <span className="muted"> ({entries.length} saved)</span> : null}</>}>
       <div className="tool-body">
         <p className="muted small-txt">Visiting PGs? Add each one, tick what you actually saw, and compare scores later. Saved only on this device.</p>
         <div className="row">
@@ -89,7 +89,7 @@ export function PgScorecard({ sectorId }: { sectorId: string }) {
           </>
         )}
       </div>
-    </details>
+    </Tool>
   );
 }
 
@@ -141,8 +141,7 @@ export function AskOwner({ sector }: { sector: Sector }) {
   const [copied, setCopied] = useState(false);
   const text = `Hi, I'm interested in the place in ${sector.name}. Before I visit, could you please confirm:\n` + picked.sort((a, b) => a - b).map((i, n) => `${n + 1}. ${QUESTIONS[i]}`).join("\n") + "\nThank you!";
   return (
-    <details className="tool">
-      <summary>💬 Questions to ask the owner or PG</summary>
+    <Tool title={<>💬 Questions to ask the owner or PG</>}>
       <div className="tool-body">
         <p className="muted small-txt">Tick what you want to ask, then send it before you visit. Clear answers in writing protect you later.</p>
         <ul className="checklist">
@@ -155,6 +154,6 @@ export function AskOwner({ sector }: { sector: Sector }) {
           <button className="btn small ghost" disabled={!picked.length} onClick={async () => { try { await navigator.clipboard.writeText(text); setCopied(true); } catch { /* blocked */ } }}>{copied ? "Copied!" : "Copy message"}</button>
         </div>
       </div>
-    </details>
+    </Tool>
   );
 }

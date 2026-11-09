@@ -12,7 +12,7 @@ import { RentReports, ResidentPolls } from "./ResidentData";
 import WomenSnapshot from "./WomenSnapshot";
 import { AskOwner, NightAndCost, PgScorecard } from "./WomenTools";
 import { womenMode } from "../lib/store";
-import CostCalculator from "./CostCalculator";
+import { ToolGroup } from "./Tool";
 import Checklist from "./Checklist";
 import RentCheck from "./RentCheck";
 import VisitPlanner from "./VisitPlanner";
@@ -122,12 +122,17 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
       <ResidentPolls sectorId={s.id} />
 
       <div className="tools">
-        {women && <PgScorecard sectorId={s.id} />}
-        {women && <AskOwner sector={s} />}
         <RentCheck sector={s} />
-        <CostCalculator sector={s} />
-        <VisitPlanner sector={s} />
-        <Checklist sectorId={s.id} />
+        <ToolGroup title="📅 Plan a visit + checklist">
+          <VisitPlanner sector={s} />
+          <Checklist sectorId={s.id} />
+        </ToolGroup>
+        {women && (
+          <ToolGroup title="🛏️ PG & owner questions">
+            <PgScorecard sectorId={s.id} />
+            <AskOwner sector={s} />
+          </ToolGroup>
+        )}
       </div>
 
       <h3>Scores</h3>

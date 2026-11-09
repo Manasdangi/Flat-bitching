@@ -123,7 +123,10 @@ export default function App() {
   const setOffice3 = (office3: Office) => setPrefs((p) => ({ ...p, office3 }));
   const setCompare = (compare: string[]) => setPrefs((p) => ({ ...p, compare }));
   const selectedId = route.view === "sector" ? route.id : null;
-  const tab = route.view === "sector" || route.view === "society" || route.view === "rentSafety" || route.view === "women" || route.view === "data" ? "explore" : route.view === "quizResult" ? "quiz" : route.view;
+  const tab = route.view === "quiz" || route.view === "quizResult" || route.view === "match" ? "match"
+    : route.view === "compare" || route.view === "shortlist" ? "shortlist"
+    : route.view === "ask" ? "ask"
+    : "explore";
 
   // Bottom-sheet drag on phones: swipe up/down on the handle.
   const touchY = useRef<number | null>(null);
@@ -143,11 +146,9 @@ export default function App() {
         <SearchBar onSelect={select} />
         <nav className="tabs" aria-label="Main">
           <a className={tab === "explore" ? "on" : ""} {...linkProps("/")}><i>🗺️</i><span>Explore</span></a>
-          <a className={tab === "quiz" ? "on" : ""} {...linkProps("/quiz")}><i>⚡</i><span>Quiz</span></a>
           <a className={tab === "match" ? "on" : ""} {...linkProps("/match")}><i>🎯</i><span>Match</span></a>
-          <a className={tab === "compare" ? "on" : ""} {...linkProps("/compare")}><i>⚖️</i><span>Compare{prefs.compare.length ? ` (${prefs.compare.length})` : ""}</span></a>
+          <a className={tab === "shortlist" ? "on" : ""} {...linkProps("/shortlist")}><i>♥</i><span>Shortlist{saved.length ? ` (${saved.length})` : ""}</span></a>
           <a className={tab === "ask" ? "on" : ""} {...linkProps("/ask")}><i>💬</i><span>Ask AI</span></a>
-          <a className={tab === "shortlist" ? "on" : ""} {...linkProps("/shortlist")}><i>♥</i><span>Saved{saved.length ? ` (${saved.length})` : ""}</span></a>
         </nav>
         <ThemeToggle />
       </header>

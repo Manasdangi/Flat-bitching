@@ -1,4 +1,5 @@
 import { checklist } from "../lib/store";
+import { Tool } from "./Tool";
 
 export const CHECKS: { id: string; text: string }[] = [
   { id: "water", text: "Water: supply hours and source (municipal, borewell, tanker). Check the taste/TDS." },
@@ -23,8 +24,7 @@ export default function Checklist({ sectorId }: { sectorId: string }) {
   const toggle = (id: string) =>
     checklist.set((c) => ({ ...c, [sectorId]: done.includes(id) ? done.filter((x) => x !== id) : [...done, id] }));
   return (
-    <details className="tool">
-      <summary>✅ Flat-visit checklist <span className="muted">({done.length}/{CHECKS.length})</span></summary>
+    <Tool title={<>✅ Flat-visit checklist <span className="muted">({done.length}/{CHECKS.length})</span></>}>
       <div className="tool-body">
         <ul className="checklist">
           {CHECKS.map((c) => (
@@ -38,6 +38,6 @@ export default function Checklist({ sectorId }: { sectorId: string }) {
           {done.length > 0 && <button className="link small-txt" onClick={() => checklist.set((c) => ({ ...c, [sectorId]: [] }))}>Reset</button>}
         </div>
       </div>
-    </details>
+    </Tool>
   );
 }
