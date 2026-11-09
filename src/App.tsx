@@ -105,6 +105,18 @@ export default function App() {
     else setSheet("full");
   }, [route.view, route.view === "sector" ? route.id : route.view === "society" ? route.slug : ""]);
 
+  // Desktop shortcuts: "/" jumps to search, Esc closes the open sector.
+  useEffect(() => {
+    const on = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      const typing = el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable);
+      if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey) { e.preventDefault(); document.querySelector<HTMLInputElement>(".search input")?.focus(); }
+      else if (e.key === "Escape" && !typing && route.view === "sector") navigate("/");
+    };
+    addEventListener("keydown", on);
+    return () => removeEventListener("keydown", on);
+  }, [route.view]);
+
   const select = (id: string) => { navigate(`/sector/${id}`); track("sector_open", { sector: id }); };
   const setOffice = (office: Office) => setPrefs((p) => ({ ...p, office }));
   const setOffice2 = (office2: Office) => setPrefs((p) => ({ ...p, office2 }));
@@ -140,7 +152,7 @@ export default function App() {
         <ThemeToggle />
       </header>
 
-      <main className={`layout sheet-${sheet}`}>
+      <main className={`layout sheet-${sheet}${route.view === "compare" ? " wide" : ""}`}>
         <div className="map-wrap">
           <MapView
             selectedId={selectedId}
@@ -200,6 +212,7 @@ export default function App() {
               office2={prefs.office ? prefs.office2 : null}
               office3={prefs.office ? prefs.office3 ?? null : null}
               onClose={() => navigate("/")}
+              budget={prefs.budget}
               inCompare={prefs.compare.includes(route.id)}
               onToggleCompare={() => {
                 const id = route.id;
@@ -217,6 +230,7 @@ export default function App() {
               pickingOffice={pickingOffice} setPickingOffice={(v) => { setPickingOffice(v); if (v) setSheet("peek"); }}
               budget={prefs.budget} setBudget={(budget) => setPrefs((p) => ({ ...p, budget }))}
               onSelect={select}
+              compareIds={prefs.compare} setCompare={setCompare}
             />
           ) : route.view === "quiz" ? (
             <Quiz onDone={(p) => { setWeights(p.weights); setOffice(p.office); setPrefs((x) => ({ ...x, budget: p.budget })); }} />

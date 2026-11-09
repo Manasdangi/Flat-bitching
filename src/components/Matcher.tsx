@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { OFFICES, SECTORS } from "../data/sectors";
 import { PRESETS } from "../lib/presets";
-import { commute, matchScore, PRIORITIES, ZERO_WEIGHTS, type Office, type Weights } from "../lib/score";
+import { allScores, commute, matchScore, PRIORITIES, ZERO_WEIGHTS, type Office, type Weights } from "../lib/score";
+import type { Sector } from "../data/sectors";
 import { money } from "../lib/store";
+import { linkProps } from "../lib/router";
 import { track } from "../lib/track";
 
 type Props = {
@@ -19,7 +21,28 @@ type Props = {
   budget: number;
   setBudget: (n: number) => void;
   onSelect: (id: string) => void;
+  compareIds: string[];
+  setCompare: (ids: string[]) => void;
 };
+
+/** One-line reasons a sector ranks well: the user's top priorities with this sector's score, plus rent. */
+function reasons(s: Sector, w: Weights, office: Office) {
+  const sc = allScores(s, office);
+  return PRIORITIES.filter((x) => w[x.key] > 0 && sc[x.key] != null)
+    .sort((a, b) => w[b.key] - w[a.key] || (sc[b.key] ?? 0) - (sc[a.key] ?? 0))
+    .slice(0, 3)
+    .map((x) => ({ key: x.key, text: `${x.icon} ${x.label} ${Math.round((sc[x.key] ?? 0) * 10) / 10}/5`, good: (sc[x.key] ?? 0) >= 3.5 }));
+}
+
+function CompareBtn({ id, ids, set }: { id: string; ids: string[]; set: (ids: string[]) => void }) {
+  const on = ids.includes(id);
+  return (
+    <button className={`btn small ${on ? "" : "ghost"}`} aria-pressed={on}
+      onClick={(e) => { e.stopPropagation(); set(on ? ids.filter((x) => x !== id) : [...ids, id].slice(-3)); track("compare_toggle", { from: "match" }); }}>
+      {on ? "✓ Comparing" : "+ Compare"}
+    </button>
+  );
+}
 
 function OfficePicker({ value, onChange, picking, onPick, label }: {
   value: Office; onChange: (o: Office) => void; picking: boolean; onPick: () => void; label: string;
@@ -67,10 +90,6 @@ export default function Matcher(p: Props) {
         .sort((a, b) => b.total - a.total || a.worst - b.worst).slice(0, 8)
     : [];
   const active = Object.values(p.weights).some(Boolean);
-  const ranked = SECTORS.map((s) => ({ s, m: matchScore(s, p.weights, p.office) ?? 0 }))
-    .filter(({ s }) => !p.budget || s.rent2bhk[0] <= p.budget)
-    .sort((a, b) => b.m - a.m)
-    .slice(0, 10);
   const salaryBudget = salary ? Math.round((salary * 0.3 * Math.max(1, people)) / 1000 / 5) * 5 : 0;
 
   return (
@@ -126,22 +145,6 @@ export default function Matcher(p: Props) {
         </>
       )}
 
-      {bestForOffices.length > 0 && (
-        <>
-          <h3>{offices.length > 1 ? `Best sectors for your ${offices.length} offices` : "Best sectors for you"}</h3>
-          <p className="muted small-txt">{offices.length > 1 ? "Ranked by your priorities and budget, plus the longest peak-hour drive so nobody has a terrible commute. " : "Ranked by your priorities, budget and drive to your office. "}Drive times are estimates.</p>
-          <ol className="ranked">
-            {bestForOffices.map(({ s, mins, worst }) => (
-              <li key={s.id} onClick={() => p.onSelect(s.id)}>
-                <span>{s.name}<small className="muted"> · {s.zone} · 2BHK ₹{s.rent2bhk[0]}–{s.rent2bhk[1]}k/mo</small>
-                  {mins.length > 0 && <small className="muted commute-line">🚗 {mins.join(" / ")} min at peak</small>}</span>
-                {mins.length > 0 && <b>{worst} min</b>}
-              </li>
-            ))}
-          </ol>
-        </>
-      )}
-
       <h3>Max 2BHK budget</h3>
       <div className="slider-row">
         <input type="range" min={0} max={100} step={5} value={p.budget} onChange={(e) => p.setBudget(+e.target.value)} />
@@ -171,7 +174,8 @@ export default function Matcher(p: Props) {
         </div>
       )}
 
-      <h3>Priorities</h3>
+      <details className="fine-tune">
+        <summary>Fine-tune priorities{active ? ` (${Object.values(p.weights).filter(Boolean).length} set)` : ""}</summary>
       <ul className="sliders">
         {PRIORITIES.map((pr) => (
           <li key={pr.key}>
@@ -184,26 +188,29 @@ export default function Matcher(p: Props) {
         ))}
       </ul>
       {!p.office && <p className="note">Pick an office to use the commute slider.</p>}
+      </details>
 
-      <h3>{active ? "Best matches" : "Set a priority to see matches"}</h3>
-      {active && (
-        <ol className="ranked">
-          {ranked.map(({ s, m }) => {
-            const c1 = commute(s, p.office);
-            const c2 = commute(s, p.office2);
-            return (
-              <li key={s.id} onClick={() => p.onSelect(s.id)}>
-                <span>
-                  {s.name}<small className="muted"> · {s.zone}</small>
-                  {c1 && <small className="muted commute-line">🚗 {c1.minutes} min{c2 ? ` / ${c2.minutes} min` : ""} at peak</small>}
-                </span>
-                <b>{m}%</b>
-              </li>
-            );
-          })}
-          {ranked.length === 0 && <li className="muted">Nothing fits that budget. Try raising it.</li>}
-        </ol>
+      {bestForOffices.length === 0 && (
+        <p className="note">{offices.length || hasOther ? "Nothing fits that budget. Try raising it." : "Pick a profile, an office or a priority above to see matching sectors here."}</p>
       )}
+      {bestForOffices.length > 0 && (
+        <>
+          <h3>{offices.length > 1 ? `Best sectors for your ${offices.length} offices` : "Best sectors for you"}</h3>
+          <p className="muted small-txt">{offices.length > 1 ? "Ranked by your priorities and budget, plus the longest peak-hour drive so nobody has a terrible commute. " : "Ranked by your priorities, budget and drive to your office. "}Drive times are estimates.</p>
+          <ol className="ranked">
+            {bestForOffices.map(({ s, mins, total }) => (
+              <li key={s.id} onClick={() => p.onSelect(s.id)}>
+                <span>{s.name}<small className="muted">{s.zone}</small><small className="muted">2BHK ₹{s.rent2bhk[0]}–{s.rent2bhk[1]}k/mo</small>
+                  {mins.length > 0 && <small className="muted commute-line">🚗 {mins.join(" / ")} min at peak</small>}
+                  {hasOther && <small className="why">{reasons(s, otherW, p.office).map((r) => <em key={r.key} className={r.good ? "ok" : ""}>{r.text}</em>)}</small>}</span>
+                <span className="row-end"><b>{Math.round(total)}%</b><CompareBtn id={s.id} ids={p.compareIds} set={p.setCompare} /></span>
+              </li>
+            ))}
+          </ol>
+          {p.compareIds.length >= 2 && <a className="btn small" {...linkProps("/compare")}>Compare {p.compareIds.length} sectors →</a>}
+        </>
+      )}
+
     </div>
   );
 }

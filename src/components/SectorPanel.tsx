@@ -28,6 +28,7 @@ type Props = {
   onClose: () => void;
   inCompare: boolean;
   onToggleCompare: () => void;
+  budget?: number;
 };
 
 export const Bar = ({ v }: { v: number | null }) => (
@@ -38,7 +39,7 @@ export const Bar = ({ v }: { v: number | null }) => (
 
 const rupees = ([a, b]: [number, number]) => `₹${a}k – ₹${b}k`;
 
-export default function SectorPanel({ id, weights, office, office2, office3, onClose, inCompare, onToggleCompare }: Props) {
+export default function SectorPanel({ id, weights, office, office2, office3, onClose, inCompare, onToggleCompare, budget = 0 }: Props) {
   const women = womenMode.use();
   const s = sectorById(id);
   if (!s) return <div className="panel-body"><h2>Sector not found</h2><p>We don't cover this one yet.</p></div>;
@@ -87,9 +88,6 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
         <button className="btn small ghost" onClick={share}>Share</button>
       </div>
 
-      {women && <WomenSnapshot sector={s} />}
-      {women && <NightAndCost sector={s} office={office} />}
-
       <div className="facts">
         <div><span>2BHK rent</span><b>{rupees(s.rent2bhk)}</b></div>
         <div><span>PG (single)</span><b>{rupees(s.pgRent)}</b></div>
@@ -105,6 +103,19 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
           </div>
         )}
       </div>
+
+      {budget > 0 && (
+        <p className={`budget-line ${s.rent2bhk[0] <= budget ? "ok" : "over"}`}>
+          {s.rent2bhk[1] <= budget ? `✓ 2BHK fits your ₹${budget}k budget` : s.rent2bhk[0] <= budget ? `~ Some 2BHKs fit your ₹${budget}k budget (rents start at ₹${s.rent2bhk[0]}k)` : `✕ Above your ₹${budget}k budget (2BHK starts at ₹${s.rent2bhk[0]}k)`}
+        </p>
+      )}
+      <div className="inshort">
+        <p><b>👍 Good:</b> {s.highlights.slice(0, 2).join(" · ")}</p>
+        <p><b>⚠️ Watch out:</b> {s.watchOut.slice(0, 2).join(" · ")}</p>
+      </div>
+
+      {women && <WomenSnapshot sector={s} />}
+      {women && <NightAndCost sector={s} office={office} />}
 
       <RiskCard id={s.id} />
       <RentReports sector={s} />
