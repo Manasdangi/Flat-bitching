@@ -32,6 +32,14 @@ export default function VisitPlanner({ sector }: { sector: Sector }) {
     track("visit_share", { sector: sector.id, via: "sheet" });
     try { if (navigator.share) await navigator.share({ text: text() }); else await navigator.clipboard?.writeText(text()); } catch { /* cancelled */ }
   };
+  // Google Calendar "create event" link: opens a pre-filled event in the user's own calendar (nothing is sent from here).
+  const gcal = ok ? "https://calendar.google.com/calendar/render?" + new URLSearchParams({
+    action: "TEMPLATE",
+    text: `Flat visit: ${sector.name}`,
+    dates: `${local(start)}/${local(new Date(start.getTime() + 3600000))}`,
+    details: text(),
+    location: place || `${sector.name}, Gurgaon`,
+  }).toString() : "";
   const ics = () => {
     track("visit_reminder", { sector: sector.id });
     const end = new Date(start.getTime() + 3600000);
@@ -70,7 +78,9 @@ export default function VisitPlanner({ sector }: { sector: Sector }) {
         <div className="row wrap">
           <button className="btn small" onClick={whatsapp} disabled={!ok}>Send on WhatsApp</button>
           <button className="btn small ghost" onClick={share} disabled={!ok}>Share / copy</button>
-          <button className="btn small ghost" onClick={ics} disabled={!ok}>Add reminder</button>
+          <a className="btn small ghost" href={gcal || undefined} target="_blank" rel="noopener noreferrer" aria-disabled={!ok}
+            onClick={(e) => { if (!ok) e.preventDefault(); else track("visit_reminder", { sector: sector.id, via: "google" }); }}>📅 Add to Google Calendar</a>
+          <button className="btn small ghost" onClick={ics} disabled={!ok}>Apple / Outlook (.ics)</button>
         </div>
       </div>
     </details>
