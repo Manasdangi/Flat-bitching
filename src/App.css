@@ -306,3 +306,55 @@ a.btn { text-decoration: none; display: inline-block; }
 .panel-back { position: sticky; top: 0; z-index: 5; display: block; width: 100%; text-align: left; background: var(--card); border: 0; border-bottom: 1px solid var(--line); padding: 10px 18px; font-size: 14px; font-weight: 600; color: var(--accent); cursor: pointer; }
 .quiz-opt.on { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
 .btn { display: inline-flex; align-items: center; justify-content: center; text-align: center; line-height: 1.2; text-decoration: none; }
+
+/* ---- Mobile polish ---- */
+.calc-grid label { min-width: 0; }
+.calc-grid input, .calc-grid select { width: 100%; min-width: 0; box-sizing: border-box; }
+.ask-msg { overflow-wrap: anywhere; }
+.ask-form .btn:disabled { opacity: .5; }
+.ask-form { padding-bottom: 12px; }
+@media (max-width: 860px) {
+  /* 16px+ text in fields stops iOS Safari zooming the page when one is focused */
+  input:not([type=range]):not([type=checkbox]):not([type=radio]), select, textarea { font-size: 16px; }
+  .sheet-handle { padding: 12px 0 10px; min-height: 32px; }
+  .sheet-handle span { width: 48px; }
+  .panel-back { top: 34px; padding: 12px 18px; min-height: 44px; }
+  .brand { min-width: 44px; min-height: 44px; justify-content: center; }
+  .legend summary { min-height: 40px; display: flex; align-items: center; padding: 0 12px; }
+  .legend-body label, .legend-body > span { min-height: 32px; }
+  .legend input { width: 18px; height: 18px; }
+  .locate-btn { width: 48px; height: 48px; }
+  .btn, .chip, .quiz-opt, select, .link-chip { min-height: 44px; }
+  .btn.small { min-height: 40px; }
+  .chip { padding: 8px 14px; font-size: 14px; }
+  .chip.small { min-height: 0; }
+  .icon-btn { min-width: 44px; min-height: 44px; font-size: 18px; }
+  .stars button { min-width: 40px; min-height: 44px; }
+  .ranked li { padding: 14px 6px; }
+  .actions-grid { gap: 8px; }
+  .panel-body { padding-bottom: 28px; }
+  details.tool > summary { padding: 14px; }
+  .sources a, .soc-link { display: inline-block; padding: 6px 0; }
+  .panel { -webkit-overflow-scrolling: touch; }
+  .sliders li { grid-template-columns: 1fr 110px 20px; }
+  input[type=range] { min-height: 32px; }
+  .tabs a { min-width: 0; font-size: 10.5px; }
+  .tabs a span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+}
+@media (max-width: 380px) { .sliders li { grid-template-columns: 1fr 90px 18px; } .actions-grid { grid-template-columns: 1fr; } }
+@media (max-width: 860px) {
+  button.link, a.link { padding: 10px 0; }
+  summary { min-height: 40px; display: flex; align-items: center; cursor: pointer; }
+  details.tool > summary { display: block; }
+}
+@media (max-width: 860px) {
+  /* zoomed out, 119 overlapping numbers are unreadable: show colour dots, numbers appear once you zoom in */
+  .map.z11 .sec-label, .map.z12 .sec-label { display: none; }
+  .panel-back { padding: 8px 18px; }
+}
+.ask-msg a { color: var(--accent); font-weight: 600; }
+.ask-msg.user a { color: #fff; }
+@media (max-width: 860px) {
+  .legend-body { gap: 2px 14px; padding-bottom: 10px; }
+  .legend-body label, .legend-body > span { min-height: 30px; }
+}

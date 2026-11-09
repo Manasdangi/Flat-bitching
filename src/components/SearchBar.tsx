@@ -37,10 +37,12 @@ export default function SearchBar({ onSelect }: { onSelect: (id: string) => void
   return (
     <div className="search">
       <input
+        type="search" enterKeyHint="search" autoComplete="off" autoCorrect="off" spellCheck={false}
         value={q}
-        placeholder="Search sector, area or society… (e.g. 48, DLF, Sobha)"
+        placeholder="Search sector or society"
         onChange={(e) => { setQ(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={(e) => e.key === "Enter" && results[0] && pick(results[0].s.id)}
         aria-label="Search sectors"
       />

@@ -19,11 +19,24 @@ type Props = {
   layers: { tech: boolean; hangout: boolean; flood?: boolean };
 };
 
+/** On phones the bottom sheet covers the lower part of the map; return its height so markers can be kept in the visible strip. */
+function sheetHeight() {
+  if (typeof window === "undefined" || window.innerWidth > 860) return 0;
+  const layout = document.querySelector<HTMLElement>(".layout");
+  if (!layout || layout.classList.contains("sheet-full")) return 0;
+  return Math.round(layout.clientHeight * (layout.classList.contains("sheet-peek") ? 0.2 : 0.52));
+}
+
 function FlyTo({ id }: { id: string | null }) {
   const map = useMap();
   useEffect(() => {
     const s = id ? sectorById(id) : null;
-    if (s) map.flyTo([s.lat, s.lng], Math.max(map.getZoom(), 14), { duration: 0.6 });
+    if (!s) return;
+    const z = Math.max(map.getZoom(), 14);
+    // Aim a little below the sector so it lands in the middle of the strip above the sheet, not behind it.
+    const shift = sheetHeight() / 2;
+    const target = shift ? map.unproject(map.project([s.lat, s.lng], z).add([0, shift]), z) : undefined;
+    map.flyTo(target ?? [s.lat, s.lng], z, { duration: 0.6 });
   }, [id, map]);
   return null;
 }
@@ -38,7 +51,7 @@ const shortLabel = (id: string) => (/^\d/.test(id) ? id.toUpperCase() : "PV");
 function FitAll() {
   const map = useMap();
   useEffect(() => {
-    map.fitBounds(SECTORS.map((s) => [s.lat, s.lng] as [number, number]), { padding: [20, 20] });
+    map.fitBounds(SECTORS.map((s) => [s.lat, s.lng] as [number, number]), { paddingTopLeft: [20, 56], paddingBottomRight: [20, 20 + sheetHeight()] });
   }, [map]);
   return null;
 }

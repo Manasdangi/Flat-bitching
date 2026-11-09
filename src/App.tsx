@@ -99,7 +99,10 @@ export default function App() {
     document.querySelector('meta[name="description"]')?.setAttribute("content", desc);
     document.querySelector('link[rel="canonical"]')?.setAttribute("href", location.origin + location.pathname);
     panelRef.current?.scrollTo?.({ top: 0 });
+    // Phones: pages with a map (sector, society) sit in a half sheet; forms and lists (quiz, match, ask...) get the full screen.
     if (route.view === "sector" || route.view === "society") setSheet((s) => (s === "peek" ? "half" : s));
+    else if (route.view === "explore") setSheet((s) => (s === "full" ? "half" : s));
+    else setSheet("full");
   }, [route.view, route.view === "sector" ? route.id : route.view === "society" ? route.slug : ""]);
 
   const select = (id: string) => { navigate(`/sector/${id}`); track("sector_open", { sector: id }); };
@@ -153,6 +156,7 @@ export default function App() {
               else if (pickingOffice === 2) setOffice2({ name: "Second office (pinned)", lat, lng });
               else setOffice({ name: "My office (pinned)", lat, lng });
               setPickingOffice(0);
+              if (route.view === "match") setSheet("full");
             }}
           />
           {pickingOffice && <div className="map-hint">Tap your office location on the map</div>}

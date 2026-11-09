@@ -17,11 +17,14 @@ const ERRORS: Record<string, string> = {
 
 /** Turn "Sector 48" mentions into links to that sector's page. */
 function linked(text: string) {
-  return text.split(/(Sector \d+[A-D]?)/g).map((part, i) => {
+  const sectors = (chunk: string, k: string) => chunk.split(/(Sector \d+[A-D]?)/g).map((part, i) => {
     const m = part.match(/^Sector (\d+[A-D]?)$/);
     const s = m ? sectorById(m[1].toLowerCase()) : undefined;
-    return s ? <a key={i} {...linkProps(`/sector/${s.id}`)}>{part}</a> : part;
+    return s ? <a key={k + i} {...linkProps(`/sector/${s.id}`)}>{part}</a> : part;
   });
+  // The model sometimes writes **bold**: show it as bold instead of raw asterisks.
+  return text.replace(/^#{1,4}\s+/gm, "").split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    /^\*\*[^*]+\*\*$/.test(part) ? <b key={i}>{sectors(part.slice(2, -2), `b${i}`)}</b> : sectors(part, `t${i}`));
 }
 
 export default function Ask() {
@@ -65,9 +68,10 @@ export default function Ask() {
         {err && <div className="ask-msg err">{err}</div>}
         <div ref={end} />
       </div>
+      {msgs.length > 0 && !busy && <button type="button" className="link small-txt" onClick={() => { setMsgs([]); setErr(""); }}>Clear chat</button>}
       <form className="ask-form" onSubmit={(e) => { e.preventDefault(); send(q); }}>
-        <input value={q} onChange={(e) => setQ(e.target.value)} maxLength={300} placeholder="e.g. Safe sector near Huda City Centre under ₹30k?" aria-label="Your question" />
-        <button type="submit" className="cta" disabled={busy || !q.trim()}>Ask</button>
+        <input value={q} onChange={(e) => setQ(e.target.value)} maxLength={300} placeholder="Ask e.g. safe sector near Cyber City" enterKeyHint="send" aria-label="Your question" />
+        <button type="submit" className="btn" disabled={busy || !q.trim()}>Ask</button>
       </form>
     </div>
   );
