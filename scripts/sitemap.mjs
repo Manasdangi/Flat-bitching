@@ -1,5 +1,5 @@
 // Generates public/sitemap.xml from the sector + society data (runs before every build).
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, statSync } from "node:fs";
 
 const SITE = "https://www.kahanrahe.online";
 const src = readFileSync(new URL("../src/data/sectors.ts", import.meta.url), "utf8");
@@ -7,12 +7,13 @@ const sectorBlocks = [...src.matchAll(/^  s\("([^"]+)",[\s\S]*?\n    \[([^\]]*)\
 const GENERIC = /(plots|floors|housing|flats|PGs|Mostly|houses|launches|societies|hospital|mall|Builder|limited)/i;
 const slugify = (n) => n.toLowerCase().replace(/\(.*?\)/g, "").replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-const urls = new Set(["/", "/ask", "/match", "/compare", "/quiz", "/rent-safety", "/women", "/data", "/guides", "/guides/best-sectors-gurgaon-single-women", "/guides/waterlogging-prone-sectors-gurgaon", "/guides/cheapest-sectors-gurgaon-2bhk-rent", "/guides/pg-rent-gurgaon-by-sector", "/guides/gurgaon-sectors-near-metro", "/guides/gurgaon-2bhk-rent-under-30000", "/guides/gurgaon-sectors-better-air-green", "/guides/gurgaon-sectors-by-zone"]);
+const urls = new Set(["/", "/ask", "/match", "/quiz", "/women/best", "/rent-safety", "/women", "/data", "/guides", "/guides/best-sectors-gurgaon-single-women", "/guides/waterlogging-prone-sectors-gurgaon", "/guides/cheapest-sectors-gurgaon-2bhk-rent", "/guides/pg-rent-gurgaon-by-sector", "/guides/gurgaon-sectors-near-metro", "/guides/gurgaon-2bhk-rent-under-30000", "/guides/gurgaon-sectors-better-air-green", "/guides/gurgaon-sectors-by-zone"]);
 for (const [, id, socs] of sectorBlocks) {
   urls.add(`/sector/${id}`);
   for (const [, name] of socs.matchAll(/"([^"]+)"/g)) if (!GENERIC.test(name) && slugify(name)) urls.add(`/society/${slugify(name)}`);
 }
-const today = new Date().toISOString().slice(0, 10);
+// lastmod = when the data last changed (not every build), so Google can trust it.
+const today = statSync(new URL("../src/data/sectors.ts", import.meta.url)).mtime.toISOString().slice(0, 10);
 const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...urls]
   .map((u) => `  <url><loc>${SITE}${u}</loc><lastmod>${today}</lastmod></url>`)
   .join("\n")}\n</urlset>\n`;

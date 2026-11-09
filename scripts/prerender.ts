@@ -16,7 +16,7 @@ const metroOf = (s: Sector) => METRO.map((m) => ({ m, d: km(s.lat, s.lng, m.lat,
 const rent = ([a, b]: [number, number]) => `₹${a}k–₹${b}k`;
 const link = (path: string, text: string) => `<a href="${path}">${esc(text)}</a>`;
 
-type Page = { path: string; title: string; desc: string; body: string; ld?: object[]; standalone?: boolean };
+type Page = { path: string; title: string; desc: string; body: string; ld?: object[]; standalone?: boolean; noindex?: boolean };
 
 const CSS = `body{font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;color:#1b1b2f;background:#fff}
 @media(prefers-color-scheme:dark){body{background:#12121c;color:#e8e8f2}a{color:#a5a8ff}th,td{border-color:#33334a}}
@@ -71,6 +71,27 @@ for (const soc of SOCIETIES) {
 <p class="note">Resident reviews load in the app. ${link("/data", "How we get our data")}.</p></main>`,
   });
 }
+
+
+// Static app pages (match, quiz, ask...): give crawlers their own title, description, canonical and text instead of the home page's.
+const appPage = (path: string, title: string, desc: string, h1: string, text: string, extra = "", noindex = false): Page => ({
+  path, title: `${title} | ${BRAND}`, desc, noindex,
+  body: `<main><nav>${link("/", NAME)}</nav><h1>${esc(h1)}</h1><p>${esc(text)}</p>${extra}<p><a class="cta" href="/">Open the map</a></p></main>`,
+  ld: [{ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+    { "@type": "ListItem", position: 1, name: BRAND, item: SITE + "/" },
+    { "@type": "ListItem", position: 2, name: h1, item: SITE + path }] }],
+});
+pages.push(
+  appPage("/match", "Find your best Gurgaon sector", "Set your priorities (women safety, metro, clean air, schools, commute, budget) and see which Gurgaon sectors match best.", "Find your best Gurgaon sector", "Pick your office, budget and what matters most. We rank all Gurgaon sectors by how well they fit, with real drive times to your office, rent and the reasons behind each match."),
+  appPage("/quiz", "Find your best Gurgaon sector in 60 seconds", "Answer 6 quick questions and get your top 3 Gurgaon sectors, with a shareable result card.", "Which Gurgaon sector suits you? 60-second quiz", "Six quick questions about budget, commute, safety and lifestyle give you a top 3 of Gurgaon sectors to look at first."),
+  appPage("/ask", "Ask about Gurgaon sectors", "Ask questions about Gurgaon sectors: safest areas for women, rent and PG prices, metro access and flood risk. Answers come from our sector data.", "Ask about Gurgaon sectors", "Ask in plain words, for example the cheapest sector for a 2 BHK with low flood risk, or a safe PG area near Cyber City. Answers use only this site's sector data."),
+  appPage("/women", "Women's guide to renting and PG safety in Gurgaon", "Checklists for single working women and PG residents: judging an area at night, PG safety checks, questions to ask landlords and getting home safely.", "Women's guide to renting and PG safety in Gurgaon", "Checklists for single working women and PG residents: how to judge an area at night, what to check in a PG, what to ask the landlord and how to plan getting home.", `<p>${link("/women/best", "Best Gurgaon sectors for women")} · ${link("/guides/best-sectors-gurgaon-single-women", "Guide: best sectors for single working women")}</p>`),
+  appPage("/women/best", "Best Gurgaon sectors for women: safety, PG and metro", "Gurgaon sectors ranked by women's safety score, with PG availability, getting-home-at-night rating and metro access.", "Best Gurgaon sectors for women", "Sectors ranked by our women's score, which combines street activity at night, PG supply, metro access and getting home late.", `<p>${link("/guides/best-sectors-gurgaon-single-women", "Read the guide")}</p>`),
+  appPage("/rent-safety", "Rent safely in Gurgaon: tenant checklist", "Avoid deposit scams and bad agreements: what to check before paying, what Haryana law says, and what to put in your rent agreement.", "Rent safely in Gurgaon: tenant checklist", "What to check before paying a token or deposit, how to verify the owner, and what to put in your rent agreement."),
+  appPage("/data", "How we get our data", "Where the Gurgaon Flat Finder data comes from, what is an estimate, how resident votes are protected from spam, and its known limits.", "How we get our data", "Sector outlines and drive times come from OpenStreetMap. Rents are rough ranges from 2025-26 listings, nearby places are straight-line distances, and scores are editorial estimates until enough residents rate them."),
+  appPage("/shortlist", "My shortlist", "Your saved Gurgaon sectors and societies, with notes.", "My shortlist", "Your saved sectors and societies live on your device.", "", true),
+  appPage("/compare", "Compare Gurgaon sectors", "Compare Gurgaon sectors side by side: rent, metro, commute, hospitals and scores.", "Compare Gurgaon sectors", "Compare up to three sectors side by side on rent, metro, commute and scores.", "", true),
+);
 
 // Home: crawlable index of every sector, grouped by zone, plus guides.
 const GUIDES: { slug: string; title: string; desc: string; build: () => string }[] = [];
@@ -193,8 +214,15 @@ function render(p: Page | null): string {
     .replace(/(<meta property="og:url" content=")[^"]*"/, `$1${url}"`)
     .replace(/(<meta name="twitter:title" content=")[^"]*"/, `$1${esc(title)}"`)
     .replace(/(<meta name="twitter:description" content=")[^"]*"/, `$1${esc(desc)}"`);
+  if (p?.noindex) html = html.replace(/<meta name="robots" content="[^"]*"/, '<meta name="robots" content="noindex,follow"');
   const ld = (p?.ld ?? [{ "@context": "https://schema.org", "@type": "WebSite", name: BRAND, alternateName: [NAME, "kahanrahe", "Kahan Rahe Gurgaon"], url: SITE + "/", inLanguage: "en-IN" },
-    { "@context": "https://schema.org", "@type": "Organization", name: BRAND, url: SITE + "/", logo: SITE + "/apple-touch-icon.png" }]).map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join("");
+    { "@context": "https://schema.org", "@type": "Organization", name: BRAND, url: SITE + "/", logo: SITE + "/apple-touch-icon.png" },
+    ...(p ? [] : [faq([
+      ["What is Kahan Rahe?", `Kahan Rahe (kahanrahe.online) is a free Gurgaon Flat Finder: a map of ${SECTORS.length} Gurgaon sectors with rent, PG prices, women-safety scores, flood risk, metro distance, societies and resident reviews.`],
+      ["Which is the cheapest sector in Gurgaon for a 2 BHK?", "See the live ranking in our guide to the cheapest Gurgaon sectors for a 2 BHK. Lower rent usually means a longer commute or older stock."],
+      ["Which Gurgaon sectors are best for single women?", "Our women's score ranks sectors on night-time street activity, PG supply, metro access and getting home late. See the guide for the top picks."],
+      ["Is the rent data exact?", "No. Rents are rough ranges from 2025-26 listings. Check real listings and visit at night and in monsoon before you rent."],
+    ])])]).map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join("");
   if (p?.standalone) {
     html = html.replace(/<script type="module"[\s\S]*?<\/script>/g, "").replace(/<link rel="(modulepreload|stylesheet)"[^>]*>/g, "")
       .replace("</head>", `<style>${CSS}</style>${ld}</head>`).replace(/<div id="root"><\/div>/, body).replace(/<noscript>[\s\S]*?<\/noscript>/, "");
