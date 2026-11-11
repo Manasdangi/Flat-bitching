@@ -19,9 +19,9 @@ const PLACES: [string, number, number][] = [
 
 type Time = "sunrise" | "midday" | "golden" | "night";
 const LIGHT: Record<Time, { pos: [number, number, number]; color: string; intensity: number; filter: string }> = {
-  sunrise: { pos: [1.5, 80, 70], color: "#ffd2a8", intensity: 0.45, filter: "brightness(.92) sepia(.25) saturate(1.15)" },
+  sunrise: { pos: [1.5, 80, 70], color: "#ffd2a8", intensity: 0.45, filter: "brightness(.95) sepia(.12) saturate(1.1)" },
   midday: { pos: [1.5, 210, 30], color: "#ffffff", intensity: 0.5, filter: "none" },
-  golden: { pos: [1.5, 270, 80], color: "#ffb15e", intensity: 0.55, filter: "brightness(.9) sepia(.35) saturate(1.3)" },
+  golden: { pos: [1.5, 270, 80], color: "#ffb15e", intensity: 0.55, filter: "brightness(.92) sepia(.15) saturate(1.2) hue-rotate(-8deg)" },
   night: { pos: [1.5, 210, 30], color: "#8fa8ff", intensity: 0.3, filter: "brightness(.45) saturate(.8) hue-rotate(195deg) contrast(1.1)" },
 };
 

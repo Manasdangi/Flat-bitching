@@ -264,6 +264,7 @@ export default function App() {
                 {women && <a className="action-card women" {...linkProps("/women")}><b>👩 Women's guide</b><span>PG checklist, night safety, helplines</span></a>}
                 <a className="action-card" {...linkProps("/match")}><b>🎯 Set priorities</b><span>Safety, metro, air, commute, budget</span></a>
                 <button className="action-card" onClick={() => document.querySelector<HTMLButtonElement>(".locate-btn")?.click()}><b>📍 Where am I?</b><span>Find the sector you're standing in</span></button>
+                <a className="action-card" href="/3d"><b>🏙️ Gurgaon in 3D</b><span>Fly over every building and sector</span></a>
                 <a className="action-card" {...linkProps("/rent-safety")}><b>🛡️ Rent safely</b><span>Scam checks, deposit and agreement tips</span></a>
                 <a className="action-card" {...linkProps("/data")}><b>🔎 How we get our data</b><span>Sources, estimates and known limits</span></a>
                 <a className="action-card" {...linkProps("/shortlist")}><b>♥ My shortlist</b><span>{saved.length ? `${saved.length} saved` : "Nothing saved yet"}</span></a>
