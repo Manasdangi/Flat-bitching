@@ -46,7 +46,14 @@ function ClickPicker({ active, onPick }: { active: boolean; onPick: (lat: number
   return null;
 }
 
-const shortLabel = (id: string) => (/^\d/.test(id) ? id.toUpperCase() : "PV");
+const shortLabel = (id: string) => {
+  if (/^\d/.test(id)) return id.toUpperCase();
+  const n = id.match(/-(\d)$/)?.[1] ?? "";
+  if (id.startsWith("dlf-phase")) return `D${n}`;
+  if (id.startsWith("sushant-lok")) return `SL${n}`;
+  if (id.startsWith("south-city")) return `SC${n}`;
+  return id === "nirvana-country" ? "NC" : "PV";
+};
 
 function FitAll() {
   const map = useMap();
