@@ -9,8 +9,6 @@ const STYLE = "https://tiles.openfreemap.org/styles/liberty";
 export default function City3D() {
   const box = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
-  const [labels, setLabels] = useState(true);
-  const [outlines, setOutlines] = useState(true);
   const [status, setStatus] = useState("Loading 3D Gurgaon…");
 
   useEffect(() => {
@@ -72,13 +70,6 @@ export default function City3D() {
     return () => { dead = true; map?.remove(); mapRef.current = null; };
   }, []);
 
-  useEffect(() => {
-    const m = mapRef.current;
-    if (!m?.isStyleLoaded()) return;
-    for (const id of ["sector-label"]) if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", labels ? "visible" : "none");
-    for (const id of ["sector-line", "sector-fill", "sector-focus"]) if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", outlines ? "visible" : "none");
-  }, [labels, outlines, status]);
-
   // WASD to move, Q/E to turn, R/F to tilt.
   useEffect(() => {
     const on = (e: KeyboardEvent) => {
@@ -98,15 +89,7 @@ export default function City3D() {
   return (
     <div className="c3d">
       <div ref={box} className="c3d-map" />
-      <div className="c3d-title">
-        <a href={new URLSearchParams(location.search).get("sector") ? `/sector/${new URLSearchParams(location.search).get("sector")}` : "/"} className="c3d-back">← Back to map</a>
-        <h1>GURGAON <span>3D</span></h1>
-        <p>Every building from OpenStreetMap, with sector outlines. Tap a sector name to open it.</p>
-      </div>
-      <div className="c3d-top">
-        <button className={labels ? "on" : ""} onClick={() => setLabels(!labels)}>Labels</button>
-        <button className={outlines ? "on" : ""} onClick={() => setOutlines(!outlines)}>Sectors</button>
-      </div>
+      <a className="c3d-back" aria-label="Back to the map" href={new URLSearchParams(location.search).get("sector") ? `/sector/${new URLSearchParams(location.search).get("sector")}` : "/"}>←</a>
       {status && <div className="c3d-status">{status}</div>}
     </div>
   );
