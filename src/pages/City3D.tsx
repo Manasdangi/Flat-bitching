@@ -45,9 +45,9 @@ export default function City3D() {
         container: box.current, style: STYLE, center: [77.0905, 28.4895], zoom: 15.3, pitch: 64, bearing: -28,
         maxPitch: 85, minZoom: 10, maxZoom: 19, attributionControl: { compact: true },
       });
-      mapRef.current = map;
+      mapRef.current = map; (window as unknown as { __c3d?: unknown }).__c3d = map;
       map.addControl(new ml.NavigationControl({ visualizePitch: true }), "bottom-right");
-      map.on("error", () => setStatus("Map tiles are slow or blocked on this network."));
+      map.on("error", (e) => { console.error("c3d", e.error?.message ?? e); setStatus(`Map problem: ${String(e.error?.message ?? "unknown").slice(0, 140)}`); });
       map.on("load", async () => {
         const m = map!;
         // Replace the style's own 3D buildings with height-coloured ones for every building we have.
