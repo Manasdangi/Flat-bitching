@@ -38,8 +38,12 @@ export default function City3D() {
     let dead = false;
     let map: import("maplibre-gl").Map | null = null;
     (async () => {
-      const ml = await import("maplibre-gl");
-      await import("maplibre-gl/dist/maplibre-gl.css");
+      const [ml, worker] = await Promise.all([
+        import("maplibre-gl"),
+        import("maplibre-gl/dist/maplibre-gl-worker.mjs?url"),
+        import("maplibre-gl/dist/maplibre-gl.css"),
+      ]);
+      ml.setWorkerUrl(worker.default);
       if (dead || !box.current) return;
       map = new ml.Map({
         container: box.current, style: STYLE, center: [77.0905, 28.4895], zoom: 15.3, pitch: 64, bearing: -28,
