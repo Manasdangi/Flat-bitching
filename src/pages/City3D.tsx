@@ -6,29 +6,9 @@ import "./City3D.css";
 // Free vector tiles (OpenStreetMap data, building heights included). No API key needed.
 const STYLE = "https://tiles.openfreemap.org/styles/liberty";
 
-const PLACES: [string, number, number][] = [
-  ["Cyber Hub", 77.0892, 28.4963],
-  ["Golf Course Rd", 77.1010, 28.4410],
-  ["Galleria", 77.0820, 28.4673],
-  ["Huda City Centre", 77.0723, 28.4594],
-  ["Medanta", 77.0420, 28.4395],
-  ["Sector 56", 77.1050, 28.4240],
-  ["Dwarka Expwy", 76.9790, 28.4800],
-  ["Old Gurgaon", 77.0230, 28.4640],
-];
-
-type Time = "sunrise" | "midday" | "golden" | "night";
-const LIGHT: Record<Time, { pos: [number, number, number]; color: string; intensity: number; filter: string }> = {
-  sunrise: { pos: [1.5, 80, 70], color: "#ffd2a8", intensity: 0.45, filter: "brightness(.95) sepia(.12) saturate(1.1)" },
-  midday: { pos: [1.5, 210, 30], color: "#ffffff", intensity: 0.5, filter: "none" },
-  golden: { pos: [1.5, 270, 80], color: "#ffb15e", intensity: 0.55, filter: "brightness(.92) sepia(.15) saturate(1.2) hue-rotate(-8deg)" },
-  night: { pos: [1.5, 210, 30], color: "#8fa8ff", intensity: 0.3, filter: "brightness(.45) saturate(.8) hue-rotate(195deg) contrast(1.1)" },
-};
-
 export default function City3D() {
   const box = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
-  const [time, setTime] = useState<Time>("midday");
   const [labels, setLabels] = useState(true);
   const [outlines, setOutlines] = useState(true);
   const [status, setStatus] = useState("Loading 3D Gurgaon…");
@@ -90,14 +70,6 @@ export default function City3D() {
 
   useEffect(() => {
     const m = mapRef.current;
-    const l = LIGHT[time];
-    const apply = () => m?.setLight({ anchor: "map", position: l.pos, color: l.color, intensity: l.intensity });
-    if (m?.isStyleLoaded()) apply(); else m?.once("load", apply);
-    if (box.current) box.current.style.filter = l.filter;
-  }, [time]);
-
-  useEffect(() => {
-    const m = mapRef.current;
     if (!m?.isStyleLoaded()) return;
     for (const id of ["sector-label"]) if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", labels ? "visible" : "none");
     for (const id of ["sector-line", "sector-fill"]) if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", outlines ? "visible" : "none");
@@ -119,8 +91,6 @@ export default function City3D() {
     return () => removeEventListener("keydown", on);
   }, []);
 
-  const fly = (lng: number, lat: number) => mapRef.current?.flyTo({ center: [lng, lat], zoom: 16, pitch: 66, bearing: -25, duration: 2500, essential: true });
-
   return (
     <div className="c3d">
       <div ref={box} className="c3d-map" />
@@ -133,16 +103,7 @@ export default function City3D() {
         <button className={labels ? "on" : ""} onClick={() => setLabels(!labels)}>Labels</button>
         <button className={outlines ? "on" : ""} onClick={() => setOutlines(!outlines)}>Sectors</button>
       </div>
-      <div className="c3d-hint">Drag to move · scroll or pinch to zoom · right-drag or two fingers to tilt · W A S D to fly, Q E to turn</div>
       {status && <div className="c3d-status">{status}</div>}
-      <div className="c3d-bottom">
-        <div className="c3d-places">{PLACES.map(([n, lng, lat]) => <button key={n} onClick={() => fly(lng, lat)}>{n}</button>)}</div>
-        <div className="c3d-time">
-          {(["sunrise", "midday", "golden", "night"] as Time[]).map((t) => (
-            <button key={t} className={time === t ? "on" : ""} onClick={() => setTime(t)}>{t === "golden" ? "Golden hour" : t[0].toUpperCase() + t.slice(1)}</button>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
