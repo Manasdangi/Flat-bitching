@@ -25,8 +25,11 @@ export default function City3D() {
       ]);
       ml.setWorkerUrl(worker.default);
       if (dead || !box.current) return;
+      // Opened from the map with ?sector=ID: start over that sector and highlight it.
+      const wanted = new URLSearchParams(location.search).get("sector")?.toLowerCase() ?? "";
+      const focus = SECTORS.find((x) => x.id === wanted);
       map = new ml.Map({
-        container: box.current, style: STYLE, center: [77.0905, 28.4895], zoom: 15.3, pitch: 64, bearing: -28,
+        container: box.current, style: STYLE, center: focus ? [focus.lng, focus.lat] : [77.0905, 28.4895], zoom: focus ? 15.8 : 15.3, pitch: 64, bearing: -28,
         maxPitch: 85, minZoom: 10, maxZoom: 19, attributionControl: { compact: true },
       });
       mapRef.current = map; (window as unknown as { __c3d?: unknown }).__c3d = map;
@@ -52,6 +55,7 @@ export default function City3D() {
         m.addSource("sector-shapes", { type: "geojson", data: { type: "FeatureCollection", features: shapes.map((s) => ({ type: "Feature", properties: { id: s.sector_id }, geometry: s.geojson })) } });
         m.addLayer({ id: "sector-fill", type: "fill", source: "sector-shapes", paint: { "fill-color": "#6366f1", "fill-opacity": 0.07 } }, "bld3d");
         m.addLayer({ id: "sector-line", type: "line", source: "sector-shapes", paint: { "line-color": "#4f46e5", "line-width": 1.6, "line-opacity": 0.85 } });
+        if (focus) m.addLayer({ id: "sector-focus", type: "line", source: "sector-shapes", filter: ["==", ["get", "id"], focus.id], paint: { "line-color": "#f59e0b", "line-width": 4 } });
         // Sector labels.
         m.addSource("sector-pts", { type: "geojson", data: { type: "FeatureCollection", features: SECTORS.map((s) => ({ type: "Feature", properties: { id: s.id, name: s.name }, geometry: { type: "Point", coordinates: [s.lng, s.lat] } })) } });
         m.addLayer({
@@ -72,7 +76,7 @@ export default function City3D() {
     const m = mapRef.current;
     if (!m?.isStyleLoaded()) return;
     for (const id of ["sector-label"]) if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", labels ? "visible" : "none");
-    for (const id of ["sector-line", "sector-fill"]) if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", outlines ? "visible" : "none");
+    for (const id of ["sector-line", "sector-fill", "sector-focus"]) if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", outlines ? "visible" : "none");
   }, [labels, outlines, status]);
 
   // WASD to move, Q/E to turn, R/F to tilt.
@@ -95,7 +99,7 @@ export default function City3D() {
     <div className="c3d">
       <div ref={box} className="c3d-map" />
       <div className="c3d-title">
-        <a href="/" className="c3d-back">← Back to map</a>
+        <a href={new URLSearchParams(location.search).get("sector") ? `/sector/${new URLSearchParams(location.search).get("sector")}` : "/"} className="c3d-back">← Back to map</a>
         <h1>GURGAON <span>3D</span></h1>
         <p>Every building from OpenStreetMap, with sector outlines. Tap a sector name to open it.</p>
       </div>

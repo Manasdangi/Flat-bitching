@@ -96,6 +96,7 @@ export default function MapView({ selectedId, onSelect, weights, office, office2
   return (
     <>
     <button className="locate-btn" onClick={locate} aria-label="Which sector am I in?" title="Which sector am I in?">📍</button>
+    <a className="map3d-btn" href={selectedId ? `/3d?sector=${encodeURIComponent(selectedId)}` : "/3d"} onClick={() => track("view_3d", { sector: selectedId ?? "" })} aria-label="Open the 3D view" title="3D view">🏙️ 3D</a>
     {locMsg && <div className="map-hint">{locMsg}</div>}
     <MapContainer center={[28.45, 77.04]} zoom={12} className={`map z${Math.min(Math.max(zoom, 11), 14)} ${pickingOffice ? "picking" : ""}`} zoomControl={false}>
       <ZoomWatch onZoom={setZoom} />
