@@ -417,3 +417,4 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; }
 .ask-mic.on { background: #dc2626; border-color: #dc2626; color: #fff; animation: askpulse 1.1s ease-in-out infinite; }
 .ask-mic:disabled { opacity: .5; }
 @keyframes askpulse { 50% { box-shadow: 0 0 0 6px rgba(220,38,38,.25); } }
+.ask-live { margin: 6px 0 2px; padding: 10px 12px; border-radius: 12px; background: rgba(220,38,38,.1); border: 1px dashed #dc2626; line-height: 1.4; overflow-wrap: anywhere; }

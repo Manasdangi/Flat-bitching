@@ -58,23 +58,27 @@ export default function Ask() {
   const [listening, setListening] = useState(false);
   const rec = useRef<any>(null);
   const heard = useRef("");
+  const silence = useRef<any>(undefined);
 
   function toggleVoice() {
     if (listening) { rec.current?.stop(); return; }
     if (!SR || busy) return;
     const r = new SR();
-    r.lang = "en-IN"; r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+    r.lang = "en-IN"; r.interimResults = true; r.continuous = true; r.maxAlternatives = 1;
     heard.current = "";
     r.onresult = (e: any) => {
       let t = "";
       for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
       heard.current = t; setQ(t);
+      // continuous mode never ends on its own: send after ~2s of silence once something was heard
+      clearTimeout(silence.current);
+      silence.current = setTimeout(() => r.stop(), 2000);
     };
     r.onerror = (e: any) => {
       setListening(false);
       setErr(e.error === "not-allowed" || e.error === "service-not-allowed" ? "Microphone is blocked. Allow mic access for this site and try again." : e.error === "no-speech" ? "Didn't hear anything. Tap the mic and try again." : "Voice didn't work. Please type your question.");
     };
-    r.onend = () => { setListening(false); const t = heard.current.trim(); if (t) { track("ask_voice"); send(t); } };
+    r.onend = () => { clearTimeout(silence.current); setListening(false); const t = heard.current.trim(); if (t) { track("ask_voice"); send(t); } };
     rec.current = r; setErr("");
     try { r.start(); setListening(true); } catch { setListening(false); }
   }
@@ -95,6 +99,7 @@ export default function Ask() {
         <div ref={end} />
       </div>
       {msgs.length > 0 && !busy && <button type="button" className="link small-txt" onClick={() => { setMsgs([]); setErr(""); }}>Clear chat</button>}
+      {listening && <div className="ask-live" aria-live="polite">🎤 {q || "Listening… start speaking"}</div>}
       <form className="ask-form" onSubmit={(e) => { e.preventDefault(); send(q); }}>
         <input value={q} onChange={(e) => setQ(e.target.value)} maxLength={300} placeholder={listening ? "Listening… speak your question" : "Ask e.g. safe sector near Cyber City"} enterKeyHint="send" aria-label="Your question" />
         {SR && <button type="button" className={`ask-mic${listening ? " on" : ""}`} onClick={toggleVoice} disabled={busy} aria-label={listening ? "Stop and send voice question" : "Ask by voice"} title={listening ? "Tap to send" : "Ask by voice"}>{listening ? "⏹" : "🎤"}</button>}
