@@ -53,6 +53,32 @@ export default function Ask() {
     }
   }
 
+  // Voice question: browser speech recognition fills the box live; when you stop speaking it is sent.
+  const SR = typeof window !== "undefined" ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) : undefined;
+  const [listening, setListening] = useState(false);
+  const rec = useRef<any>(null);
+  const heard = useRef("");
+
+  function toggleVoice() {
+    if (listening) { rec.current?.stop(); return; }
+    if (!SR || busy) return;
+    const r = new SR();
+    r.lang = "en-IN"; r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+    heard.current = "";
+    r.onresult = (e: any) => {
+      let t = "";
+      for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+      heard.current = t; setQ(t);
+    };
+    r.onerror = (e: any) => {
+      setListening(false);
+      setErr(e.error === "not-allowed" || e.error === "service-not-allowed" ? "Microphone is blocked. Allow mic access for this site and try again." : e.error === "no-speech" ? "Didn't hear anything. Tap the mic and try again." : "Voice didn't work. Please type your question.");
+    };
+    r.onend = () => { setListening(false); const t = heard.current.trim(); if (t) { track("ask_voice"); send(t); } };
+    rec.current = r; setErr("");
+    try { r.start(); setListening(true); } catch { setListening(false); }
+  }
+
   return (
     <div className="panel-body ask">
       <h2>Ask about Gurgaon sectors</h2>
@@ -70,7 +96,8 @@ export default function Ask() {
       </div>
       {msgs.length > 0 && !busy && <button type="button" className="link small-txt" onClick={() => { setMsgs([]); setErr(""); }}>Clear chat</button>}
       <form className="ask-form" onSubmit={(e) => { e.preventDefault(); send(q); }}>
-        <input value={q} onChange={(e) => setQ(e.target.value)} maxLength={300} placeholder="Ask e.g. safe sector near Cyber City" enterKeyHint="send" aria-label="Your question" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} maxLength={300} placeholder={listening ? "Listening… speak your question" : "Ask e.g. safe sector near Cyber City"} enterKeyHint="send" aria-label="Your question" />
+        {SR && <button type="button" className={`ask-mic${listening ? " on" : ""}`} onClick={toggleVoice} disabled={busy} aria-label={listening ? "Stop and send voice question" : "Ask by voice"} title={listening ? "Tap to send" : "Ask by voice"}>{listening ? "⏹" : "🎤"}</button>}
         <button type="submit" className="btn" disabled={busy || !q.trim()}>Ask</button>
       </form>
     </div>

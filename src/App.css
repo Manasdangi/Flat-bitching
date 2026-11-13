@@ -406,3 +406,14 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; }
 
 .map3d-btn { position: absolute; right: 12px; bottom: 84px; z-index: 1000; height: 40px; padding: 0 14px; display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: inherit; box-shadow: 0 4px 14px #0003; font-size: 14px; font-weight: 600; text-decoration: none; }
 @media (max-width: 860px) { .map3d-btn { top: 68px; bottom: auto; height: 44px; } }
+
+/* Ask AI: keep the input pinned right above the bottom tabs, add voice button */
+.panel:has(.ask) { display: flex; flex-direction: column; }
+.panel:has(.ask) > * { flex-shrink: 0; }
+.panel-body.ask { flex: 1 0 auto; display: flex; flex-direction: column; padding-bottom: 6px; }
+.panel-body.ask .ask-log { flex: 1; }
+.ask-form { margin-top: auto; padding-bottom: 8px; }
+.ask-mic { flex: none; width: 44px; border-radius: 10px; border: 1px solid var(--line); background: transparent; font-size: 18px; cursor: pointer; }
+.ask-mic.on { background: #dc2626; border-color: #dc2626; color: #fff; animation: askpulse 1.1s ease-in-out infinite; }
+.ask-mic:disabled { opacity: .5; }
+@keyframes askpulse { 50% { box-shadow: 0 0 0 6px rgba(220,38,38,.25); } }
