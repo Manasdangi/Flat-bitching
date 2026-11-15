@@ -166,7 +166,7 @@ export default function App() {
         <ThemeToggle />
       </header>
 
-      <main className={`layout sheet-${sheet}${route.view === "compare" ? " wide" : ""}`} style={(panelW ? { "--panel-w": `${panelW}px` } : undefined) as React.CSSProperties}>
+      <main className={`layout sheet-${sheet}${route.view === "compare" ? " wide" : ""}`} style={(panelW ? ({ "--panel-w": `${panelW}px` } as unknown) : undefined) as React.CSSProperties | undefined}>
         <div className="map-wrap">
           <MapView
             selectedId={selectedId}
