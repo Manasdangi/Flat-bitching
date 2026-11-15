@@ -84,7 +84,7 @@ export default function App() {
   setActiveDrives(hub2Name, drives2);
   const [, setCommunityTick] = useState(0);
   // Desktop: the right panel's width can be dragged (saved per browser).
-  const [panelW, setPanelW] = useState(() => { try { return Math.min(900, Math.max(320, Number(localStorage.getItem("panelW")) || 420)); } catch { return 420; } });
+  const [panelW, setPanelW] = useState<number | null>(() => { try { const n = Number(localStorage.getItem("panelW")); return n ? Math.min(900, Math.max(320, n)) : null; } catch { return null; } });
   const startResize = (e: React.PointerEvent) => {
     e.preventDefault();
     const move = (ev: PointerEvent) => {
@@ -95,7 +95,7 @@ export default function App() {
     document.body.style.userSelect = "none";
     addEventListener("pointermove", move); addEventListener("pointerup", up);
   };
-  useEffect(() => { try { localStorage.setItem("panelW", String(panelW)); } catch { /* ignore */ } }, [panelW]);
+  useEffect(() => { try { if (panelW) localStorage.setItem("panelW", String(panelW)); else localStorage.removeItem("panelW"); } catch { /* ignore */ } }, [panelW]);
   useEffect(() => {
     if (!communityEnabled) return;
     loadCommunityScores().then((m) => { setCommunity(m); setCommunityTick((x) => x + 1); }).catch(() => {});
@@ -166,7 +166,7 @@ export default function App() {
         <ThemeToggle />
       </header>
 
-      <main className={`layout sheet-${sheet}${route.view === "compare" ? " wide" : ""}`} style={{ "--panel-w": `${panelW}px` } as React.CSSProperties}>
+      <main className={`layout sheet-${sheet}${route.view === "compare" ? " wide" : ""}`} style={(panelW ? { "--panel-w": `${panelW}px` } : undefined) as React.CSSProperties}>
         <div className="map-wrap">
           <MapView
             selectedId={selectedId}
@@ -201,7 +201,7 @@ export default function App() {
         </div>
 
         <div className="panel-resizer" role="separator" aria-orientation="vertical" aria-label="Drag to resize the side panel" title="Drag to resize · double-click to reset"
-          onPointerDown={startResize} onDoubleClick={() => { setPanelW(420); window.dispatchEvent(new Event("resize")); }} />
+          onPointerDown={startResize} onDoubleClick={() => { setPanelW(null); window.dispatchEvent(new Event("resize")); }} />
         <aside className="panel" ref={panelRef}>
           <button
             className="sheet-handle"
