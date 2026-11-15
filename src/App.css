@@ -424,3 +424,6 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; }
 button.map3d-btn { cursor: pointer; font-family: inherit; }
 .c3d.c3d-embed { position: absolute; inset: 0; z-index: 999; background: var(--card); }
 .map-wrap:has(.c3d-embed) .legend, .map-wrap:has(.c3d-embed) .locate-btn { display: none; }
+.listing-links { margin: 16px 0; }
+.listing-links h3 { margin: 0 0 8px; }
+.listing-links .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }

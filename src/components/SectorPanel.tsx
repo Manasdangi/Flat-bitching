@@ -4,6 +4,7 @@ import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type 
 import { isNamedSociety, slugify } from "../lib/societies";
 import { AqiBadge, SuggestFix } from "./Extras";
 import DataTrust from "./DataTrust";
+import { track } from "../lib/track";
 import Reviews from "./Reviews";
 import { SaveButton } from "./Shortlist";
 import { FLOOD, FLOOD_SOURCE, WATER, WATER_SOURCE } from "../data/risk";
@@ -168,6 +169,23 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
         {s.societies.map((x) => isNamedSociety(x)
           ? <a key={x} className="chip link-chip" {...linkProps(`/society/${slugify(x)}`)}>🏢 {x} ›</a>
           : <span key={x} className="chip">{x}</span>)}
+      </div>
+
+      <div className="listing-links">
+        <h3>Ready to look? See live listings</h3>
+        <div className="chips">
+          {[["NoBroker", "nobroker.in"], ["99acres", "99acres.com"], ["MagicBricks", "magicbricks.com"]].map(([n, d]) => (
+            <a key={n} className="chip link-chip" target="_blank" rel="noopener noreferrer" onClick={() => track("listing_link", { sector: s.id, site: n })}
+              href={`https://www.google.com/search?q=${encodeURIComponent(`2 BHK flat for rent ${s.name} Gurgaon site:${d}`)}`}>🏠 {n} ›</a>
+          ))}
+        </div>
+        <small className="muted">Opens a search on those sites. Always check the listing in person; never pay a deposit before visiting.</small>
+      </div>
+
+      <div className="listing-links">
+        <h3>Live here? Help others</h3>
+        <a className="btn small ghost" target="_blank" rel="noopener noreferrer" onClick={() => track("ask_residents", { sector: s.id })}
+          href={`https://wa.me/?text=${encodeURIComponent(`Do you live in ${s.name}, Gurgaon? Rate it in 30 seconds so others can choose safely: ${location.origin}/sector/${s.id}`)}`}>Ask a friend here to rate it (WhatsApp)</a>
       </div>
 
       <DataTrust sectorId={s.id} />
