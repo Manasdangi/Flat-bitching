@@ -382,7 +382,8 @@ a.btn { text-decoration: none; display: inline-block; }
 .compare-summary { margin: 10px 0; padding-left: 18px; font-size: 14px; line-height: 1.5; }
 @media (min-width: 861px) {
   .panel-body { max-width: 860px; }
-  .search { max-width: 560px; }
+  .top { flex-wrap: nowrap; }
+  .search { max-width: none; }
   .tabs a:hover:not(.on), .chip:hover, .action-card:hover { border-color: var(--accent); }
   .ranked li:hover .btn.ghost { background: var(--accent-soft); }
 }
