@@ -6,12 +6,16 @@ import "./City3D.css";
 // Free vector tiles (OpenStreetMap data, building heights included). No API key needed.
 const STYLE = "https://tiles.openfreemap.org/styles/liberty";
 
-type Props = { embedded?: boolean; focusId?: string | null; onSelect?: (id: string) => void };
+type Props = { embedded?: boolean; focusId?: string | null; onSelect?: (id: string) => void; userPos?: { lat: number; lng: number } | null };
+
+// Cyber Hub: the default view when we have no location or sector.
+const CYBER_HUB: [number, number] = [77.0888, 28.4950];
 
 /** The 3D city. Standalone at /3d, or embedded over the main map (`embedded`) so the map itself turns 3D in place. */
-export default function City3D({ embedded = false, focusId = null, onSelect }: Props = {}) {
+export default function City3D({ embedded = false, focusId = null, onSelect, userPos = null }: Props = {}) {
   const selectRef = useRef(onSelect); selectRef.current = onSelect;
   const ready = useRef(false);
+  const posRef = useRef(userPos); posRef.current = userPos;
   const box = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
   const [status, setStatus] = useState("Loading 3D Gurgaon…");
@@ -32,7 +36,7 @@ export default function City3D({ embedded = false, focusId = null, onSelect }: P
       const wanted = (embedded ? focusId ?? "" : new URLSearchParams(location.search).get("sector") ?? "").toLowerCase();
       const focus = SECTORS.find((x) => x.id === wanted);
       map = new ml.Map({
-        container: box.current, style: STYLE, center: focus ? [focus.lng, focus.lat] : [77.0905, 28.4895], zoom: focus ? 15.8 : 15.3, pitch: 64, bearing: -28,
+        container: box.current, style: STYLE, center: posRef.current ? [posRef.current.lng, posRef.current.lat] : focus ? [focus.lng, focus.lat] : CYBER_HUB, zoom: posRef.current ? 16.3 : focus ? 15.8 : 15.6, pitch: 64, bearing: -28,
         maxPitch: 85, minZoom: 10, maxZoom: 19, attributionControl: { compact: true },
       });
       mapRef.current = map; (window as unknown as { __c3d?: unknown }).__c3d = map;
@@ -70,6 +74,7 @@ export default function City3D({ embedded = false, focusId = null, onSelect }: P
         m.on("mouseenter", "sector-label", () => (m.getCanvas().style.cursor = "pointer"));
         m.on("mouseleave", "sector-label", () => (m.getCanvas().style.cursor = ""));
         ready.current = true;
+        window.dispatchEvent(new Event("c3d-ready"));
         setStatus("");
       });
     })();
@@ -83,6 +88,24 @@ export default function City3D({ embedded = false, focusId = null, onSelect }: P
     if (m.getLayer("sector-focus")) m.setFilter("sector-focus", ["==", ["get", "id"], f?.id ?? "__none__"]);
     if (f) m.flyTo({ center: [f.lng, f.lat], zoom: Math.max(m.getZoom(), 15.5), duration: 900 });
   }, [focusId, embedded]);
+
+  // Embedded: show a blue dot where the user is and fly there once the location arrives.
+  const dot = useRef<import("maplibre-gl").Marker | null>(null);
+  useEffect(() => {
+    if (!embedded || !userPos) return;
+    let cancelled = false;
+    const run = async () => {
+      const m = mapRef.current; if (!m || !ready.current || cancelled) return;
+      const ml = await import("maplibre-gl");
+      dot.current?.remove();
+      const el = document.createElement("div");
+      el.style.cssText = "width:16px;height:16px;border-radius:50%;background:#2563eb;border:3px solid #fff;box-shadow:0 0 0 6px rgba(37,99,235,.28)";
+      dot.current = new ml.Marker({ element: el }).setLngLat([userPos.lng, userPos.lat]).addTo(m);
+      m.flyTo({ center: [userPos.lng, userPos.lat], zoom: 16.3, duration: 1200 });
+    };
+    run(); addEventListener("c3d-ready", run);
+    return () => { cancelled = true; removeEventListener("c3d-ready", run); dot.current?.remove(); };
+  }, [userPos, embedded]);
 
   // WASD to move, Q/E to turn, R/F to tilt.
   useEffect(() => {

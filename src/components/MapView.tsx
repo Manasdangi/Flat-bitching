@@ -73,6 +73,7 @@ function ZoomWatch({ onZoom }: { onZoom: (z: number) => void }) {
 export default function MapView({ selectedId, onSelect, weights, office, office2, office3, pickingOffice, onPickOffice, layers }: Props) {
   const [zoom, setZoom] = useState(12);
   const [is3d, setIs3d] = useState(false);
+  const [pos3d, setPos3d] = useState<{ lat: number; lng: number } | null>(null);
   const shapes = useShapes();
   const hasShape = new Set(shapes.map((x) => x.sector_id));
   const base = zoom >= 14 ? 15 : zoom >= 13 ? 12 : 9;
@@ -95,10 +96,22 @@ export default function MapView({ selectedId, onSelect, weights, office, office2
       { enableHighAccuracy: true, timeout: 10000 },
     );
   };
+  // Turning 3D on asks for location; if allowed we fly to you (and pick your sector), otherwise the chosen sector, else Cyber Hub.
+  const go3d = () => {
+    setPos3d(null);
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if (p.lat < 28.3 || p.lat > 28.6 || p.lng < 76.85 || p.lng > 77.25) { setLocMsg("You're outside Gurgaon, showing Cyber Hub."); setTimeout(() => setLocMsg(""), 4000); return; }
+      setPos3d(p);
+      const hit = sectorAt(p.lat, p.lng, shapes, SECTORS);
+      if (hit) onSelect(hit.id);
+    }, () => {}, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+  };
   return (
     <>
     <button className="locate-btn" onClick={locate} aria-label="Which sector am I in?" title="Which sector am I in?">📍</button>
-    <button type="button" className="map3d-btn" onClick={() => { track("view_3d", { sector: selectedId ?? "", on: !is3d }); setIs3d(!is3d); }} aria-pressed={is3d} aria-label={is3d ? "Back to the flat map" : "Turn the map 3D"} title={is3d ? "Back to 2D" : "3D view"}>{is3d ? "🗺️ 2D" : "🏙️ 3D"}</button>
+    <button type="button" className="map3d-btn" onClick={() => { track("view_3d", { sector: selectedId ?? "", on: !is3d }); if (is3d) { setIs3d(false); return; } setIs3d(true); go3d(); }} aria-pressed={is3d} aria-label={is3d ? "Back to the flat map" : "Turn the map 3D"} title={is3d ? "Back to 2D" : "3D view"}>{is3d ? "🗺️ 2D" : "🏙️ 3D"}</button>
     {locMsg && <div className="map-hint">{locMsg}</div>}
     <MapContainer center={[28.45, 77.04]} zoom={12} className={`map z${Math.min(Math.max(zoom, 11), 14)} ${pickingOffice ? "picking" : ""}`} zoomControl={false}>
       <ZoomWatch onZoom={setZoom} />
@@ -176,7 +189,7 @@ export default function MapView({ selectedId, onSelect, weights, office, office2
         </CircleMarker>
       )}
     </MapContainer>
-    {is3d && <Suspense fallback={null}><City3D embedded focusId={selectedId} onSelect={onSelect} /></Suspense>}
+    {is3d && <Suspense fallback={null}><City3D embedded focusId={selectedId} onSelect={onSelect} userPos={pos3d} /></Suspense>}
     </>
   );
 }
