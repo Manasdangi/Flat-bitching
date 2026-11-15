@@ -83,6 +83,19 @@ export default function App() {
   const drives2 = useDriveTimes(hub2Name);
   setActiveDrives(hub2Name, drives2);
   const [, setCommunityTick] = useState(0);
+  // Desktop: the right panel's width can be dragged (saved per browser).
+  const [panelW, setPanelW] = useState(() => { try { return Math.min(900, Math.max(320, Number(localStorage.getItem("panelW")) || 420)); } catch { return 420; } });
+  const startResize = (e: React.PointerEvent) => {
+    e.preventDefault();
+    const move = (ev: PointerEvent) => {
+      const w = Math.round(Math.min(Math.max(320, window.innerWidth - ev.clientX), Math.min(900, window.innerWidth * 0.7)));
+      setPanelW(w); window.dispatchEvent(new Event("resize"));
+    };
+    const up = () => { removeEventListener("pointermove", move); removeEventListener("pointerup", up); document.body.style.userSelect = ""; };
+    document.body.style.userSelect = "none";
+    addEventListener("pointermove", move); addEventListener("pointerup", up);
+  };
+  useEffect(() => { try { localStorage.setItem("panelW", String(panelW)); } catch { /* ignore */ } }, [panelW]);
   useEffect(() => {
     if (!communityEnabled) return;
     loadCommunityScores().then((m) => { setCommunity(m); setCommunityTick((x) => x + 1); }).catch(() => {});
@@ -153,7 +166,7 @@ export default function App() {
         <ThemeToggle />
       </header>
 
-      <main className={`layout sheet-${sheet}${route.view === "compare" ? " wide" : ""}`}>
+      <main className={`layout sheet-${sheet}${route.view === "compare" ? " wide" : ""}`} style={{ "--panel-w": `${panelW}px` } as React.CSSProperties}>
         <div className="map-wrap">
           <MapView
             selectedId={selectedId}
@@ -187,6 +200,8 @@ export default function App() {
           </details>
         </div>
 
+        <div className="panel-resizer" role="separator" aria-orientation="vertical" aria-label="Drag to resize the side panel" title="Drag to resize · double-click to reset"
+          onPointerDown={startResize} onDoubleClick={() => { setPanelW(420); window.dispatchEvent(new Event("resize")); }} />
         <aside className="panel" ref={panelRef}>
           <button
             className="sheet-handle"
