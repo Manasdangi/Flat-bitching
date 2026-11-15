@@ -1,11 +1,12 @@
 import { FLOOD } from "../data/risk";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { CircleMarker, GeoJSON, MapContainer, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { sectorAt, useShapes } from "../lib/geo";
 import { track } from "../lib/track";
 import Basemap from "./Basemap";
 import { LANDMARKS, METRO, SECTORS, sectorById } from "../data/sectors";
 import { matchColor, matchScore, type Office, type Weights } from "../lib/score";
+const City3D = lazy(() => import("../pages/City3D"));
 
 type Props = {
   selectedId: string | null;
@@ -71,6 +72,7 @@ function ZoomWatch({ onZoom }: { onZoom: (z: number) => void }) {
 
 export default function MapView({ selectedId, onSelect, weights, office, office2, office3, pickingOffice, onPickOffice, layers }: Props) {
   const [zoom, setZoom] = useState(12);
+  const [is3d, setIs3d] = useState(false);
   const shapes = useShapes();
   const hasShape = new Set(shapes.map((x) => x.sector_id));
   const base = zoom >= 14 ? 15 : zoom >= 13 ? 12 : 9;
@@ -96,7 +98,7 @@ export default function MapView({ selectedId, onSelect, weights, office, office2
   return (
     <>
     <button className="locate-btn" onClick={locate} aria-label="Which sector am I in?" title="Which sector am I in?">📍</button>
-    <a className="map3d-btn" href={selectedId ? `/3d?sector=${encodeURIComponent(selectedId)}` : "/3d"} onClick={() => track("view_3d", { sector: selectedId ?? "" })} aria-label="Open the 3D view" title="3D view">🏙️ 3D</a>
+    <button type="button" className="map3d-btn" onClick={() => { track("view_3d", { sector: selectedId ?? "", on: !is3d }); setIs3d(!is3d); }} aria-pressed={is3d} aria-label={is3d ? "Back to the flat map" : "Turn the map 3D"} title={is3d ? "Back to 2D" : "3D view"}>{is3d ? "🗺️ 2D" : "🏙️ 3D"}</button>
     {locMsg && <div className="map-hint">{locMsg}</div>}
     <MapContainer center={[28.45, 77.04]} zoom={12} className={`map z${Math.min(Math.max(zoom, 11), 14)} ${pickingOffice ? "picking" : ""}`} zoomControl={false}>
       <ZoomWatch onZoom={setZoom} />
@@ -174,6 +176,7 @@ export default function MapView({ selectedId, onSelect, weights, office, office2
         </CircleMarker>
       )}
     </MapContainer>
+    {is3d && <Suspense fallback={null}><City3D embedded focusId={selectedId} onSelect={onSelect} /></Suspense>}
     </>
   );
 }

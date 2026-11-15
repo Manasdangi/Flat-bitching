@@ -6,13 +6,18 @@ import "./City3D.css";
 // Free vector tiles (OpenStreetMap data, building heights included). No API key needed.
 const STYLE = "https://tiles.openfreemap.org/styles/liberty";
 
-export default function City3D() {
+type Props = { embedded?: boolean; focusId?: string | null; onSelect?: (id: string) => void };
+
+/** The 3D city. Standalone at /3d, or embedded over the main map (`embedded`) so the map itself turns 3D in place. */
+export default function City3D({ embedded = false, focusId = null, onSelect }: Props = {}) {
+  const selectRef = useRef(onSelect); selectRef.current = onSelect;
+  const ready = useRef(false);
   const box = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
   const [status, setStatus] = useState("Loading 3D Gurgaon…");
 
   useEffect(() => {
-    document.title = "Gurgaon 3D: explore every sector in 3D | Kahan Rahe";
+    if (!embedded) document.title = "Gurgaon 3D: explore every sector in 3D | Kahan Rahe";
     let dead = false;
     let map: import("maplibre-gl").Map | null = null;
     (async () => {
@@ -24,14 +29,14 @@ export default function City3D() {
       ml.setWorkerUrl(worker.default);
       if (dead || !box.current) return;
       // Opened from the map with ?sector=ID: start over that sector and highlight it.
-      const wanted = new URLSearchParams(location.search).get("sector")?.toLowerCase() ?? "";
+      const wanted = (embedded ? focusId ?? "" : new URLSearchParams(location.search).get("sector") ?? "").toLowerCase();
       const focus = SECTORS.find((x) => x.id === wanted);
       map = new ml.Map({
         container: box.current, style: STYLE, center: focus ? [focus.lng, focus.lat] : [77.0905, 28.4895], zoom: focus ? 15.8 : 15.3, pitch: 64, bearing: -28,
         maxPitch: 85, minZoom: 10, maxZoom: 19, attributionControl: { compact: true },
       });
       mapRef.current = map; (window as unknown as { __c3d?: unknown }).__c3d = map;
-      map.addControl(new ml.NavigationControl({ visualizePitch: true }), "bottom-right");
+      map.addControl(new ml.NavigationControl({ visualizePitch: true }), embedded ? "bottom-left" : "bottom-right");
       map.on("error", (e) => { console.error("c3d", e.error?.message ?? e); setStatus(`Map problem: ${String(e.error?.message ?? "unknown").slice(0, 140)}`); });
       map.on("load", async () => {
         const m = map!;
@@ -53,7 +58,7 @@ export default function City3D() {
         m.addSource("sector-shapes", { type: "geojson", data: { type: "FeatureCollection", features: shapes.map((s) => ({ type: "Feature", properties: { id: s.sector_id }, geometry: s.geojson })) } });
         m.addLayer({ id: "sector-fill", type: "fill", source: "sector-shapes", paint: { "fill-color": "#6366f1", "fill-opacity": 0.07 } }, "bld3d");
         m.addLayer({ id: "sector-line", type: "line", source: "sector-shapes", paint: { "line-color": "#4f46e5", "line-width": 1.6, "line-opacity": 0.85 } });
-        if (focus) m.addLayer({ id: "sector-focus", type: "line", source: "sector-shapes", filter: ["==", ["get", "id"], focus.id], paint: { "line-color": "#f59e0b", "line-width": 4 } });
+        m.addLayer({ id: "sector-focus", type: "line", source: "sector-shapes", filter: ["==", ["get", "id"], focus?.id ?? "__none__"], paint: { "line-color": "#f59e0b", "line-width": 4 } });
         // Sector labels.
         m.addSource("sector-pts", { type: "geojson", data: { type: "FeatureCollection", features: SECTORS.map((s) => ({ type: "Feature", properties: { id: s.id, name: s.name }, geometry: { type: "Point", coordinates: [s.lng, s.lat] } })) } });
         m.addLayer({
@@ -61,14 +66,23 @@ export default function City3D() {
           layout: { "text-field": ["get", "name"], "text-font": ["Noto Sans Bold"], "text-size": ["interpolate", ["linear"], ["zoom"], 11, 10, 16, 15], "text-allow-overlap": false, "text-padding": 3, "text-pitch-alignment": "viewport" },
           paint: { "text-color": "#1e1b4b", "text-halo-color": "#ffffff", "text-halo-width": 1.8 },
         });
-        m.on("click", "sector-label", (e) => { const id = e.features?.[0]?.properties?.id; if (id) location.href = `/sector/${id}`; });
+        m.on("click", "sector-label", (e) => { const id = e.features?.[0]?.properties?.id; if (!id) return; if (selectRef.current) selectRef.current(id); else location.href = `/sector/${id}`; });
         m.on("mouseenter", "sector-label", () => (m.getCanvas().style.cursor = "pointer"));
         m.on("mouseleave", "sector-label", () => (m.getCanvas().style.cursor = ""));
+        ready.current = true;
         setStatus("");
       });
     })();
     return () => { dead = true; map?.remove(); mapRef.current = null; };
   }, []);
+
+  // Embedded: follow the sector picked on the main map.
+  useEffect(() => {
+    const m = mapRef.current; if (!embedded || !m || !ready.current) return;
+    const f = SECTORS.find((x) => x.id === focusId);
+    if (m.getLayer("sector-focus")) m.setFilter("sector-focus", ["==", ["get", "id"], f?.id ?? "__none__"]);
+    if (f) m.flyTo({ center: [f.lng, f.lat], zoom: Math.max(m.getZoom(), 15.5), duration: 900 });
+  }, [focusId, embedded]);
 
   // WASD to move, Q/E to turn, R/F to tilt.
   useEffect(() => {
@@ -87,9 +101,9 @@ export default function City3D() {
   }, []);
 
   return (
-    <div className="c3d">
+    <div className={embedded ? "c3d c3d-embed" : "c3d"}>
       <div ref={box} className="c3d-map" />
-      <a className="c3d-back" aria-label="Back to the map" href={new URLSearchParams(location.search).get("sector") ? `/sector/${new URLSearchParams(location.search).get("sector")}` : "/"}>←</a>
+      {!embedded && <a className="c3d-back" aria-label="Back to the map" href={new URLSearchParams(location.search).get("sector") ? `/sector/${new URLSearchParams(location.search).get("sector")}` : "/"}>←</a>}
       {status && <div className="c3d-status">{status}</div>}
     </div>
   );

@@ -418,3 +418,8 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; }
 .ask-mic:disabled { opacity: .5; }
 @keyframes askpulse { 50% { box-shadow: 0 0 0 6px rgba(220,38,38,.25); } }
 .ask-live { margin: 6px 0 2px; padding: 10px 12px; border-radius: 12px; background: rgba(220,38,38,.1); border: 1px dashed #dc2626; line-height: 1.4; overflow-wrap: anywhere; }
+
+/* 3D mode: the map itself turns 3D in place (no page change) */
+button.map3d-btn { cursor: pointer; font-family: inherit; }
+.c3d.c3d-embed { position: absolute; inset: 0; z-index: 999; background: var(--card); }
+.map-wrap:has(.c3d-embed) .legend, .map-wrap:has(.c3d-embed) .locate-btn { display: none; }
