@@ -66,7 +66,7 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
     <article className="panel-body">
       <div className="row between">
         <div className="row">
-          <button className="icon-btn" onClick={() => goBack("/")} aria-label="Back">←</button>
+          <button className="icon-btn head-back" onClick={() => goBack("/")} aria-label="Back">←</button>
           <div>
             <p className="eyebrow">{s.zone}</p>
             <h2>{s.name}</h2>
