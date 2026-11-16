@@ -201,7 +201,7 @@ for (const g of GUIDES) pages.push({
   body: `<main><nav>${link("/", NAME)} › ${link("/guides", "Guides")}</nav><h1>${esc(g.title)}</h1>${g.build()}<h2>More guides</h2><ul>${GUIDES.filter((x) => x.slug !== g.slug).map((x) => `<li>${link(`/guides/${x.slug}`, x.title)}</li>`).join("")}</ul><p><a class="cta" href="/">Open the map</a></p></main>`,
   ld: [
     { "@context": "https://schema.org", "@type": "Article", headline: g.title, description: g.desc, dateModified: DATA_UPDATED, mainEntityOfPage: `${SITE}/guides/${g.slug}`,
-      image: `${SITE}/og.png`, author: { "@type": "Organization", name: BRAND, url: SITE + "/" }, publisher: { "@type": "Organization", name: BRAND, url: SITE + "/" } },
+      image: `${SITE}/og-v2.png`, author: { "@type": "Organization", name: BRAND, url: SITE + "/" }, publisher: { "@type": "Organization", name: BRAND, url: SITE + "/" } },
     { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
       { "@type": "ListItem", position: 1, name: BRAND, item: SITE + "/" },
       { "@type": "ListItem", position: 2, name: "Guides", item: SITE + "/guides" },
