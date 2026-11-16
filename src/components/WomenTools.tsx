@@ -14,19 +14,18 @@ export function NightAndCost({ sector, office }: { sector: Sector; office?: Offi
   return (
     <div className="women-card">
       <h3>🌙 Getting home after dark</h3>
-      <div className={`women-score ${tone}`}><b>{n.score}/5</b><span>{n.label}. Nearest metro {n.km.toFixed(1)} km away.</span></div>
+      <div className={`women-score ${tone}`}><b>{n.score}/5</b><span>{n.label} · metro {n.km.toFixed(1)} km</span><AreaCardButton sector={sector} /></div>
       <ul className="women-list">
         {n.tips.map((t) => <li key={t}>{t}</li>)}
         {cm && office && <li>🚕 Late-night cab home from {office.name}: about <b>{cm.offpeak ?? Math.max(10, Math.round(cm.minutes * 0.6))} min</b> on empty roads ({cm.roadKm.toFixed(1)} km)</li>}
       </ul>
-      <AreaCardButton sector={sector} />
-      <h3>💰 PG or a shared flat?</h3>
-      <div className="facts">
-        <div><span>PG, single room</span><b>~₹{c.pg}k</b></div>
-        <div><span>Flat with 1 flatmate</span><b>~₹{c.share2}k</b></div>
-        <div><span>Flat with 2 flatmates</span><b>~₹{c.share3}k</b></div>
+      <h3>💰 PG or shared flat? <small className="muted">per person / month</small></h3>
+      <div className="facts facts3">
+        <div><span>PG single</span><b>~₹{c.pg}k</b></div>
+        <div><span>Flat + 1</span><b>~₹{c.share2}k</b></div>
+        <div><span>Flat + 2</span><b>~₹{c.share3}k</b></div>
       </div>
-      <p className="muted small-txt">Per person per month. Shared-flat figures are your share of the 2BHK rent plus about ₹3k for bills and help. A PG usually includes food and no deposit hassle, a flat gives more privacy and control.</p>
+      <p className="muted small-txt">Flat = your share of 2BHK rent + ~₹3k bills. PG usually includes food; a flat gives more privacy.</p>
     </div>
   );
 }
@@ -121,7 +120,7 @@ function AreaCardButton({ sector }: { sector: Sector }) {
     const text = areaCardText(sector, `${location.origin}/sector/${sector.id}`);
     try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard?.writeText(text); setDone(true); } } catch { /* cancelled */ }
   };
-  return <p><button className="btn small ghost" onClick={go}>{done ? "Copied!" : "📤 Share this area's safety card"}</button></p>;
+  return <button className="btn small ghost share-sm" onClick={go}>{done ? "Copied!" : "📤 Share"}</button>;
 }
 
 const QUESTIONS = [

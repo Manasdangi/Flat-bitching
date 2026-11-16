@@ -37,7 +37,7 @@ export default function WomenSnapshot({ sector }: { sector: Sector }) {
       <h3>👩 For women</h3>
       <div className={`women-score ${tone}`}>
         <b>{Math.round(safety * 10) / 10}/5</b>
-        <span>{tone === "good" ? "Rated safer than most" : tone === "ok" ? "Average safety rating" : "Rated lower for safety, be extra careful here"}</span>
+        <span>{tone === "good" ? "Safer than most" : tone === "ok" ? "Average safety" : "Lower safety, be careful"}</span>
       </div>
       <ul className="women-list">
         {night && <li>🌙 <b>{night.yes}%</b> of residents say it feels safe to walk at 10pm <small className="muted">({night.n} votes)</small></li>}
@@ -45,9 +45,9 @@ export default function WomenSnapshot({ sector }: { sector: Sector }) {
         {cab && <li>🚕 <b>{cab.yes}%</b> say an auto or cab is easy to get after 9pm <small className="muted">({cab.n} votes)</small></li>}
         {single && <li>🏠 <b>{single.yes}%</b> say landlords and PGs accept single women <small className="muted">({single.n} votes)</small></li>}
         {women.length > 0 && <li>💬 {women.length} review{women.length > 1 ? "s" : ""} from women{womenSafety ? <>, average night safety <b>{Math.round(womenSafety * 10) / 10}/5</b></> : null}</li>}
-        <li>🚇 Nearest metro: {metro.station.name}, {metro.km.toFixed(1)} km. <small className="muted">Check the last train time before relying on it late at night.</small></li>
-        {hospital && <li>🏥 Nearest big hospital: {hospital.name}, {hospital.km.toFixed(1)} km</li>}
-        <li>🛏️ PG availability: {sector.pg}</li>
+        <li>🚇 {metro.station.name} metro, {metro.km.toFixed(1)} km <small className="muted">(check last train)</small></li>
+        {hospital && <li>🏥 {hospital.name}, {hospital.km.toFixed(1)} km</li>}
+        <li>🛏️ PG: {sector.pg}</li>
       </ul>
       {(SAFETY_EV[sector.id] ?? []).map((e) => e.src === "police2024" ? (
         <p key={e.note} className="note">⚠️ Police named {e.note} here as an unsafe spot for women. <small>That is one spot, not the whole sector, and the list dates from 2024, so ask locally. <a className="link" href={SRC[e.src].url} target="_blank" rel="noreferrer">{SRC[e.src].label}</a></small></p>
@@ -55,7 +55,7 @@ export default function WomenSnapshot({ sector }: { sector: Sector }) {
         <p key={e.note} className="note">{e.tone === "info" ? "💬" : "⚠️"} {e.tone === "info" ? "Residents say" : "Reported"}: {e.note} <small>{e.src === "safetipinHubs" || e.src === "sqy56" ? "From a public audit or reviews, not our own data." : "One news report, not a pattern."} <a className="link" href={SRC[e.src].url} target="_blank" rel="noreferrer">{SRC[e.src].label}</a></small></p>
       ))}
       {!night && !lit && !cab && !single && women.length === 0 && (
-        <p className="muted small-txt">No resident answers yet for this sector. Do you live here? <a className="link" {...linkProps(`/rate?sector=${sector.id}`)}>Rate it in 30 seconds</a>, or share that link with someone who does.</p>
+        <p className="muted small-txt">No resident votes yet. Live here? <a className="link" {...linkProps(`/rate?sector=${sector.id}`)}>Rate in 30 sec</a></p>
       )}
       <p className="small-txt"><a className="link" {...linkProps("/women")}>Women's renting &amp; PG safety guide →</a></p>
     </div>

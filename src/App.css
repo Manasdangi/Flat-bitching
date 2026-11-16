@@ -450,3 +450,18 @@ button.map3d-btn { cursor: pointer; font-family: inherit; }
 .police-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .police .helplines { margin: 12px 0; display: grid; gap: 8px; }
 .police .helplines > div { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* compact women cards */
+.women-card { padding: 2px 12px 8px; margin: 10px 0; }
+.women-card h3 { margin: 8px 0 4px; font-size: 15px; }
+.women-card h3 small { font-weight: 400; font-size: 11px; }
+.women-card .women-score { padding: 5px 8px; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.women-card .women-score b { font-size: 18px; }
+.women-card .women-score .share-sm { margin-left: auto; padding: 3px 9px; min-height: 0; font-size: 12px; }
+.women-card .women-list { margin: 6px 0; gap: 3px; font-size: 13px; line-height: 1.35; }
+.women-card .note { margin: 6px 0; padding: 6px 8px; font-size: 12px; }
+.women-card .small-txt { margin: 4px 0; }
+.women-card .facts.facts3 { grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 6px 0; }
+.women-card .facts div { padding: 5px 6px; text-align: center; }
+.women-card .facts span { font-size: 11px; }
+.women-card .facts b { font-size: 14px; }
