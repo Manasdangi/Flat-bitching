@@ -79,7 +79,7 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
       )}
       {m != null && <p className="match">Your match: <b>{m}%</b></p>}
       <p>{s.summary}</p>
-      {(() => { const cf = confidence(s.id); return <p className="note">📊 Data confidence: <b>{cf.level}</b>. {cf.why}. <a className="link" {...linkProps("/data")}>How reliable is this?</a></p>; })()}
+      {(() => { const cf = confidence(s.id); return <p className="note">📊 Data confidence: <b>{cf.level}</b>. {cf.why}. <a className="link" {...linkProps("/data")}>How reliable is this?</a>{cf.level !== "High" && <> Live here? <a className="link" {...linkProps(`/rate?sector=${s.id}`)}>Add your vote</a> to raise it.</>}</p>; })()}
       <AqiBadge lat={s.lat} lng={s.lng} />
 
       <div className="actions">
