@@ -11,6 +11,9 @@ const is3d = location.pathname.replace(/\/+$/, '') === '/3d'
 inject()
 injectSpeedInsights()
 
+// iOS Safari ignores user-scalable=no, so stop its page-pinch gesture too (map pinch uses touch events and is unaffected).
+document.addEventListener('gesturestart', (e) => e.preventDefault())
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     {is3d ? <Suspense fallback={null}><City3D /></Suspense> : <App />}

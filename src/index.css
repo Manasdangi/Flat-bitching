@@ -31,3 +31,6 @@
 html, body, #root { margin: 0; height: 100%; }
 body { background: var(--bg); }
 button, input, select, textarea { font: inherit; color: inherit; }
+
+/* No page zoom: the app scrolls inside its panels. The map and 3D view handle their own pinch. */
+html, body { touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; }
