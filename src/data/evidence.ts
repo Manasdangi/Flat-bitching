@@ -17,6 +17,10 @@ export const SRC = {
   sqy52: { label: "Square Yards resident reviews, Sector 52 (51 reviews, Mar 2026)", url: "https://www.squareyards.com/reviews/locality/sector-52/63755" },
   sqy48: { label: "Square Yards resident reviews, Sector 48 (11 reviews, Jan 2026)", url: "https://www.squareyards.com/reviews/locality/sector-48/63747" },
   sqy40: { label: "Square Yards resident reviews, Sector 40 (12 reviews, Jun 2025)", url: "https://www.squareyards.com/reviews/locality/sector-40/63731" },
+  tribuneRain2026: { label: "The Tribune, 5 Jul 2026", url: "https://www.tribuneindia.com/news/gurugram/gurugram-heavy-rain-triggers-flooding-power-cuts/" },
+  tribuneHeat2024: { label: "The Tribune, 31 May 2024", url: "https://www.tribuneindia.com/news/haryana/amid-power-water-shortage-gurugram-left-hot-and-dry-626336" },
+  tribune66: { label: "The Tribune, 3 May 2026", url: "https://www.tribuneindia.com/news/delhi/woman-molested-assaulted-outside-gurugram-club/" },
+  oneindia69: { label: "Oneindia, 30 Oct 2026", url: "https://www.oneindia.com/india/woman-harassed-by-another-woman-and-man-in-scorpio-chased-through-streets-in-gurugram-8245865.html" },
   police2024: { label: "The Tribune, 8 Jul 2024", url: "https://www.tribuneindia.com/news/haryana/gurugram-police-identify-over-25-unsafe-spots-for-women-637807" },
   sqyWater: { label: "Square Yards, Apr 2026", url: "https://www.squareyards.com/gurugram/infra/water-supply" },
   sqyRent: { label: "Square Yards listings", url: "https://www.squareyards.com/rent/2-bhk-for-rent-in-gurgaon" },
@@ -30,10 +34,15 @@ const f2025 = (): Evidence => ({ src: "tribune2025", note: FLOOD_2025, tone: "ba
 /** Flood reports. tone "info" = drainage under stress but not reported flooded (doesn't change the flood level). */
 export const FLOOD_EV: Record<string, Evidence[]> = {
   ...Object.fromEntries(["4", "5", "12", "22", "23", "30", "31", "40", "45", "47", "48", "51"].map((id) => [id, [f2025()]])),
+  "4": [f2025(), { src: "tribuneRain2026", note: "Named for waterlogging in the July 2026 rain.", tone: "bad" }],
   "9": [
     { src: "tribune2026", note: "Flooding from blocked drains reported in Aug 2026.", tone: "bad" },
     { src: "indiatv2025", note: "Sector 9A (Bhardwaj Chowk) named as a waterlogging hotspot.", tone: "bad" },
+    { src: "tribuneRain2026", note: "Named for waterlogging in the July 2026 rain.", tone: "bad" },
   ],
+  "10": [{ src: "tribuneRain2026", note: "Among the hardest-hit spots in the July 2026 rain, with major water accumulation.", tone: "bad" }],
+  "7": [{ src: "tribuneRain2026", note: "Named for waterlogging in the July 2026 rain.", tone: "bad" }],
+  "9a": [{ src: "tribuneRain2026", note: "Named for waterlogging in the July 2026 rain.", tone: "bad" }],
   "14": [{ src: "tribune2026", note: "Drainage network described as under severe pressure from dense stilt-plus-four building.", tone: "info" }],
   "17": [{ src: "tribune2026", note: "Drainage network described as under severe pressure from dense stilt-plus-four building (not reported flooded).", tone: "info" }],
   "28": [{ src: "indiatv2025", note: "Chakkarpur named as a waterlogging hotspot.", tone: "bad" }],
@@ -42,11 +51,16 @@ export const FLOOD_EV: Record<string, Evidence[]> = {
 
 const NEW_GGN = ["81", "82", "83", "84", "85", "86", "88a", "88b", "89", "90", "91", "92", "93", "95", "99", "99a", "110", "37d"];
 /** Water-supply assessments from a real-estate portal (a commercial source: used as a second opinion, with conflicts shown). */
-export const WATER_EV: Record<string, Evidence[]> = {
+const WATER_BASE: Record<string, Evidence[]> = {
   ...Object.fromEntries(["21", "47", "51", "57"].map((id) => [id, [{ src: "sqyWater" as SrcKey, note: "Listed with reported pressure and supply issues.", tone: "bad" as const }]])),
   ...Object.fromEntries(NEW_GGN.map((id) => [id, [{ src: "sqyWater" as SrcKey, note: "Listed among New Gurugram areas where water infrastructure is still catching up.", tone: "info" as const }]])),
   ...Object.fromEntries(["4", "14", "15", "54", "56"].map((id) => [id, [{ src: "sqyWater" as SrcKey, note: "Listed as having good water infrastructure.", tone: "good" as const }]])),
 };
+
+const HEAT_2024 = ["5", "10a", "20", "21", "22", "23", "40", "45", "48", "51", "56", "57", "7", "46", "52", "dlf-phase-1", "dlf-phase-2", "dlf-phase-3", "sushant-lok-1"];
+/** Same sector can appear in several sources, so merge lists instead of letting one overwrite the other. */
+export const WATER_EV: Record<string, Evidence[]> = { ...WATER_BASE };
+for (const id of HEAT_2024) WATER_EV[id] = [...(WATER_BASE[id] ?? []), { src: "tribuneHeat2024", note: "Named among areas hit by water and power shortages in the May 2024 heatwave (older report).", tone: "bad" }];
 
 /** Named spots police flagged as unsafe for women (2024). A spot, not the whole sector. */
 export const SAFETY_EV: Record<string, Evidence[]> = {
@@ -65,6 +79,8 @@ export const SAFETY_EV: Record<string, Evidence[]> = {
   "34": [{ src: "safetipinHubs", note: "Audited area scored 2.1 out of 5 for women's safety (0-1 poor, 1-3.4 average, above 3.4 good).", tone: "bad" }],
   "44": [{ src: "safetipinHubs", note: "Audited area scored 1.5 out of 5 for women's safety (0-1 poor, 1-3.4 average, above 3.4 good).", tone: "bad" }],
   "56": [{ src: "sqy56", note: "Residents are mixed: many call it secure with night patrols, others mention poorly lit back streets and blind spots.", tone: "info" }],
+  "66": [{ src: "tribune66", note: "A woman was molested and assaulted outside a club in the sector (May 2026). One incident, not a sector-wide rating.", tone: "bad" }],
+  "69": [{ src: "oneindia69", note: "Two women were harassed and chased by a car near Avenue 69 / Tulip Society (Oct 2026); the report credits Badshahpur police. One incident, not a sector-wide rating.", tone: "bad" }],
   "70": [{ src: "tribune70", note: "Two women returning to their PG near Tulip Chowk were followed by a man in an SUV (Oct 2026). The woman said lighting was poor and patrols were missing. No arrest was reported.", tone: "bad" }],
 };
 
