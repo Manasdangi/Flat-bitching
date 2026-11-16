@@ -15,11 +15,13 @@ export type Route =
   | { view: "ask" }
   | { view: "quizResult" }
   | { view: "sector"; id: string }
+  | { view: "police"; id: string }
   | { view: "society"; slug: string };
 
 export function parse(path: string): Route {
   const [, a, b] = path.split("?")[0].replace(/\/+$/, "").split("/");
   if (a === "sector" && b) return { view: "sector", id: decodeURIComponent(b).toLowerCase() };
+  if (a === "police" && b) return { view: "police", id: decodeURIComponent(b).toLowerCase() };
   if (a === "society" && b) return { view: "society", slug: decodeURIComponent(b) };
   if (a === "match") return { view: "match" };
   if (a === "compare") return { view: "compare" };

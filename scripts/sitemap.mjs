@@ -10,6 +10,7 @@ const slugify = (n) => n.toLowerCase().replace(/\(.*?\)/g, "").replace(/&/g, "an
 const urls = new Set(["/", "/ask", "/3d", "/match", "/quiz", "/women/best", "/rent-safety", "/women", "/data", "/guides", "/guides/best-sectors-gurgaon-single-women", "/guides/waterlogging-prone-sectors-gurgaon", "/guides/cheapest-sectors-gurgaon-2bhk-rent", "/guides/pg-rent-gurgaon-by-sector", "/guides/gurgaon-sectors-near-metro", "/guides/gurgaon-2bhk-rent-under-30000", "/guides/gurgaon-sectors-better-air-green", "/guides/gurgaon-sectors-by-zone"]);
 for (const [, id, socs] of sectorBlocks) {
   urls.add(`/sector/${id}`);
+  urls.add(`/police/${id}`);
   for (const [, name] of socs.matchAll(/"([^"]+)"/g)) if (!GENERIC.test(name) && slugify(name)) urls.add(`/society/${slugify(name)}`);
 }
 // lastmod = when the data last changed (not every build), so Google can trust it.

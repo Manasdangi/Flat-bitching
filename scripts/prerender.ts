@@ -3,6 +3,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { SECTORS, ZONES, METRO, DATA_UPDATED, type Sector } from "../src/data/sectors";
 import { FLOOD, WATER } from "../src/data/risk";
+import { stationsFor } from "../src/data/police";
 import { SOCIETIES } from "../src/lib/societies";
 
 const SITE = "https://www.kahanrahe.online";
@@ -72,6 +73,19 @@ for (const soc of SOCIETIES) {
   });
 }
 
+// Police station page per sector.
+for (const s of SECTORS) {
+  const { stations } = stationsFor(s);
+  const list = stations.map(({ station: st }) => `<li><b>${esc(st.name)}</b>${st.address ? `, ${esc(st.address)}` : ""}. Phone: ${st.phones.map(esc).join(", ")}${st.emails.length ? `. Email: ${st.emails.map(esc).join(", ")}` : ""}</li>`).join("");
+  pages.push({
+    path: `/police/${s.id}`,
+    title: `Police station near ${s.name}, Gurgaon: address, phone, email | ${BRAND}`,
+    desc: `Nearest police stations (thana) to ${s.name}, Gurgaon, with address, phone numbers and email, plus women helpline 1091 and emergency 112.`,
+    body: `<main><nav>${link("/", NAME)} › ${link(`/sector/${s.id}`, s.name)}</nav><h1>Police stations near ${esc(s.name)}, Gurgaon</h1>
+<p>Emergency: 112. Women helpline: 1091. Closest stations by distance (Gurugram Police decides which station handles a street):</p><ul>${list}</ul>
+<p class="note">Contact details can change. Confirm on the official Gurugram Police site.</p><p><a class="cta" href="/police/${esc(s.id)}">Open the police page</a></p></main>`,
+  });
+}
 
 // Static app pages (match, quiz, ask...): give crawlers their own title, description, canonical and text instead of the home page's.
 const appPage = (path: string, title: string, desc: string, h1: string, text: string, extra = "", noindex = false): Page => ({

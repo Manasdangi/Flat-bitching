@@ -12,6 +12,7 @@ import RateYourSector from "./components/RateYourSector";
 import RentSafety from "./components/RentSafety";
 import DataMethod from "./components/DataMethod";
 import Ask from "./components/Ask";
+import Police from "./components/Police";
 import { Quiz, QuizResult } from "./components/Quiz";
 import Compare from "./components/Compare";
 import SocietyPage, { SocietyList } from "./components/SocietyPage";
@@ -40,6 +41,10 @@ function seo(route: Route) {
   if (route.view === "sector") {
     const s = sectorById(route.id);
     if (s) return { title: `${s.name}, Gurgaon: rent, societies, reviews | ${SITE}`, desc: `${s.name} (${s.zone}): 2BHK ₹${s.rent2bhk[0]}–${s.rent2bhk[1]}k, PGs, metro, schools, hospitals, tech hubs and resident reviews. ${s.summary}` };
+  }
+  if (route.view === "police") {
+    const s = sectorById(route.id);
+    if (s) return { title: `Police station near ${s.name}, Gurgaon: address, phone, email | ${SITE}`, desc: `Nearest police stations (thana) to ${s.name}, Gurgaon, with address, phone numbers and email, plus women helpline 1091 and emergency 112.` };
   }
   if (route.view === "society") {
     const soc = societyBySlug(route.slug);
@@ -235,6 +240,8 @@ export default function App() {
                 setCompare(prefs.compare.includes(id) ? prefs.compare.filter((x) => x !== id) : [...prefs.compare, id].slice(-3));
               }}
             />
+          ) : route.view === "police" ? (
+            <Police sectorId={route.id} />
           ) : route.view === "society" ? (
             <SocietyPage slug={route.slug} onClose={() => navigate("/")} />
           ) : route.view === "match" ? (

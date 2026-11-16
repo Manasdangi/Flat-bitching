@@ -4,6 +4,7 @@ import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type 
 import { isNamedSociety, slugify } from "../lib/societies";
 import { AqiBadge, SuggestFix } from "./Extras";
 import DataTrust from "./DataTrust";
+import { stationsFor } from "../data/police";
 import { track } from "../lib/track";
 import Reviews from "./Reviews";
 import { SaveButton } from "./Shortlist";
@@ -170,6 +171,18 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
           ? <a key={x} className="chip link-chip" {...linkProps(`/society/${slugify(x)}`)}>🏢 {x} ›</a>
           : <span key={x} className="chip">{x}</span>)}
       </div>
+
+      {(() => {
+        const near = stationsFor(s).stations[0];
+        if (!near) return null;
+        const lp = linkProps(`/police/${s.id}`);
+        return (
+          <a className="police-link" href={lp.href} onClick={(e) => { track("police_card", { sector: s.id }); lp.onClick(e); }}>
+            <span className="pl-ico">🚓</span>
+            <span><b>Police stations & helpline</b><small>Nearest: {near.station.name}. Address, phone, email ›</small></span>
+          </a>
+        );
+      })()}
 
       <div className="listing-links">
         <h3>Ready to look? See live listings</h3>
