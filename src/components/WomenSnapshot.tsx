@@ -28,7 +28,7 @@ export default function WomenSnapshot({ sector }: { sector: Sector }) {
   const safety = allScores(sector, null).safety ?? sector.scores.safety;
   const metro = nearestMetro(sector);
   const hospital = nearby(sector, "hospital", 1, 99)[0];
-  const night = pct(polls?.night_safe), lit = pct(polls?.lit_streets), cab = pct(polls?.late_cab), single = pct(polls?.single_friendly);
+  const night = pct(polls?.night_safe), lit = pct(polls?.lit_streets), cab = pct(polls?.late_cab), single = pct(polls?.single_friendly), harass = pct(polls?.harass_rare), metroWalk = pct(polls?.metro_walk), guards = pct(polls?.guards_cctv);
   const womenSafety = aspectAverages(women).find((a) => a.key === "r_safety")?.avg ?? null;
   const tone = safety >= 4 ? "good" : safety >= 3 ? "ok" : "low";
 
@@ -44,6 +44,9 @@ export default function WomenSnapshot({ sector }: { sector: Sector }) {
         {lit && <li>🔦 <b>{lit.yes}%</b> say streets are well lit <small className="muted">({lit.n} votes)</small></li>}
         {cab && <li>🚕 <b>{cab.yes}%</b> say an auto or cab is easy to get after 9pm <small className="muted">({cab.n} votes)</small></li>}
         {single && <li>🏠 <b>{single.yes}%</b> say landlords and PGs accept single women <small className="muted">({single.n} votes)</small></li>}
+        {harass && <li>🚫 <b>{harass.yes}%</b> say street harassment is rare <small className="muted">({harass.n} votes)</small></li>}
+        {metroWalk && <li>🚇 <b>{metroWalk.yes}%</b> say the walk to metro or bus is safe after dark <small className="muted">({metroWalk.n} votes)</small></li>}
+        {guards && <li>📹 <b>{guards.yes}%</b> say societies have 24h guards and CCTV <small className="muted">({guards.n} votes)</small></li>}
         {women.length > 0 && <li>💬 {women.length} review{women.length > 1 ? "s" : ""} from women{womenSafety ? <>, average night safety <b>{Math.round(womenSafety * 10) / 10}/5</b></> : null}</li>}
         <li>🚇 {metro.station.name} metro, {metro.km.toFixed(1)} km <small className="muted">(check last train)</small></li>
         {hospital && <li>🏥 {hospital.name}, {hospital.km.toFixed(1)} km</li>}
@@ -54,7 +57,7 @@ export default function WomenSnapshot({ sector }: { sector: Sector }) {
       ) : (
         <p key={e.note} className="note">{e.tone === "info" ? "💬" : "⚠️"} {e.tone === "info" ? "Residents say" : "Reported"}: {e.note} <small>{e.src === "safetipinHubs" || e.src === "sqy56" ? "From a public audit or reviews, not our own data." : "One news report, not a pattern."} <a className="link" href={SRC[e.src].url} target="_blank" rel="noreferrer">{SRC[e.src].label}</a></small></p>
       ))}
-      {!night && !lit && !cab && !single && women.length === 0 && (
+      {!night && !lit && !cab && !single && !harass && !metroWalk && !guards && women.length === 0 && (
         <p className="muted small-txt">No resident votes yet. Live here? <a className="link" {...linkProps(`/rate?sector=${sector.id}`)}>Rate in 30 sec</a></p>
       )}
       <p className="small-txt"><a className="link" {...linkProps("/women")}>Women's renting &amp; PG safety guide →</a></p>

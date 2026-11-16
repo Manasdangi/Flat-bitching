@@ -465,3 +465,10 @@ button.map3d-btn { cursor: pointer; font-family: inherit; }
 .women-card .facts div { padding: 5px 6px; text-align: center; }
 .women-card .facts span { font-size: 11px; }
 .women-card .facts b { font-size: 14px; }
+
+/* searchable sector picker */
+.sector-search { position: relative; margin: 8px 0; }
+.sector-search input { width: 100%; box-sizing: border-box; padding: 12px; font-size: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--raise); color: inherit; }
+.sector-results { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); max-height: 240px; overflow: auto; margin: 0; padding: 4px; list-style: none; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.sector-results button { width: 100%; text-align: left; padding: 10px 12px; border: 0; background: transparent; color: inherit; font-size: 15px; border-radius: 8px; cursor: pointer; }
+.sector-results button:hover, .sector-results button[aria-selected="true"] { background: var(--raise); }

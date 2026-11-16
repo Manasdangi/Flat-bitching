@@ -11,8 +11,13 @@ export const POLLS = [
   { key: "lit_streets", q: "Are streets well lit at night?", icon: "🔦" },
   { key: "late_cab", q: "Is an auto or cab easy to get after 9pm?", icon: "🚕" },
   { key: "single_friendly", q: "Do landlords and PGs here accept single women?", icon: "🏠" },
+  { key: "harass_rare", q: "Is street harassment or catcalling rare here?", icon: "🚫" },
+  { key: "patrol", q: "Do you see police patrols or PCR vans at night?", icon: "🚓" },
+  { key: "metro_walk", q: "Is the walk to the metro or bus stop safe after dark?", icon: "🚇" },
+  { key: "guards_cctv", q: "Do societies here have 24-hour guards and working CCTV?", icon: "📹" },
+  { key: "no_deserted", q: "Is it free of deserted or dark stretches you avoid?", icon: "🌑" },
 ] as const;
-export const WOMEN_POLLS: PollKey[] = ["night_safe", "lit_streets", "late_cab", "single_friendly"];
+export const WOMEN_POLLS: PollKey[] = ["night_safe", "lit_streets", "late_cab", "single_friendly", "harass_rare", "patrol", "metro_walk", "guards_cctv", "no_deserted"];
 export type PollKey = (typeof POLLS)[number]["key"];
 export type PollAnswer = "yes" | "sometimes" | "no";
 export type PollCounts = Record<PollKey, Record<PollAnswer, number>>;
@@ -27,7 +32,7 @@ export async function loadPolls(sectorId: string): Promise<PollCounts> {
 }
 
 const votedKey = (sectorId: string) => `gff-voted-${sectorId}`;
-const POLL_TO_PRIORITY = { water: "water", flood: "drain", night_safe: "safety", lit_streets: "safety", clean: "clean" } as const;
+const POLL_TO_PRIORITY = { water: "water", flood: "drain", night_safe: "safety", lit_streets: "safety", harass_rare: "safety", patrol: "safety", metro_walk: "safety", guards_cctv: "safety", no_deserted: "safety", clean: "clean" } as const;
 const POINTS: Record<PollAnswer, number> = { yes: 5, sometimes: 3, no: 1 };
 
 /** All sectors' poll results as per-priority resident means (used to adjust scores). */

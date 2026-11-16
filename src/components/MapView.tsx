@@ -100,13 +100,14 @@ export default function MapView({ selectedId, onSelect, weights, office, office2
   const go3d = () => {
     setPos3d(null);
     if (!navigator.geolocation) return;
+    if (me) setPos3d(me);
     navigator.geolocation.getCurrentPosition((pos) => {
       const p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      if (p.lat < 28.3 || p.lat > 28.6 || p.lng < 76.85 || p.lng > 77.25) { setLocMsg("You're outside Gurgaon, showing Cyber Hub."); setTimeout(() => setLocMsg(""), 4000); return; }
       setPos3d(p);
+      if (p.lat < 28.3 || p.lat > 28.6 || p.lng < 76.85 || p.lng > 77.25) { setLocMsg("You're outside Gurgaon, showing Cyber Hub."); setTimeout(() => setLocMsg(""), 4000); return; }
       const hit = sectorAt(p.lat, p.lng, shapes, SECTORS);
       if (hit) onSelect(hit.id);
-    }, () => {}, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+    }, () => { setLocMsg("Location is off, so we can't show where you are."); setTimeout(() => setLocMsg(""), 4000); }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
   };
   return (
     <>

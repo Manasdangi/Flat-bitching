@@ -99,9 +99,9 @@ export default function City3D({ embedded = false, focusId = null, onSelect, use
       const ml = await import("maplibre-gl");
       dot.current?.remove();
       const el = document.createElement("div");
-      el.style.cssText = "width:16px;height:16px;border-radius:50%;background:#2563eb;border:3px solid #fff;box-shadow:0 0 0 6px rgba(37,99,235,.28)";
+      el.style.cssText = "width:18px;height:18px;border-radius:50%;background:#2563eb;border:3px solid #fff;box-shadow:0 0 0 8px rgba(37,99,235,.3),0 2px 8px rgba(0,0,0,.5);z-index:10";
       dot.current = new ml.Marker({ element: el }).setLngLat([userPos.lng, userPos.lat]).addTo(m);
-      m.flyTo({ center: [userPos.lng, userPos.lat], zoom: 16.3, duration: 1200 });
+      if (userPos.lat > 28.3 && userPos.lat < 28.6 && userPos.lng > 76.85 && userPos.lng < 77.25) m.flyTo({ center: [userPos.lng, userPos.lat], zoom: 16.3, duration: 1200 });
     };
     run(); addEventListener("c3d-ready", run);
     return () => { cancelled = true; removeEventListener("c3d-ready", run); dot.current?.remove(); };
