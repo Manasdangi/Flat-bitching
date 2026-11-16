@@ -12,7 +12,10 @@ inject()
 injectSpeedInsights()
 
 // iOS Safari ignores user-scalable=no, so stop its page-pinch gesture too (map pinch uses touch events and is unaffected).
-document.addEventListener('gesturestart', (e) => e.preventDefault())
+for (const t of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(t, (e) => e.preventDefault())
+// Newer iOS also zooms the page on a two-finger touchmove; cancel it (Leaflet and MapLibre read the touches themselves).
+document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault() }, { passive: false })
+document.addEventListener('dblclick', (e) => e.preventDefault())
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
