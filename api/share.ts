@@ -39,6 +39,6 @@ export default function handler(req: Request) {
 <meta http-equiv="refresh" content="0;url=${esc(target)}">
 <link rel="canonical" href="${esc(url.origin + target)}">
 </head><body><p><a href="${esc(target)}">See the result</a></p>
-<script>location.replace(${JSON.stringify(target)})</script></body></html>`;
+<script>location.replace(${JSON.stringify(target).replace(/</g, "\\u003c")})</script></body></html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300" } });
 }

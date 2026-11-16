@@ -25,6 +25,9 @@ const handlers = {
     if (req.method !== "POST") return json({ error: "method" }, 405);
     const origin = req.headers.get("origin") ?? "";
     if (origin && !ALLOWED.test(origin)) return json({ error: "origin" }, 403);
+    // CSRF: a cross-site <form> can only send simple content types, so insist on JSON (which forces a CORS preflight we never allow).
+    if (!(req.headers.get("content-type") ?? "").toLowerCase().startsWith("application/json")) return json({ error: "content_type" }, 415);
+    if (req.headers.get("sec-fetch-site") === "cross-site") return json({ error: "origin" }, 403);
     const claudeKey = process.env.ANTHROPIC_API_KEY;
     const key = claudeKey || process.env.LLM_API_KEY || process.env.GROQ_API_KEY;
     if (!key) return json({ error: "not_configured" }, 503);
