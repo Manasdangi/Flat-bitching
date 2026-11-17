@@ -18,6 +18,7 @@ import Compare from "./components/Compare";
 import SocietyPage, { SocietyList } from "./components/SocietyPage";
 import ShortlistPage from "./components/Shortlist";
 import LatestReviews from "./components/LatestReviews";
+import FeedbackCard from "./components/FeedbackCard";
 import { shortlist, womenMode } from "./lib/store";
 import { DATA_UPDATED, OFFICES, SECTORS, SOURCES, sectorById } from "./data/sectors";
 import { useDriveTimes } from "./lib/geo";
@@ -293,6 +294,7 @@ export default function App() {
                 {women ? "👩 Women-first view is on: safety leads the map and quiz." : "Showing the general view."}{" "}
                 <button className="link" onClick={() => { womenMode.set(!women); track("women_mode", { on: !women }); }}>{women ? "Show for everyone" : "Switch to women-first"}</button>
               </p>
+              <FeedbackCard />
               <LatestReviews />
               <h3>Browse by zone</h3>
               {Array.from(new Set(SECTORS.map((s) => s.zone))).map((z) => (
