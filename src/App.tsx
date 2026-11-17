@@ -190,7 +190,7 @@ export default function App() {
               if (route.view === "match") setSheet("full");
             }}
           />
-          {pickingOffice && <div className="map-hint">Tap your office location on the map</div>}
+          {pickingOffice > 0 && <div className="map-hint">Tap your office location on the map</div>}
           <details className="legend" open={legendOpen} onToggle={(e) => setLegendOpen((e.target as HTMLDetailsElement).open)}>
             <summary>Map key</summary>
             <div className="legend-body">
