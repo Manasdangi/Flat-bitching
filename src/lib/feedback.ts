@@ -3,10 +3,9 @@ import { deviceId, hasBackend, insert, rpc } from "./api";
 
 export const feedbackEnabled = hasBackend;
 
-export async function sendFeedback(message: string, contact: string) {
+export async function sendFeedback(message: string) {
   await insert("feedback", {
     message: message.trim().slice(0, 1000),
-    contact: contact.trim().slice(0, 120) || null,
     page: (location.pathname + location.search).slice(0, 200),
   });
 }

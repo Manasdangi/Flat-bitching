@@ -9,7 +9,6 @@ const MIN = 5, MAX = 1000;
 export default function FeedbackCard() {
   const [open, setOpen] = useState(false);
   const [msg, setMsg] = useState("");
-  const [contact, setContact] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [err, setErr] = useState("");
   const [visitors, setVisitors] = useState<number | null>(null);
@@ -21,9 +20,9 @@ export default function FeedbackCard() {
     if (msg.trim().length < MIN) return setErr(`Please write at least ${MIN} characters.`);
     setState("sending"); setErr("");
     try {
-      await sendFeedback(msg, contact);
+      await sendFeedback(msg);
       track("feedback_sent", {});
-      setState("done"); setMsg(""); setContact("");
+      setState("done"); setMsg("");
     } catch (e2) {
       setErr(friendlyError(e2, "Couldn't send. Please try again in a moment.")); setState("idle");
     }
@@ -50,14 +49,12 @@ export default function FeedbackCard() {
             <textarea id="fb-msg" rows={4} maxLength={MAX} value={msg} onChange={(e) => { setMsg(e.target.value); setErr(""); }} autoFocus
               placeholder="e.g. Sector 57 rent looks too low, or: please add metro timings" />
             <div className="fb-count muted small-txt">{msg.length}/{MAX}</div>
-            <label htmlFor="fb-contact" className="small-txt muted">Email or phone, only if you want a reply (optional)</label>
-            <input id="fb-contact" type="text" maxLength={120} value={contact} onChange={(e) => setContact(e.target.value)} autoComplete="off" />
             {err && <p className="error small-txt" role="alert">{err}</p>}
             <div className="row fb-actions">
               <button className="btn small" disabled={state === "sending" || msg.trim().length < MIN}>{state === "sending" ? "Sending…" : "Send feedback"}</button>
               <button type="button" className="link small-txt" onClick={() => { setOpen(false); setErr(""); }}>Cancel</button>
             </div>
-            <small className="muted">Anonymous by default. Please don't include sensitive personal details.</small>
+            <small className="muted">Anonymous. We don't ask for your name or email.</small>
           </form>
         )}
       </section>

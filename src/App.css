@@ -572,8 +572,8 @@ details.tool[open] > summary::after { content: ""; transform: rotate(-135deg) tr
 .feedback-card .fb-open > span:nth-child(2) { flex: 1; min-width: 0; }
 .feedback-card .fb-go { font-size: 22px; color: var(--muted); }
 .feedback-card form { display: grid; gap: 6px; padding: 12px 14px; }
-.feedback-card textarea, .feedback-card input[type=text] { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: inherit; resize: vertical; }
-.feedback-card textarea:focus, .feedback-card input[type=text]:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+.feedback-card textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: inherit; resize: vertical; }
+.feedback-card textarea:focus { outline: 2px solid var(--accent); outline-offset: 0; }
 .feedback-card .fb-count { text-align: right; margin-top: -2px; }
 .feedback-card .fb-actions { gap: 14px; align-items: center; margin-top: 2px; }
 .feedback-card .fb-actions .btn[disabled] { opacity: .5; cursor: not-allowed; }
