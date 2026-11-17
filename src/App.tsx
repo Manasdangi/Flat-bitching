@@ -18,7 +18,7 @@ import Compare from "./components/Compare";
 import SocietyPage, { SocietyList } from "./components/SocietyPage";
 import ShortlistPage from "./components/Shortlist";
 import LatestReviews from "./components/LatestReviews";
-import FeedbackCard from "./components/FeedbackCard";
+import FeedbackCard, { VisitorLine } from "./components/FeedbackCard";
 import { shortlist, womenMode } from "./lib/store";
 import { DATA_UPDATED, OFFICES, SECTORS, SOURCES, sectorById } from "./data/sectors";
 import { useDriveTimes } from "./lib/geo";
@@ -280,6 +280,7 @@ export default function App() {
             <div className="panel-body">
               <h2>{women ? "Where will you feel safe in Gurgaon?" : "Where should you live in Gurgaon?"}</h2>
               <p className="muted">{women ? "Safety-first picks for single women and PG residents. Tap a sector, search above, or take the quiz." : "Tap a sector on the map, search above, or let us pick for you."}</p>
+              <VisitorLine />
               <div className="actions-grid">
                 <a className="action-card primary" {...linkProps("/quiz")}><b>{women ? "⚡ Find a safe sector for me" : "⚡ 60-second quiz"}</b><span>Answer 6 taps, get your top 3 sectors</span></a>
                 <a className="action-card" {...linkProps("/rate")}><b>🗳️ Rate your sector</b><span>30 sec, helps others</span></a>

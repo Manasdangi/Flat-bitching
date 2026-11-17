@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { friendlyError } from "../lib/api";
 import { feedbackEnabled, recordVisit, sendFeedback } from "../lib/feedback";
+
+/** Small unique-visitor line, shown at the top of the home panel. */
+export function VisitorLine() {
+  const [visitors, setVisitors] = useState<number | null>(null);
+  useEffect(() => { recordVisit().then(setVisitors); }, []);
+  if (visitors == null || visitors < 1) return null;
+  return <p className="visitor-line muted small-txt">👀 {visitors.toLocaleString("en-IN")} unique visitor{visitors === 1 ? "" : "s"} so far</p>;
+}
 import { track } from "../lib/track";
 
 const MIN = 5, MAX = 1000;
@@ -11,8 +19,6 @@ export default function FeedbackCard() {
   const [msg, setMsg] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [err, setErr] = useState("");
-  const [visitors, setVisitors] = useState<number | null>(null);
-  useEffect(() => { recordVisit().then(setVisitors); }, []);
   if (!feedbackEnabled) return null;
 
   const submit = async (e: React.FormEvent) => {
@@ -58,9 +64,6 @@ export default function FeedbackCard() {
           </form>
         )}
       </section>
-      {visitors != null && visitors >= 1 && (
-        <p className="visitor-line muted small-txt">👀 {visitors.toLocaleString("en-IN")} unique visitor{visitors === 1 ? "" : "s"} so far</p>
-      )}
     </>
   );
 }
