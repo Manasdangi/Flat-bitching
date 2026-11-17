@@ -5,7 +5,9 @@ import {
   addRentReport, communityEnabled, HOME_LABEL, loadPolls, loadRentSummary, POLLS, vote, votedAlready, WOMEN_POLLS,
   type HomeType, type PollAnswer, type PollCounts, type PollKey, type RentRow,
 } from "../lib/community";
-import { RENT_CHECK } from "../data/evidence";
+import { RENT_CHECK, RENT_CHECK_3BHK } from "../data/evidence";
+import { BHK_TXT } from "../lib/rent";
+import type { Bhk } from "../lib/store";
 import { womenMode } from "../lib/store";
 import { track } from "../lib/track";
 
@@ -75,9 +77,10 @@ export function ResidentPolls({ sectorId, only }: { sectorId: string; only?: Pol
   );
 }
 
-export function RentReports({ sector }: { sector: Sector }) {
+export function RentReports({ sector, bhk = "2bhk" }: { sector: Sector; bhk?: Bhk }) {
   const [rows, setRows] = useState<RentRow[] | null>(null);
-  const [type, setType] = useState<HomeType>("2bhk");
+  const [type, setType] = useState<HomeType>(bhk);
+  useEffect(() => { setType(bhk); }, [bhk]);
   const [rent, setRent] = useState("");
   const [maint, setMaint] = useState("");
   const [dep, setDep] = useState("2");
@@ -108,16 +111,19 @@ export function RentReports({ sector }: { sector: Sector }) {
   return (
     <div className="community">
       <h3>💬 What residents actually pay</h3>
-      {RENT_CHECK[sector.id] && (() => {
-        const r = RENT_CHECK[sector.id];
-        return <p className="muted small-txt">Asking rents for 2 BHK on <a className="link" href={`https://www.squareyards.com/rent/2-bhk-for-rent-in-sector-${sector.id}-gurgaon`} target="_blank" rel="noreferrer">Square Yards</a> ({r.date}): {r.median ? <>typical <b>₹{r.median}k</b>, </> : null}₹{r.min}k–₹{r.max}k{r.n ? ` across ${r.n} listings` : ""}, about ₹{r.sqft}/sq ft. Asking prices are usually a little above what people finally pay.</p>;
+      {(() => {
+        const three = bhk === "3bhk";
+        const r = three ? RENT_CHECK_3BHK[sector.id] : RENT_CHECK[sector.id];
+        if (!r) return three ? <p className="muted small-txt">No 3 BHK listings read for this sector yet. The 3 BHK range above is an estimate from the 2 BHK range.</p> : null;
+        const sqft = "sqft" in r ? (r as { sqft: number }).sqft : 0;
+        return <p className="muted small-txt">Asking rents for {BHK_TXT[bhk]} on <a className="link" href={`https://www.squareyards.com/rent/${three ? "3" : "2"}-bhk-for-rent-in-sector-${sector.id}-gurgaon`} target="_blank" rel="noreferrer">Square Yards</a> ({r.date}): {r.median ? <>typical <b>₹{r.median}k</b>, </> : null}₹{r.min}k–₹{r.max}k{r.n ? ` across ${r.n} listings` : ""}{sqft ? `, about ₹${sqft}/sq ft` : ""}. Asking prices are usually a little above what people finally pay.</p>;
       })()}
       {rows == null ? <p className="muted">Loading…</p> : rows.length === 0 ? (
         <p className="muted">No reports yet. Be the first to share what you pay (anonymous).</p>
       ) : (
         <ul className="rent-rows">
-          {rows.map((r) => (
-            <li key={r.home_type}>
+          {[...rows].sort((a, b) => Number(b.home_type === bhk) - Number(a.home_type === bhk)).map((r) => (
+            <li key={r.home_type} className={r.home_type === bhk ? "sel" : ""}>
               <b>{HOME_LABEL[r.home_type]}</b>
               {r.n >= MIN_RENT
                 ? <span>{inr(r.median)}/mo <small className="muted">(typical {inr(r.p25)}–{inr(r.p75)} · {r.n} reports{r.n < 8 ? ", early signal" : ""}{r.avg_deposit ? ` · deposit ~${r.avg_deposit} mo` : ""})</small></span>
@@ -126,6 +132,7 @@ export function RentReports({ sector }: { sector: Sector }) {
           ))}
         </ul>
       )}
+      {rows != null && rows.length > 0 && !rows.some((r) => r.home_type === bhk) && <p className="muted small-txt">No {BHK_TXT[bhk]} reports here yet.</p>}
       {state === "done" ? <p className="success">Thanks! Your report helps the next person.</p> : (
         <details className="tool">
           <summary>➕ Share what you pay</summary>

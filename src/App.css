@@ -551,3 +551,12 @@ details.tool[open] > summary::after { content: ""; transform: rotate(-135deg) tr
 .ranked li small { grid-column: 1; }
 .ranked li small.why { grid-column: 1 / -1; margin-top: 8px; }
 .ranked li .row-end { grid-column: 2; grid-row: 1 / span 3; }
+
+/* ── BHK picker on the sector page ── */
+.bhk-pick { display: flex; align-items: center; gap: 10px; margin: 10px 0 0; }
+.bhk-pick > span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.bhk-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--raise); }
+.bhk-seg button { border: 0; background: transparent; color: inherit; font: inherit; font-size: 13px; font-weight: 600; padding: 6px 16px; cursor: pointer; min-height: 32px; }
+.bhk-seg button.on { background: var(--accent); color: #fff; }
+.bhk-seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.rent-rows li.sel { font-weight: 600; }

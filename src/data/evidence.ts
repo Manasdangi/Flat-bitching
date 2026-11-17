@@ -84,6 +84,14 @@ export const SAFETY_EV: Record<string, Evidence[]> = {
   "70": [{ src: "tribune70", note: "Two women returning to their PG near Tulip Chowk were followed by a man in an SUV (Oct 2026). The woman said lighting was poor and patrols were missing. No arrest was reported.", tone: "bad" }],
 };
 
+/** Asking rents for 3 BHK read from Square Yards listing pages (first page, 25 listings each), ₹ thousand/month. */
+export const RENT_CHECK_3BHK: Record<string, Omit<RentCheck, "sqft">> = {
+  "57": { median: 60, min: 42, max: 85, n: 25, date: "Nov 2026" },
+  "65": { median: 75, min: 46, max: 283, n: 25, date: "Nov 2026" },
+  "82": { median: 36, min: 28.5, max: 45, n: 25, date: "Nov 2026" },
+  "84": { median: 38.5, min: 33, max: 60, n: 25, date: "Nov 2026" },
+};
+
 /** Asking rents for 2 BHK read from Square Yards listing pages (first page of results only), ₹ thousand/month. */
 export type RentCheck = { median?: number; min: number; max: number; n?: number; date: string; sqft: number };
 export const RENT_CHECK: Record<string, RentCheck> = {

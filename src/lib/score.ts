@@ -1,5 +1,7 @@
 import { LANDMARKS, METRO, type Landmark, type Sector } from "../data/sectors";
 import { drainFor, waterScore } from "../data/risk";
+import { rentRange } from "./rent";
+import type { Bhk } from "./store";
 
 export type Office = { name: string; lat: number; lng: number } | null;
 
@@ -72,7 +74,8 @@ export const hangoutScore = (sec: Sector) => {
 };
 
 export const transitScore = (sec: Sector) => band(nearestMetro(sec).km, [1, 2, 3.5, 6]);
-export const affordScore = (sec: Sector) => band((sec.rent2bhk[0] + sec.rent2bhk[1]) / 2, [28, 36, 48, 70]);
+/** Affordability by rupees, so a 3 BHK scores lower than a 2 BHK in the same sector. */
+export const affordScore = (sec: Sector, bhk: Bhk = "2bhk") => { const [a, b] = rentRange(sec, bhk); return band((a + b) / 2, [28, 36, 48, 70]); };
 
 // Real road drive times (OSRM) for the selected tech hub, set by the app when an office is chosen.
 type DriveRow = { km: number; minutes_offpeak: number };
@@ -120,7 +123,7 @@ const blend = (prior: number, c?: { mean: number; n: number }) => {
   return Math.round(capped * 10) / 10;
 };
 
-export function allScores(sec: Sector, office: Office): Record<PriorityKey, number | null> {
+export function allScores(sec: Sector, office: Office, bhk: Bhk = "2bhk"): Record<PriorityKey, number | null> {
   const cm = community.get(sec.id);
   return {
     ...sec.scores,
@@ -129,7 +132,7 @@ export function allScores(sec: Sector, office: Office): Record<PriorityKey, numb
     drain: blend(drainFor(sec.id, sec.scores.drain), cm?.drain),
     water: blend(waterScore(sec.id), cm?.water),
     transit: transitScore(sec),
-    afford: affordScore(sec),
+    afford: affordScore(sec, bhk),
     health: healthScore(sec),
     schools: schoolScore(sec),
     techhub: techScore(sec),
@@ -141,8 +144,8 @@ export function allScores(sec: Sector, office: Office): Record<PriorityKey, numb
 }
 
 /** 0–100 match, or null when no priority is set. */
-export function matchScore(sec: Sector, w: Weights, office: Office): number | null {
-  const sc = allScores(sec, office);
+export function matchScore(sec: Sector, w: Weights, office: Office, bhk: Bhk = "2bhk"): number | null {
+  const sc = allScores(sec, office, bhk);
   let sum = 0;
   let wsum = 0;
   for (const p of PRIORITIES) {

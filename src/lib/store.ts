@@ -41,5 +41,9 @@ export const checklist = createStore<Record<string, string[]>>("gff-checklist", 
 // ── Money settings (local only) ────────────────────────
 export const money = createStore<{ salary: number; people: number }>("gff-money", { salary: 0, people: 1 });
 
+// ── Home size shown on the sector page (2 or 3 BHK) ──
+export type Bhk = "2bhk" | "3bhk";
+export const bhkPref = createStore<Bhk>("gff-bhk", "2bhk");
+
 // ── Women-first mode (default on): safety-led defaults, quiz and home page ──
 export const womenMode = createStore<boolean>("gff-women-mode", true);

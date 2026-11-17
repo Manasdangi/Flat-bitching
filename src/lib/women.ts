@@ -1,6 +1,8 @@
 import { SECTORS, type Sector } from "../data/sectors";
 import { nearby, nearestMetro } from "./score";
 import { FLOOD, WATER } from "../data/risk";
+import { rentRange } from "./rent";
+import type { Bhk } from "./store";
 
 const metroScore = (km: number) => (km <= 1 ? 5 : km <= 2 ? 4 : km <= 3.5 ? 3 : km <= 5 ? 2 : 1);
 const mid = ([a, b]: [number, number]) => (a + b) / 2;
@@ -27,8 +29,8 @@ export function womenScore(s: Sector) {
 }
 
 /** Rough monthly cost of the three common ways to live, in ₹ thousand. Estimates from the sector's rent ranges. */
-export function livingCosts(s: Sector) {
-  const flat = mid(s.rent2bhk);
+export function livingCosts(s: Sector, bhk: Bhk = "2bhk") {
+  const flat = mid(rentRange(s, bhk));
   const bills = 3; // electricity, internet, help, maintenance share
   return {
     pg: Math.round(mid(s.pgRent)),

@@ -3,12 +3,13 @@ import { Tool } from "./Tool";
 import type { Sector } from "../data/sectors";
 import { areaCardText, livingCosts, nightHome } from "../lib/women";
 import { commute, type Office } from "../lib/score";
-import { createStore } from "../lib/store";
+import { createStore, type Bhk } from "../lib/store";
+import { BHK_TXT } from "../lib/rent";
 import { track } from "../lib/track";
 
 /** Getting-home score and PG vs shared flat costs for one sector. */
-export function NightAndCost({ sector, office }: { sector: Sector; office?: Office }) {
-  const n = nightHome(sector), c = livingCosts(sector);
+export function NightAndCost({ sector, office, bhk = "2bhk" }: { sector: Sector; office?: Office; bhk?: Bhk }) {
+  const n = nightHome(sector), c = livingCosts(sector, bhk);
   const cm = commute(sector, office ?? null);
   const tone = n.score >= 4 ? "good" : n.score >= 3 ? "ok" : "low";
   return (
@@ -25,7 +26,7 @@ export function NightAndCost({ sector, office }: { sector: Sector; office?: Offi
         <div><span>Flat + 1</span><b>~₹{c.share2}k</b></div>
         <div><span>Flat + 2</span><b>~₹{c.share3}k</b></div>
       </div>
-      <p className="muted small-txt">Flat = your share of 2BHK rent + ~₹3k bills. PG usually includes food; a flat gives more privacy.</p>
+      <p className="muted small-txt">Flat = your share of {BHK_TXT[bhk]} rent + ~₹3k bills. PG usually includes food; a flat gives more privacy.</p>
     </div>
   );
 }

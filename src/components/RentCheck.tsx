@@ -3,13 +3,16 @@ import type { Sector } from "../data/sectors";
 import { communityEnabled, loadRentSummary, type RentRow } from "../lib/community";
 import { track } from "../lib/track";
 import { Tool } from "./Tool";
+import { rentRange, isEstimate, BHK_TXT } from "../lib/rent";
+import type { Bhk } from "../lib/store";
 
-type Kind = "2bhk" | "pg";
+type Kind = Bhk | "pg";
 const inr = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
 
 /** "Is my rent fair?": compares the rent someone was quoted with the sector's range and with resident reports. */
-export default function RentCheck({ sector }: { sector: Sector }) {
-  const [kind, setKind] = useState<Kind>("2bhk");
+export default function RentCheck({ sector, bhk = "2bhk" }: { sector: Sector; bhk?: Bhk }) {
+  const [kind, setKind] = useState<Kind>(bhk);
+  useEffect(() => { setKind(bhk); setShown(false); }, [bhk]);
   const [rent, setRent] = useState("");
   const [maint, setMaint] = useState("");
   const [shown, setShown] = useState(false);
@@ -19,7 +22,7 @@ export default function RentCheck({ sector }: { sector: Sector }) {
     if (communityEnabled) loadRentSummary(sector.id).then(setRows).catch(() => setRows([]));
   }, [sector.id]);
 
-  const [lo, hi] = (kind === "pg" ? sector.pgRent : sector.rent2bhk).map((x) => x * 1000);
+  const [lo, hi] = (kind === "pg" ? sector.pgRent : rentRange(sector, kind)).map((x) => x * 1000);
   const r = Number(rent);
   const valid = Number.isFinite(r) && r >= 2000;
   const resident = rows.find((x) => x.home_type === kind && x.n >= 3);
@@ -49,11 +52,11 @@ export default function RentCheck({ sector }: { sector: Sector }) {
         <div className="calc-grid">
           <label>Home type
             <select value={kind} onChange={(e) => { setKind(e.target.value as Kind); setShown(false); }}>
-              <option value="2bhk">2 BHK</option><option value="pg">PG (single)</option>
+              <option value="2bhk">2 BHK</option><option value="3bhk">3 BHK</option><option value="pg">PG (single)</option>
             </select>
           </label>
           <label>Quoted rent (₹/month)
-            <input type="number" inputMode="numeric" min={2000} required value={rent} onChange={(e) => { setRent(e.target.value); setShown(false); }} placeholder={kind === "pg" ? "e.g. 14000" : "e.g. 35000"} />
+            <input type="number" inputMode="numeric" min={2000} required value={rent} onChange={(e) => { setRent(e.target.value); setShown(false); }} placeholder={kind === "pg" ? "e.g. 14000" : kind === "3bhk" ? "e.g. 50000" : "e.g. 35000"} />
           </label>
           <label>Maintenance (₹, optional)
             <input type="number" inputMode="numeric" min={0} value={maint} onChange={(e) => setMaint(e.target.value)} />
@@ -65,10 +68,10 @@ export default function RentCheck({ sector }: { sector: Sector }) {
             <b>{msg[0]}</b>
             <p>{msg[1]}</p>
             <ul className="more-reports">
-              <li>Usual range here: {inr(lo)} – {inr(hi)} (rough, from 2025–26 listings)</li>
+              <li>Usual {kind === "pg" ? "PG" : BHK_TXT[kind]} range here: {inr(lo)} – {inr(hi)} ({kind !== "pg" && isEstimate(kind) ? "estimated from the 2 BHK range, so treat it as rough" : "rough, from 2025–26 listings"})</li>
               {resident && <li>Residents report a typical {inr(resident.median)} ({resident.n} reports)</li>}
               {Number(maint) > 0 && <li>All-in per month with maintenance: <b>{inr(r + Number(maint))}</b></li>}
-              {kind === "2bhk" && <li>Deposit is usually 2 months' rent; avoid paying more than that up front.</li>}
+              {kind !== "pg" && <li>Deposit is usually 2 months' rent; avoid paying more than that up front.</li>}
             </ul>
           </div>
         )}

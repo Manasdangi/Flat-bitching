@@ -14,7 +14,9 @@ import { FLOOD_EV, SRC, WATER_EV } from "../data/evidence";
 import { RentReports, ResidentPolls } from "./ResidentData";
 import WomenSnapshot from "./WomenSnapshot";
 import { AskOwner, NightAndCost, PgScorecard } from "./WomenTools";
-import { womenMode } from "../lib/store";
+import { womenMode, bhkPref, type Bhk } from "../lib/store";
+import { BHK_TXT, rentRange, isEstimate } from "../lib/rent";
+import { RENT_CHECK_3BHK } from "../data/evidence";
 import { ToolGroup } from "./Tool";
 import Checklist from "./Checklist";
 import RentCheck from "./RentCheck";
@@ -46,6 +48,7 @@ type Tab = "overview" | "women" | "water" | "community";
 
 export default function SectorPanel({ id, weights, office, office2, office3, onClose, inCompare, onToggleCompare, budget = 0 }: Props) {
   const women = womenMode.use();
+  const bhk: Bhk = bhkPref.use() === "3bhk" ? "3bhk" : "2bhk";
   const [tab, setTab] = useState<Tab>("overview");
   const [showCf, setShowCf] = useState(false);
   useEffect(() => { setTab("overview"); setShowCf(false); }, [id]);
@@ -56,8 +59,10 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
   const c2 = commute(s, office2);
   const c3 = commute(s, office3 ?? null);
   const badges = badgesFor(s.id);
-  const sc = allScores(s, office);
-  const m = matchScore(s, weights, office);
+  const sc = allScores(s, office, bhk);
+  const m = matchScore(s, weights, office, bhk);
+  const range = rentRange(s, bhk);
+  const listed = bhk === "3bhk" ? RENT_CHECK_3BHK[s.id] : undefined;
   const named = s.societies.filter(isNamedSociety);
 
   const share = async () => {
@@ -119,8 +124,19 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
         <button className="btn small ghost" onClick={share}>Share</button>
       </div>
 
+      <div className="bhk-pick" role="group" aria-label="Home size">
+        <span>Rent for</span>
+        <div className="bhk-seg">
+          {(["2bhk", "3bhk"] as Bhk[]).map((k) => (
+            <button key={k} type="button" aria-pressed={bhk === k} className={bhk === k ? "on" : ""}
+              onClick={() => { if (k !== bhk) { bhkPref.set(k); track("bhk_pick", { sector: s.id, bhk: k }); } }}>{BHK_TXT[k]}</button>
+          ))}
+        </div>
+      </div>
       <div className="facts">
-        <div><span>2BHK rent</span><b>{rupees(s.rent2bhk)}</b></div>
+        <div><span>{BHK_TXT[bhk]} rent{isEstimate(bhk) && !listed ? " (est.)" : ""}</span><b>{rupees(range)}</b>
+          {bhk === "3bhk" && <small className="muted">{listed ? `Listings: typical ₹${listed.median}k` : "Estimated from 2 BHK"}</small>}
+        </div>
         <div><span>PG (single)</span><b>{rupees(s.pgRent)}</b></div>
         <div><span>PG availability</span><b>{s.pg}</b></div>
         <div><span>Nearest metro</span><b>{metro.station.name} · {metro.km.toFixed(1)} km</b></div>
@@ -136,8 +152,8 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
       </div>
 
       {budget > 0 && (
-        <p className={`budget-line ${s.rent2bhk[0] <= budget ? "ok" : "over"}`}>
-          {s.rent2bhk[1] <= budget ? `✓ 2BHK fits your ₹${budget}k budget` : s.rent2bhk[0] <= budget ? `~ Some 2BHKs fit your ₹${budget}k budget (rents start at ₹${s.rent2bhk[0]}k)` : `✕ Above your ₹${budget}k budget (2BHK starts at ₹${s.rent2bhk[0]}k)`}
+        <p className={`budget-line ${range[0] <= budget ? "ok" : "over"}`}>
+          {range[1] <= budget ? `✓ ${BHK_TXT[bhk]} fits your ₹${budget}k budget` : range[0] <= budget ? `~ Some ${BHK_TXT[bhk]}s fit your ₹${budget}k budget (rents start at ₹${range[0]}k)` : `✕ Above your ₹${budget}k budget (${BHK_TXT[bhk]} starts at ₹${range[0]}k)`}
         </p>
       )}
       <div className="inshort">
@@ -199,14 +215,14 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
             <div className="chips">
               {[["NoBroker", "nobroker.in"], ["99acres", "99acres.com"], ["MagicBricks", "magicbricks.com"]].map(([n, d]) => (
                 <a key={n} className="chip link-chip" target="_blank" rel="noopener noreferrer" onClick={() => track("listing_link", { sector: s.id, site: n })}
-                  href={`https://www.google.com/search?q=${encodeURIComponent(`2 BHK flat for rent ${s.name} Gurgaon site:${d}`)}`}>🏠 {n} ›</a>
+                  href={`https://www.google.com/search?q=${encodeURIComponent(`${BHK_TXT[bhk]} flat for rent ${s.name} Gurgaon site:${d}`)}`}>🏠 {n} ›</a>
               ))}
             </div>
             <small className="muted">Opens a search on those sites. Always check the listing in person; never pay a deposit before visiting.</small>
           </div>
 
           <div className="tools">
-            <RentCheck sector={s} />
+            <RentCheck sector={s} bhk={bhk} />
             <ToolGroup title="📅 Plan a visit + checklist">
               <VisitPlanner sector={s} />
               <Checklist sectorId={s.id} />
@@ -218,7 +234,7 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
       {active === "women" && women && (
         <>
           <WomenSnapshot sector={s} />
-          <NightAndCost sector={s} office={office} />
+          <NightAndCost sector={s} office={office} bhk={bhk} />
           {policeLink}
           <div className="tools">
             <ToolGroup title="🛏️ PG & owner questions">
@@ -239,7 +255,7 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
             <a className="link small-txt" target="_blank" rel="noopener noreferrer" onClick={() => track("ask_residents", { sector: s.id })}
               href={`https://wa.me/?text=${encodeURIComponent(`Do you live in ${s.name}, Gurgaon? Rate it in 30 seconds so others can choose safely: ${location.origin}/sector/${s.id}`)}`}>Ask a friend here (WhatsApp)</a>
           </div>
-          <RentReports sector={s} />
+          <RentReports sector={s} bhk={bhk} />
           <ResidentPolls sectorId={s.id} />
           <Reviews sectorId={s.id} societies={named} />
         </>
@@ -249,7 +265,7 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
         <summary>ℹ️ About this data</summary>
         <DataTrust sectorId={s.id} />
         <p className="note">
-          Sector outlines and drive times come from OpenStreetMap. Rents are rough ranges from 2025–26 listings, nearby places are straight-line
+          Sector outlines and drive times come from OpenStreetMap. Rents are rough ranges from 2025–26 listings (3 BHK ranges are estimated from 2 BHK unless a listing figure is shown), nearby places are straight-line
           distances, and scores are editorial estimates until enough residents rate them. Visit at night and in monsoon before renting.
         </p>
         <SuggestFix sectorId={s.id} />
