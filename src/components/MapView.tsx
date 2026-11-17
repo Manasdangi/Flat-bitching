@@ -1,4 +1,5 @@
 import { FLOOD } from "../data/risk";
+import { bhkPref } from "../lib/store";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { CircleMarker, GeoJSON, MapContainer, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { sectorAt, useShapes } from "../lib/geo";
@@ -71,6 +72,7 @@ function ZoomWatch({ onZoom }: { onZoom: (z: number) => void }) {
 }
 
 export default function MapView({ selectedId, onSelect, weights, office, office2, office3, pickingOffice, onPickOffice, layers }: Props) {
+  const bhk = bhkPref.use() === "3bhk" ? "3bhk" : "2bhk";
   const [zoom, setZoom] = useState(12);
   const [is3d, setIs3d] = useState(false);
   const [pos3d, setPos3d] = useState<{ lat: number; lng: number } | null>(null);
@@ -131,7 +133,7 @@ export default function MapView({ selectedId, onSelect, weights, office, office2
       {shapes.map((sh) => {
         const sec = sectorById(sh.sector_id);
         if (!sec) return null;
-        const color = matchColor(matchScore(sec, weights, office));
+        const color = matchColor(matchScore(sec, weights, office, bhk));
         const sel = sh.sector_id === selectedId;
         return (
           <GeoJSON
@@ -144,7 +146,7 @@ export default function MapView({ selectedId, onSelect, weights, office, office2
       })}
 
       {SECTORS.map((s) => {
-        const m = matchScore(s, weights, office);
+        const m = matchScore(s, weights, office, bhk);
         const sel = s.id === selectedId;
         const r = hasShape.has(s.id) ? Math.max(base - 3, 7) : base;
         return (

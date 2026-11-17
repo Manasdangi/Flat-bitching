@@ -3,7 +3,8 @@ import { OFFICES, SECTORS } from "../data/sectors";
 import { PRESETS } from "../lib/presets";
 import { allScores, commute, matchScore, PRIORITIES, ZERO_WEIGHTS, type Office, type Weights } from "../lib/score";
 import type { Sector } from "../data/sectors";
-import { money } from "../lib/store";
+import { money, bhkPref, type Bhk } from "../lib/store";
+import { BHK_TXT, rentRange } from "../lib/rent";
 import { linkProps } from "../lib/router";
 import { track } from "../lib/track";
 
@@ -26,8 +27,8 @@ type Props = {
 };
 
 /** One-line reasons a sector ranks well: the user's top priorities with this sector's score, plus rent. */
-function reasons(s: Sector, w: Weights, office: Office) {
-  const sc = allScores(s, office);
+function reasons(s: Sector, w: Weights, office: Office, bhk: Bhk = "2bhk") {
+  const sc = allScores(s, office, bhk);
   return PRIORITIES.filter((x) => w[x.key] > 0 && sc[x.key] != null)
     .sort((a, b) => w[b.key] - w[a.key] || (sc[b.key] ?? 0) - (sc[a.key] ?? 0))
     .slice(0, 3)
@@ -68,6 +69,7 @@ function OfficePicker({ value, onChange, picking, onPick, label }: {
 
 export default function Matcher(p: Props) {
   const { salary, people } = money.use();
+  const bhk: Bhk = bhkPref.use() === "3bhk" ? "3bhk" : "2bhk";
   const [showSalary, setShowSalary] = useState(false);
   const [showSecond, setShowSecond] = useState(Boolean(p.office2));
   const [showThird, setShowThird] = useState(Boolean(p.office3));
@@ -77,13 +79,13 @@ export default function Matcher(p: Props) {
   const otherW = { ...p.weights, commute: 0 };
   const hasOther = Object.values(otherW).some(Boolean);
   const bestForOffices = offices.length >= 1 || hasOther
-    ? SECTORS.filter((s) => !p.budget || s.rent2bhk[0] <= p.budget)
+    ? SECTORS.filter((s) => !p.budget || rentRange(s, bhk)[0] <= p.budget)
         .map((s) => {
           const mins = offices.map((o) => commute(s, o)?.minutes ?? 0);
           const worst = mins.length ? Math.max(...mins) : 0;
           const avg = mins.length ? mins.reduce((a, b) => a + b, 0) / mins.length : 0;
           const commuteScore = mins.length ? Math.max(0, Math.min(100, 100 - ((worst - 15) / 45) * 100)) : 0;
-          const other = hasOther ? matchScore(s, otherW, null) ?? 0 : 0;
+          const other = hasOther ? matchScore(s, otherW, null, bhk) ?? 0 : 0;
           const total = !mins.length ? other : hasOther ? (p.weights.commute ? 0.5 : 0.25) * commuteScore + (p.weights.commute ? 0.5 : 0.75) * other : commuteScore;
           return { s, mins, worst, avg, total };
         })
@@ -146,7 +148,13 @@ export default function Matcher(p: Props) {
         </>
       )}
 
-      <h3>Max 2BHK budget</h3>
+      <h3>Home size</h3>
+      <div className="bhk-seg" role="group" aria-label="Home size">
+        {(["2bhk", "3bhk"] as Bhk[]).map((k) => (
+          <button key={k} type="button" aria-pressed={bhk === k} className={bhk === k ? "on" : ""} onClick={() => { if (k !== bhk) { bhkPref.set(k); track("bhk_pick", { sector: "match", bhk: k }); } }}>{BHK_TXT[k]}</button>
+        ))}
+      </div>
+      <h3>Max {BHK_TXT[bhk]} budget</h3>
       <div className="slider-row">
         <input type="range" min={0} max={100} step={5} value={p.budget} onChange={(e) => p.setBudget(+e.target.value)} />
         <b>{p.budget ? `₹${p.budget}k` : "Any"}</b>
@@ -201,9 +209,9 @@ export default function Matcher(p: Props) {
           <ol className="ranked">
             {bestForOffices.map(({ s, mins, total }) => (
               <li key={s.id} onClick={() => p.onSelect(s.id)}>
-                <span>{s.name}<small className="muted">{s.zone}</small><small className="muted">2BHK ₹{s.rent2bhk[0]}–{s.rent2bhk[1]}k/mo</small>
+                <span>{s.name}<small className="muted">{s.zone}</small><small className="muted">{BHK_TXT[bhk]} ₹{rentRange(s, bhk)[0]}–{rentRange(s, bhk)[1]}k/mo{bhk === "3bhk" ? " (est.)" : ""}</small>
                   {mins.length > 0 && <small className="muted commute-line">🚗 {mins.join(" / ")} min at peak</small>}
-                  {hasOther && <small className="why">{reasons(s, otherW, p.office).map((r) => <em key={r.key} className={r.good ? "ok" : ""}>{r.text}</em>)}</small>}</span>
+                  {hasOther && <small className="why">{reasons(s, otherW, p.office, bhk).map((r) => <em key={r.key} className={r.good ? "ok" : ""}>{r.text}</em>)}</small>}</span>
                 <span className="row-end"><b>{Math.round(total)}%</b><CompareBtn id={s.id} ids={p.compareIds} set={p.setCompare} /></span>
               </li>
             ))}

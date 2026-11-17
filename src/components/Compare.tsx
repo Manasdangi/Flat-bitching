@@ -1,7 +1,8 @@
 import { SECTORS, sectorById } from "../data/sectors";
 import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type Office, type Weights } from "../lib/score";
 import { Bar } from "./SectorPanel";
-import { womenMode } from "../lib/store";
+import { womenMode, bhkPref } from "../lib/store";
+import { BHK_TXT, rentRange } from "../lib/rent";
 import { nightHome, womenScore } from "../lib/women";
 import { shortlist } from "../lib/store";
 import { ShortlistTabs } from "./Shortlist";
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export default function Compare({ ids, setIds, weights, office, onSelect }: Props) {
+  const bhk = bhkPref.use() === "3bhk" ? "3bhk" : "2bhk";
   const women = womenMode.use();
   const list = ids.map(sectorById).filter(Boolean) as NonNullable<ReturnType<typeof sectorById>>[];
   const add = (id: string) => id && !ids.includes(id) && ids.length < 3 && setIds([...ids, id]);
@@ -29,9 +31,9 @@ export default function Compare({ ids, setIds, weights, office, onSelect }: Prop
     const b = higher ? Math.max(...nums) : Math.min(...nums);
     return vals.map((v) => (v === b ? "best" : ""));
   };
-  const rent = best(list.map((s) => (s.rent2bhk[0] + s.rent2bhk[1]) / 2), false);
+  const rent = best(list.map((s) => (rentRange(s, bhk)[0] + rentRange(s, bhk)[1]) / 2), false);
   const metroKm = best(list.map((s) => nearestMetro(s).km), false);
-  const matchBest = best(list.map((s) => matchScore(s, weights, office)), true);
+  const matchBest = best(list.map((s) => matchScore(s, weights, office, bhk)), true);
   const womenBest = best(list.map((s) => womenScore(s)), true);
   const commuteBest = best(list.map((s) => (office ? commute(s, office)?.minutes ?? null : null)), false);
   const summary = list.length >= 2 ? [
@@ -76,18 +78,18 @@ export default function Compare({ ids, setIds, weights, office, onSelect }: Prop
             </thead>
             <tbody>
               {Object.values(weights).some(Boolean) && (
-                <tr><td>Your match</td>{list.map((s, i) => <td key={s.id} className={matchBest[i]}><b>{matchScore(s, weights, office)}%</b></td>)}</tr>
+                <tr><td>Your match</td>{list.map((s, i) => <td key={s.id} className={matchBest[i]}><b>{matchScore(s, weights, office, bhk)}%</b></td>)}</tr>
               )}
               {women && <tr><td>👩 Women's score</td>{list.map((s, i) => <td key={s.id} className={womenBest[i]}><b>{womenScore(s)}</b>/100</td>)}</tr>}
               {women && <tr><td>🌙 Getting home</td>{list.map((s) => <td key={s.id}>{nightHome(s).label}</td>)}</tr>}
-              <tr><td>2BHK rent</td>{list.map((s, i) => <td key={s.id} className={rent[i]}>₹{s.rent2bhk[0]}–{s.rent2bhk[1]}k</td>)}</tr>
+              <tr><td>{BHK_TXT[bhk]} rent</td>{list.map((s, i) => <td key={s.id} className={rent[i]}>₹{rentRange(s, bhk)[0]}–{rentRange(s, bhk)[1]}k</td>)}</tr>
               <tr><td>PG</td>{list.map((s) => <td key={s.id}>₹{s.pgRent[0]}–{s.pgRent[1]}k · {s.pg}</td>)}</tr>
               <tr><td>Metro</td>{list.map((s, i) => { const m = nearestMetro(s); return <td key={s.id} className={metroKm[i]}>{m.station.name}<br /><small>{m.km.toFixed(1)} km</small></td>; })}</tr>
               <tr><td>Nearest tech hub</td>{list.map((s) => { const h = nearby(s, "tech", 1, 99)[0]; return <td key={s.id}>{h ? <>{h.name}<br /><small>{h.km.toFixed(1)} km</small></> : "–"}</td>; })}</tr>
               <tr><td>Nearest hospital</td>{list.map((s) => { const h = nearby(s, "hospital", 1, 99)[0]; return <td key={s.id}>{h ? <>{h.name}<br /><small>{h.km.toFixed(1)} km</small></> : "–"}</td>; })}</tr>
               {office && <tr><td>Commute</td>{list.map((s, i) => <td key={s.id} className={commuteBest[i]}>~{commute(s, office)!.minutes} min</td>)}</tr>}
               {PRIORITIES.filter((p) => p.key !== "commute" || office).map((p) => (
-                <tr key={p.key}><td>{p.icon} {p.label}</td>{list.map((s) => <td key={s.id}><Bar v={allScores(s, office)[p.key]} /></td>)}</tr>
+                <tr key={p.key}><td>{p.icon} {p.label}</td>{list.map((s) => <td key={s.id}><Bar v={allScores(s, office, bhk)[p.key]} /></td>)}</tr>
               ))}
               <tr><td>Societies</td>{list.map((s) => <td key={s.id}><small>{s.societies.join(", ")}</small></td>)}</tr>
             </tbody>

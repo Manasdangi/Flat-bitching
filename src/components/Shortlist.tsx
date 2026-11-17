@@ -2,7 +2,8 @@ import { sectorById } from "../data/sectors";
 import { linkProps, navigate } from "../lib/router";
 import { matchScore, type Office, type Weights } from "../lib/score";
 import { societyBySlug } from "../lib/societies";
-import { isSaved, setNote, shortlist, toggleSaved, type SavedItem } from "../lib/store";
+import { isSaved, setNote, shortlist, toggleSaved, bhkPref, type SavedItem } from "../lib/store";
+import { rentRange } from "../lib/rent";
 import { track } from "../lib/track";
 
 export function SaveButton({ kind, id }: { kind: SavedItem["kind"]; id: string }) {
@@ -53,6 +54,7 @@ export default function ShortlistPage({ weights, office, compareIds, setCompare 
   weights: Weights; office: Office; compareIds: string[]; setCompare: (ids: string[]) => void;
 }) {
   const items = shortlist.use();
+  const bhk = bhkPref.use() === "3bhk" ? "3bhk" : "2bhk";
   const shared = sharedFromUrl();
 
   if (shared.length) {
@@ -109,14 +111,14 @@ export default function ShortlistPage({ weights, office, compareIds, setCompare 
           <ul className="saved-list">
             {items.map((it) => {
               const sec = it.kind === "sector" ? sectorById(it.id) : societyBySlug(it.id)?.sectors[0];
-              const m = sec && it.kind === "sector" ? matchScore(sec, weights, office) : null;
+              const m = sec && it.kind === "sector" ? matchScore(sec, weights, office, bhk) : null;
               return (
                 <li key={it.kind + it.id}>
                   <div className="row between">
                     <a className="link" {...linkProps(path(it))}>{it.kind === "society" ? "🏢 " : ""}{label(it)}</a>
                     <span className="row">
                       {m != null && <span className="pill">{m}%</span>}
-                      {sec && <span className="muted small-txt">₹{sec.rent2bhk[0]}–{sec.rent2bhk[1]}k</span>}
+                      {sec && <span className="muted small-txt">₹{rentRange(sec, bhk)[0]}–{rentRange(sec, bhk)[1]}k</span>}
                       <button className="icon-btn" aria-label="Remove" onClick={() => toggleSaved(it.kind, it.id)}>✕</button>
                     </span>
                   </div>
