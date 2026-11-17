@@ -529,3 +529,7 @@ details.tool[open] > summary::after { content: ""; transform: rotate(-135deg) tr
 .panel-body > .police-link { margin: 12px 0; }
 .sector-tabs + h3 { margin-top: 12px; }
 .sector-tabs button { padding: 9px 9px; font-size: 13.5px; }
+
+.action-card { padding: 9px 12px; }
+.action-card b { font-size: 14.5px; }
+.action-card span { margin-top: 2px; font-size: 12.5px; line-height: 1.3; }

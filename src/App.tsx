@@ -281,8 +281,8 @@ export default function App() {
               <p className="muted">{women ? "Safety-first picks for single women and PG residents. Tap a sector, search above, or take the quiz." : "Tap a sector on the map, search above, or let us pick for you."}</p>
               <div className="actions-grid">
                 <a className="action-card primary" {...linkProps("/quiz")}><b>{women ? "⚡ Find a safe sector for me" : "⚡ 60-second quiz"}</b><span>Answer 6 taps, get your top 3 sectors</span></a>
-                <a className="action-card" {...linkProps("/rate")}><b>🗳️ Rate your sector</b><span>30 seconds, helps other women</span></a>
-                {women && <a className="action-card women" {...linkProps("/women/best")}><b>🌙 Best sectors for women</b><span>Ranked by night safety, metro and cost</span></a>}
+                <a className="action-card" {...linkProps("/rate")}><b>🗳️ Rate your sector</b><span>30 sec, helps others</span></a>
+                {women && <a className="action-card women" {...linkProps("/women/best")}><b>🌙 Best for women</b><span>Night safety, metro, cost</span></a>}
                 {women && <a className="action-card women" {...linkProps("/women")}><b>👩 Women's guide</b><span>PG checklist, night safety, helplines</span></a>}
                 <a className="action-card" {...linkProps("/match")}><b>🎯 Set priorities</b><span>Safety, metro, air, commute, budget</span></a>
                 <button className="action-card" onClick={() => document.querySelector<HTMLButtonElement>(".locate-btn")?.click()}><b>📍 Where am I?</b><span>Find the sector you're standing in</span></button>
