@@ -83,7 +83,7 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
   const tabs: { key: Tab; label: string }[] = [
     { key: "overview", label: "Overview" },
     ...(women ? [{ key: "women" as Tab, label: "👩 Women" }] : []),
-    { key: "water", label: "🌧️ Water & flood" },
+    { key: "water", label: "🌧️ Water" },
     { key: "community", label: "💬 Community" },
   ];
   const active: Tab = tabs.some((t) => t.key === tab) ? tab : "overview";

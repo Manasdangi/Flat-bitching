@@ -515,3 +515,17 @@ details.tool[open] > summary::after { content: ""; transform: rotate(-135deg) tr
 .risk, .risk.has, .women-card { background: var(--raise); border: 1px solid var(--line); }
 .women-card { border-left: 3px solid #f472b6; }
 .risk.has { border-left: 3px solid #38bdf8; }
+
+/* Spacing rhythm for the Overview tab */
+.panel-body .scores { gap: 7px; margin-bottom: 16px; }
+.panel-body .scores li { grid-template-columns: 1fr 110px; font-size: 13.5px; }
+.panel-body > details.tool { margin: 10px 0; }
+.panel-body > details.tool > summary { padding: 12px 14px; }
+.panel-body > details.tool > .two-col, .panel-body > details.tool > .nearby { padding: 0 14px 12px; }
+.panel-body > .tools { margin: 10px 0; gap: 10px; }
+.panel-body > h3 { margin: 18px 0 8px; }
+.panel-body > .chips { margin-bottom: 14px; }
+.panel-body > .listing-links { margin: 14px 0; }
+.panel-body > .police-link { margin: 12px 0; }
+.sector-tabs + h3 { margin-top: 12px; }
+.sector-tabs button { padding: 9px 9px; font-size: 13.5px; }
