@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { sectorById } from "../data/sectors";
 import { goBack, linkProps } from "../lib/router";
 import { allScores, commute, matchScore, nearby, nearestMetro, PRIORITIES, type Office, type Weights, COMMUNITY_MIN_VOTES, communityFor } from "../lib/score";
@@ -41,8 +42,13 @@ export const Bar = ({ v }: { v: number | null }) => (
 
 const rupees = ([a, b]: [number, number]) => `₹${a}k – ₹${b}k`;
 
+type Tab = "overview" | "women" | "water" | "community";
+
 export default function SectorPanel({ id, weights, office, office2, office3, onClose, inCompare, onToggleCompare, budget = 0 }: Props) {
   const women = womenMode.use();
+  const [tab, setTab] = useState<Tab>("overview");
+  const [showCf, setShowCf] = useState(false);
+  useEffect(() => { setTab("overview"); setShowCf(false); }, [id]);
   const s = sectorById(id);
   if (!s) return <div className="panel-body"><h2>Sector not found</h2><p>We don't cover this one yet.</p></div>;
   const metro = nearestMetro(s);
@@ -62,6 +68,26 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
     } catch { /* cancelled */ }
   };
 
+  const cf = confidence(s.id);
+  const policeLink = (() => {
+    const near = stationsFor(s).stations[0];
+    if (!near) return null;
+    const lp = linkProps(`/police/${s.id}`);
+    return (
+      <a className="police-link" href={lp.href} onClick={(e) => { track("police_card", { sector: s.id }); lp.onClick(e); }}>
+        <span className="pl-ico">🚓</span>
+        <span><b>Police stations & helpline</b><small>Nearest: {near.station.name}. Address, phone, email ›</small></span>
+      </a>
+    );
+  })();
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "overview", label: "Overview" },
+    ...(women ? [{ key: "women" as Tab, label: "👩 Women" }] : []),
+    { key: "water", label: "🌧️ Water & flood" },
+    { key: "community", label: "💬 Community" },
+  ];
+  const active: Tab = tabs.some((t) => t.key === tab) ? tab : "overview";
+
   return (
     <article className="panel-body">
       <div className="row between">
@@ -77,10 +103,13 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
       {badges.length > 0 && (
         <div className="chips badges">{badges.map((b) => <span key={b} className="chip badge">🏆 Top pick: {b}</span>)}</div>
       )}
-      {m != null && <p className="match">Your match: <b>{m}%</b></p>}
+      <div className="chip-row">
+        {m != null && <span className="chip match-chip">Your match: <b>{m}%</b></span>}
+        <button type="button" className={`chip cf-chip ${cf.level.toLowerCase()}`} aria-expanded={showCf} onClick={() => setShowCf((v) => !v)}>📊 {cf.level} confidence ⓘ</button>
+        <AqiBadge lat={s.lat} lng={s.lng} />
+      </div>
+      {showCf && <p className="note">{cf.why}. <a className="link" {...linkProps("/data")}>How reliable is this?</a></p>}
       <p>{s.summary}</p>
-      {(() => { const cf = confidence(s.id); return <p className="note">📊 Data confidence: <b>{cf.level}</b>. {cf.why}. <a className="link" {...linkProps("/data")}>How reliable is this?</a>{cf.level !== "High" && <> Live here? <a className="link" {...linkProps(`/rate?sector=${s.id}`)}>Add your vote</a> to raise it.</>}</p>; })()}
-      <AqiBadge lat={s.lat} lng={s.lng} />
 
       <div className="actions">
         <SaveButton kind="sector" id={s.id} />
@@ -116,99 +145,115 @@ export default function SectorPanel({ id, weights, office, office2, office3, onC
         <p><b>⚠️ Watch out:</b> {s.watchOut.slice(0, 2).join(" · ")}</p>
       </div>
 
-      {women && <WomenSnapshot sector={s} />}
-      {women && <NightAndCost sector={s} office={office} />}
-
-      <RiskCard id={s.id} />
-      <RentReports sector={s} />
-      <ResidentPolls sectorId={s.id} />
-
-      <div className="tools">
-        <RentCheck sector={s} />
-        <ToolGroup title="📅 Plan a visit + checklist">
-          <VisitPlanner sector={s} />
-          <Checklist sectorId={s.id} />
-        </ToolGroup>
-        {women && (
-          <ToolGroup title="🛏️ PG & owner questions">
-            <PgScorecard sectorId={s.id} />
-            <AskOwner sector={s} />
-          </ToolGroup>
-        )}
-      </div>
-
-      <h3>Scores</h3>
-      <ul className="scores">
-        {PRIORITIES.map((p) => (
-          <li key={p.key}><span>{p.icon} {p.label}{(() => { const c = communityFor(s.id)?.[p.key]; return c && c.n >= COMMUNITY_MIN_VOTES ? <small className="muted"> · {c.n} resident votes</small> : null; })()}</span><Bar v={sc[p.key]} /></li>
+      <div className="sector-tabs" role="tablist">
+        {tabs.map((t) => (
+          <button key={t.key} type="button" role="tab" aria-selected={active === t.key} className={active === t.key ? "on" : ""} onClick={() => { setTab(t.key); track("sector_tab", { sector: s.id, tab: t.key }); }}>{t.label}</button>
         ))}
-      </ul>
-      {!office && <p className="note">Pick your office in the Match tab to see real drive times.</p>}
-
-      <div className="two-col">
-        <div><h3>👍 Good</h3><ul>{s.highlights.map((h) => <li key={h}>{h}</li>)}</ul></div>
-        <div><h3>⚠️ Watch out</h3><ul>{s.watchOut.map((h) => <li key={h}>{h}</li>)}</ul></div>
       </div>
 
-      <h3>Nearby</h3>
-      <div className="nearby">
-        {([["tech", "💼 Tech & office hubs"], ["hangout", "🎉 Happening places"], ["hospital", "🏥 Hospitals"], ["school", "🎒 Schools"], ["mall", "🛍️ Malls & markets"]] as const).map(([k, label]) => {
-          const list = nearby(s, k);
-          return (
-            <div key={k}>
-              <b>{label}</b>
-              {list.length === 0 ? <p className="muted">None of our listed ones within 6 km</p> : (
-                <ul>{list.map((l) => <li key={l.name + l.area}>{l.name} <span className="muted">· {l.area} · {l.km.toFixed(1)} km</span></li>)}</ul>
-              )}
+      {active === "overview" && (
+        <>
+          <h3>Scores</h3>
+          <ul className="scores">
+            {PRIORITIES.map((p) => (
+              <li key={p.key}><span>{p.icon} {p.label}{(() => { const c = communityFor(s.id)?.[p.key]; return c && c.n >= COMMUNITY_MIN_VOTES ? <small className="muted"> · {c.n} resident votes</small> : null; })()}</span><Bar v={sc[p.key]} /></li>
+            ))}
+          </ul>
+          {!office && <p className="muted small-txt">Pick your office in the Match tab to see real drive times.</p>}
+
+          <details className="tool">
+            <summary>👍 All pros and cons</summary>
+            <div className="two-col">
+              <div><h3>👍 Good</h3><ul>{s.highlights.map((h) => <li key={h}>{h}</li>)}</ul></div>
+              <div><h3>⚠️ Watch out</h3><ul>{s.watchOut.map((h) => <li key={h}>{h}</li>)}</ul></div>
             </div>
-          );
-        })}
-      </div>
+          </details>
+          <details className="tool">
+            <summary>📍 Nearby places</summary>
+            <div className="nearby">
+              {([["tech", "💼 Tech & office hubs"], ["hangout", "🎉 Happening places"], ["hospital", "🏥 Hospitals"], ["school", "🎒 Schools"], ["mall", "🛍️ Malls & markets"]] as const).map(([k, label]) => {
+                const list = nearby(s, k);
+                return (
+                  <div key={k}>
+                    <b>{label}</b>
+                    {list.length === 0 ? <p className="muted">None of our listed ones within 6 km</p> : (
+                      <ul>{list.map((l) => <li key={l.name + l.area}>{l.name} <span className="muted">· {l.area} · {l.km.toFixed(1)} km</span></li>)}</ul>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </details>
 
-      <h3>Popular societies & housing</h3>
-      <div className="chips">
-        {s.societies.map((x) => isNamedSociety(x)
-          ? <a key={x} className="chip link-chip" {...linkProps(`/society/${slugify(x)}`)}>🏢 {x} ›</a>
-          : <span key={x} className="chip">{x}</span>)}
-      </div>
+          <h3>Popular societies & housing</h3>
+          <div className="chips">
+            {s.societies.map((x) => isNamedSociety(x)
+              ? <a key={x} className="chip link-chip" {...linkProps(`/society/${slugify(x)}`)}>🏢 {x} ›</a>
+              : <span key={x} className="chip">{x}</span>)}
+          </div>
 
-      {(() => {
-        const near = stationsFor(s).stations[0];
-        if (!near) return null;
-        const lp = linkProps(`/police/${s.id}`);
-        return (
-          <a className="police-link" href={lp.href} onClick={(e) => { track("police_card", { sector: s.id }); lp.onClick(e); }}>
-            <span className="pl-ico">🚓</span>
-            <span><b>Police stations & helpline</b><small>Nearest: {near.station.name}. Address, phone, email ›</small></span>
-          </a>
-        );
-      })()}
+          {!women && policeLink}
 
-      <div className="listing-links">
-        <h3>Ready to look? See live listings</h3>
-        <div className="chips">
-          {[["NoBroker", "nobroker.in"], ["99acres", "99acres.com"], ["MagicBricks", "magicbricks.com"]].map(([n, d]) => (
-            <a key={n} className="chip link-chip" target="_blank" rel="noopener noreferrer" onClick={() => track("listing_link", { sector: s.id, site: n })}
-              href={`https://www.google.com/search?q=${encodeURIComponent(`2 BHK flat for rent ${s.name} Gurgaon site:${d}`)}`}>🏠 {n} ›</a>
-          ))}
-        </div>
-        <small className="muted">Opens a search on those sites. Always check the listing in person; never pay a deposit before visiting.</small>
-      </div>
+          <div className="listing-links">
+            <h3>Ready to look? See live listings</h3>
+            <div className="chips">
+              {[["NoBroker", "nobroker.in"], ["99acres", "99acres.com"], ["MagicBricks", "magicbricks.com"]].map(([n, d]) => (
+                <a key={n} className="chip link-chip" target="_blank" rel="noopener noreferrer" onClick={() => track("listing_link", { sector: s.id, site: n })}
+                  href={`https://www.google.com/search?q=${encodeURIComponent(`2 BHK flat for rent ${s.name} Gurgaon site:${d}`)}`}>🏠 {n} ›</a>
+              ))}
+            </div>
+            <small className="muted">Opens a search on those sites. Always check the listing in person; never pay a deposit before visiting.</small>
+          </div>
 
-      <div className="listing-links">
-        <h3>Live here? Help others</h3>
-        <a className="btn small ghost" target="_blank" rel="noopener noreferrer" onClick={() => track("ask_residents", { sector: s.id })}
-          href={`https://wa.me/?text=${encodeURIComponent(`Do you live in ${s.name}, Gurgaon? Rate it in 30 seconds so others can choose safely: ${location.origin}/sector/${s.id}`)}`}>Ask a friend here to rate it (WhatsApp)</a>
-      </div>
+          <div className="tools">
+            <RentCheck sector={s} />
+            <ToolGroup title="📅 Plan a visit + checklist">
+              <VisitPlanner sector={s} />
+              <Checklist sectorId={s.id} />
+            </ToolGroup>
+          </div>
+        </>
+      )}
 
-      <DataTrust sectorId={s.id} />
-      <p className="note">
-        Sector outlines and drive times come from OpenStreetMap. Rents are rough ranges from 2025–26 listings, nearby places are straight-line
-        distances, and scores are editorial estimates until enough residents rate them. Visit at night and in monsoon before renting.
-      </p>
-      <SuggestFix sectorId={s.id} />
+      {active === "women" && women && (
+        <>
+          <WomenSnapshot sector={s} />
+          <NightAndCost sector={s} office={office} />
+          {policeLink}
+          <div className="tools">
+            <ToolGroup title="🛏️ PG & owner questions">
+              <PgScorecard sectorId={s.id} />
+              <AskOwner sector={s} />
+            </ToolGroup>
+          </div>
+        </>
+      )}
 
-      <Reviews sectorId={s.id} societies={named} />
+      {active === "water" && <RiskCard id={s.id} />}
+
+      {active === "community" && (
+        <>
+          <div className="rate-cta">
+            <div><b>Live here? Rate {s.name} in 30 seconds</b><small className="muted">One tap each, anonymous. It makes the data more reliable for everyone.</small></div>
+            <a className="btn small" {...linkProps(`/rate?sector=${s.id}`)}>Rate it</a>
+            <a className="link small-txt" target="_blank" rel="noopener noreferrer" onClick={() => track("ask_residents", { sector: s.id })}
+              href={`https://wa.me/?text=${encodeURIComponent(`Do you live in ${s.name}, Gurgaon? Rate it in 30 seconds so others can choose safely: ${location.origin}/sector/${s.id}`)}`}>Ask a friend here (WhatsApp)</a>
+          </div>
+          <RentReports sector={s} />
+          <ResidentPolls sectorId={s.id} />
+          <Reviews sectorId={s.id} societies={named} />
+        </>
+      )}
+
+      <details className="tool about-data">
+        <summary>ℹ️ About this data</summary>
+        <DataTrust sectorId={s.id} />
+        <p className="note">
+          Sector outlines and drive times come from OpenStreetMap. Rents are rough ranges from 2025–26 listings, nearby places are straight-line
+          distances, and scores are editorial estimates until enough residents rate them. Visit at night and in monsoon before renting.
+        </p>
+        <SuggestFix sectorId={s.id} />
+      </details>
     </article>
   );
 }
@@ -230,7 +275,6 @@ function RiskCard({ id }: { id: string }) {
       )}
       {!f && !w && <p className="muted">No water or flooding problems reported for this sector in the sources we checked. That is not a guarantee, so ask current residents.</p>}
       <small className="muted">Sources: <a href={WATER_SOURCE.url} target="_blank" rel="noreferrer">{WATER_SOURCE.label}</a>, <a href={FLOOD_SOURCE.url} target="_blank" rel="noreferrer">{FLOOD_SOURCE.label}</a>. Reports, not official data. </small>
-      <SuggestFix sectorId={id} defaultTopic="water_flood" label="⚠️ Report wrong water or flood info" />
     </div>
   );
 }

@@ -14,7 +14,7 @@ export function NightAndCost({ sector, office }: { sector: Sector; office?: Offi
   return (
     <div className="women-card">
       <h3>🌙 Getting home after dark</h3>
-      <div className={`women-score ${tone}`}><b>{n.score}/5</b><span>{n.label} · metro {n.km.toFixed(1)} km</span><AreaCardButton sector={sector} /></div>
+      <div className={`women-score ${tone}`}><b>{n.score}/5</b><span>{n.label}</span><AreaCardButton sector={sector} /></div>
       <ul className="women-list">
         {n.tips.map((t) => <li key={t}>{t}</li>)}
         {cm && office && <li>🚕 Late-night cab home from {office.name}: about <b>{cm.offpeak ?? Math.max(10, Math.round(cm.minutes * 0.6))} min</b> on empty roads ({cm.roadKm.toFixed(1)} km)</li>}

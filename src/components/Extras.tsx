@@ -13,14 +13,13 @@ export function AqiBadge({ lat, lng }: { lat: number; lng: number }) {
     loadAqi(lat, lng).then((a) => live && setAqi(a));
     return () => { live = false; };
   }, [lat, lng]);
-  if (aqi === undefined) return <div className="aqi muted">Air quality: loading…</div>;
+  if (aqi === undefined) return <div className="aqi muted">AQI…</div>;
   if (!aqi) return null;
   const b = aqiBand(aqi.aqi);
   return (
     <div className="aqi" title="Live US AQI estimate from Open-Meteo (CAMS model), not a ground station">
       <span className="aqi-dot" style={{ background: b.color }} />
-      <span>Air quality now: <b>{aqi.aqi}</b> AQI · {b.label}</span>
-      <small className="muted"> · PM2.5 {aqi.pm25} µg/m³</small>
+      <span>AQI <b>{aqi.aqi}</b> · {b.label}</span>
     </div>
   );
 }
