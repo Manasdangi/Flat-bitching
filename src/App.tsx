@@ -76,9 +76,8 @@ export default function App() {
   const [pickingOffice, setPickingOffice] = useState<0 | 1 | 2 | 3>(0);
   const saved = shortlist.use();
   const women = womenMode.use();
-  const [layers, setLayers] = usePersisted("gff-layers", { tech: true, hangout: true, flood: false });
+  const [layers] = usePersisted("gff-layers", { tech: true, hangout: true, flood: false });
   const [sheet, setSheet] = useState<Sheet>("half");
-  const [legendOpen, setLegendOpen] = useState(() => typeof window === "undefined" || window.innerWidth > 860);
   const panelRef = useRef<HTMLElement>(null);
 
   // Real drive times for the selected hub (custom pins fall back to estimates).
@@ -192,18 +191,7 @@ export default function App() {
             }}
           />
           {pickingOffice > 0 && <div className="map-hint">Tap your office location on the map</div>}
-          <details className="legend" open={legendOpen} onToggle={(e) => setLegendOpen((e.target as HTMLDetailsElement).open)}>
-            <summary>Map key</summary>
-            <div className="legend-body">
-            <span><i style={{ background: "hsl(0 75% 45%)" }} />Low</span>
-            <span><i style={{ background: "hsl(130 75% 45%)" }} />High match</span>
-            <span><i className="dot" style={{ background: "#ca8a04" }} />Yellow</span>
-            <span><i className="dot" style={{ background: "#0284c7" }} />Rapid</span>
-            <label><input type="checkbox" checked={layers.tech} onChange={(e) => setLayers((l) => ({ ...l, tech: e.target.checked }))} /><i className="dot" style={{ background: "#0f172a" }} />Tech hubs</label>
-            <label><input type="checkbox" checked={layers.hangout} onChange={(e) => setLayers((l) => ({ ...l, hangout: e.target.checked }))} /><i className="dot" style={{ background: "#db2777" }} />Hangouts</label>
-              <label><input type="checkbox" checked={Boolean(layers.flood)} onChange={(e) => setLayers((l) => ({ ...l, flood: e.target.checked }))} /><i className="dot" style={{ background: "#0ea5e9" }} />Flood-prone</label>
-          </div>
-          </details>
+
         </div>
 
         <div className="panel-resizer" role="separator" aria-orientation="vertical" aria-label="Drag to resize the side panel" title="Drag to resize · double-click to reset"
