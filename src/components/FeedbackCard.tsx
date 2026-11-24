@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { friendlyError } from "../lib/api";
 import { feedbackEnabled, recordVisit, sendFeedback } from "../lib/feedback";
 
-/** Small unique-visitor line, shown at the top of the home panel. */
+/** Small unique-visitor and total-views line, shown at the top of the home panel. */
 export function VisitorLine() {
-  const [visitors, setVisitors] = useState<number | null>(null);
-  useEffect(() => { recordVisit().then(setVisitors); }, []);
-  if (visitors == null || visitors < 1) return null;
-  return <p className="visitor-line muted small-txt">👀 {visitors.toLocaleString("en-IN")} unique visitor{visitors === 1 ? "" : "s"} so far</p>;
+  const [st, setSt] = useState<{ unique: number; views: number } | null>(null);
+  useEffect(() => { recordVisit().then(setSt); }, []);
+  if (!st) return null;
+  const f = (n: number) => n.toLocaleString("en-IN");
+  return <p className="visitor-line muted small-txt">👀 {f(st.unique)} unique visitor{st.unique === 1 ? "" : "s"} · {f(st.views)} total view{st.views === 1 ? "" : "s"}</p>;
 }
 import { track } from "../lib/track";
 
